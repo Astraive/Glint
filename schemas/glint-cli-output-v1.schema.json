@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:glint:schema:glint-cli-output:v1",
+  "$comment": "PROPOSED format (CLI-001): the envelope every `glint ... --json` call prints on stdout, for success and failure alike. Command names, flags and per-command `data` shapes stay proposed until documented as stable in docs/cli/reference.md. Fields are only added within schemaVersion 1; an incompatible change bumps schemaVersion. apps/cli/tests/exit_codes.rs validates real CLI output against this file.",
+  "x-glint-status": "proposed",
+  "title": "Glint CLI JSON output envelope v1",
+  "type": "object",
+  "oneOf": [
+    { "$ref": "#/$defs/success" },
+    { "$ref": "#/$defs/failure" }
+  ],
+  "$defs": {
+    "common": {
+      "schemaVersion": { "const": 1 },
+      "glintVersion": { "type": "string", "minLength": 1 },
+      "command": {
+        "description": "The recognised command words, e.g. \"theme validate\"; null when the first word was not recognised.",
+        "type": ["string", "null"]
+      }
+    },
+    "success": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "glintVersion", "command", "ok", "exitCode", "data"],
+      "properties": {
+        "schemaVersion": { "$ref": "#/$defs/common/schemaVersion" },
+        "glintVersion": { "$ref": "#/$defs/common/glintVersion" },
+        "command": { "$ref": "#/$defs/common/command" },
+        "ok": { "const": true },
+        "exitCode": { "const": 0 },
+        "data": {
+          "description": "Command-specific payload; see docs/cli/reference.md.",
+          "type": "object"
+        }
+      }
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "glintVersion", "command", "ok", "exitCode", "error"],
+      "properties": {
+        "schemaVersion": { "$ref": "#/$defs/common/schemaVersion" },
+        "glintVersion": { "$ref": "#/$defs/common/glintVersion" },
+        "command": { "$ref": "#/$defs/common/command" },
+        "ok": { "const": false },
+        "exitCode": { "enum": [1, 2, 3, 4, 5, 6, 7, 8] },
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "code", "message", "details"],
+          "properties": {
+            "kind": {
+              "description": "Failure class. Fixes exitCode: failure 1, usage 2, unsupported 3, invalid-package 4, permission-denied 5, daemon-unavailable 6, not-found 7, timeout 8.",
+              "enum": [
+                "failure",
+                "usage",
+                "unsupported",
+                "invalid-package",
+                "permission-denied",
+                "daemon-unavailable",
+                "not-found",
+                "timeout"
+              ]
+            },
+            "code": {
+              "description": "Most specific stable code: GLINT_CLI_*, GLINT_SOURCE_*, GLINT_PACKAGE_* or GLINT_MANIFEST_*.",
+              "type": "string",
+              "pattern": "^GLINT_[A-Z0-9_]+$"
+            },
+            "message": {
+              "description": "Human-readable text; not a contract.",
+              "type": "string",
+              "minLength": 1
+            },
+            "details": {
+              "description": "Machine-readable context such as sourceCode, packageCode, manifestCode, pointer or plannedIn.",
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

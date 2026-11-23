@@ -12,5 +12,14 @@ publish.workspace = true
 name = "glint"
 path = "src/main.rs"
 
+[dependencies]
+glint-package = { path = "../../crates/glint-package" }
+glint-schema = { path = "../../crates/glint-schema" }
+glint-sources = { path = "../../crates/glint-sources" }
+serde_json = "1"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
 [lints]
 workspace = true

@@ -1,49 +1,60 @@
-//! `glint` CLI entry point.
+//! `glint` CLI entry point (CLI-001).
 //!
-//! Glint is in the planning/foundation stage. This binary only reports its
-//! version; commands are added by the CLI-* tickets and must never report
-//! success for work they did not perform.
+//! Thin by design: argument parsing, output rendering and the exit code
+//! contract live here; the work is done by the library crates. Commands in
+//! the proposed tree that are not implemented yet fail with the typed
+//! `unsupported` error (exit 3) and never report success. The contract is
+//! documented in `docs/cli/reference.md`.
 
+mod cli;
+mod commands;
+mod error;
+mod output;
+
+use std::io::{self, IsTerminal, Write};
 use std::process::ExitCode;
 
-const USAGE: &str = "usage: glint [--version | --help]";
-
-fn run(args: &[String]) -> Result<String, String> {
-    match args.first().map(String::as_str) {
-        None | Some("--help") | Some("-h") => Ok(USAGE.to_owned()),
-        Some("--version") | Some("-V") => Ok(format!("glint {}", env!("CARGO_PKG_VERSION"))),
-        Some(other) => Err(format!(
-            "unsupported command `{other}`: not implemented yet\n{USAGE}"
-        )),
-    }
-}
+use crate::commands::Terminal;
+use crate::error::{CliError, codes};
 
 fn main() -> ExitCode {
-    let args: Vec<String> = std::env::args().skip(1).collect();
-    match run(&args) {
-        Ok(out) => {
-            println!("{out}");
-            ExitCode::SUCCESS
-        }
-        Err(err) => {
-            eprintln!("{err}");
-            ExitCode::from(2)
-        }
-    }
-}
+    let parsed = match std::env::args_os()
+        .skip(1)
+        .map(|arg| {
+            arg.into_string().map_err(|arg| {
+                CliError::usage(format!(
+                    "argument {} is not valid Unicode",
+                    arg.to_string_lossy()
+                ))
+            })
+        })
+        .collect::<Result<Vec<String>, CliError>>()
+    {
+        Ok(args) => cli::parse(&args),
+        Err(error) => cli::Parsed {
+            json: false,
+            command: None,
+            action: Err(error),
+        },
+    };
+    let terminal = Terminal {
+        interactive: io::stdin().is_terminal() && io::stdout().is_terminal(),
+    };
+    let result = parsed
+        .action
+        .and_then(|action| commands::execute(action, parsed.json, terminal));
+    let rendered = output::render(parsed.json, parsed.command.as_deref(), result);
 
-#[cfg(test)]
-mod tests {
-    use super::run;
-
-    #[test]
-    fn version_flag_reports_package_version() {
-        let out = run(&["--version".to_owned()]).unwrap();
-        assert_eq!(out, format!("glint {}", env!("CARGO_PKG_VERSION")));
+    // A closed stdout (`glint ... | head`) is not worth a panic; report it
+    // as a failure on stderr if stderr still works.
+    if let Err(error) = io::stdout().write_all(rendered.stdout.as_bytes()) {
+        let _ = writeln!(
+            io::stderr(),
+            "error[failure]: cannot write output: {error} ({})",
+            codes::IO
+        );
+        return ExitCode::from(error::ErrorKind::Failure.exit_code());
     }
-
-    #[test]
-    fn unknown_command_is_an_error_not_a_fake_success() {
-        assert!(run(&["theme".to_owned()]).is_err());
-    }
+    let _ = io::stderr().write_all(rendered.stderr.as_bytes());
+    ExitCode::from(rendered.exit_code)
 }

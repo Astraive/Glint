@@ -135,6 +135,13 @@ dependencies = [
 [[package]]
 name = "glint-cli"
 version = "0.0.0"
+dependencies = [
+ "glint-package",
+ "glint-schema",
+ "glint-sources",
+ "serde_json",
+ "tempfile",
+]
 
 [[package]]
 name = "glint-package"
