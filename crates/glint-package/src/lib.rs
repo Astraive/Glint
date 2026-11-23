@@ -9,6 +9,9 @@
 //! installer's job (INS). [`pack_directory`] writes a byte-for-byte
 //! reproducible archive from a theme directory and returns its
 //! [`PackageDigest`]; its output always passes the reader.
+//! [`export_package_tree`] re-packs an extracted package tree the same way,
+//! without the authoring exclusions, for exporting installed releases
+//! (PKG-005).
 //!
 //! The design follows the SPK-007 spike
 //! (`docs/research/spikes/package-security.md`): the archive is identified by
@@ -41,6 +44,7 @@
 #![warn(missing_docs)]
 
 mod error;
+mod export;
 mod limits;
 mod path;
 mod reader;
@@ -50,6 +54,7 @@ mod validate;
 mod writer;
 
 pub use error::{ErrorCode, PackageError, PathRejection};
+pub use export::export_package_tree;
 pub use limits::PackageLimits;
 pub use path::{
     EXECUTABLE_EXTENSIONS, MANIFEST_NAME, is_executable_name, is_reserved_device_name,

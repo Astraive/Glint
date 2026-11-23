@@ -153,6 +153,26 @@ pub fn pack_directory_with_limits(
     dest: &Path,
     limits: &PackageLimits,
 ) -> Result<PackageDigest, PackageError> {
+    pack_tree(src, dest, limits, Exclusions::Apply)
+}
+
+/// Whether [`pack_tree`] skips development junk ([`is_excluded_name`]).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Exclusions {
+    /// Skip excluded names (authoring: [`pack_directory`]).
+    Apply,
+    /// Pack every regular file (export of an extracted package, PKG-005).
+    None,
+}
+
+/// The packer behind [`pack_directory_with_limits`] and
+/// [`crate::export_package_tree`].
+pub(crate) fn pack_tree(
+    src: &Path,
+    dest: &Path,
+    limits: &PackageLimits,
+    exclusions: Exclusions,
+) -> Result<PackageDigest, PackageError> {
     if !staging::is_real_dir(src) {
         return Err(PackageError::PackSourceInvalid(src.to_path_buf()));
     }
@@ -171,7 +191,7 @@ pub fn pack_directory_with_limits(
 
     let mut files = Vec::new();
     let mut excluded = Vec::new();
-    collect(src, "", 0, limits, &mut files, &mut excluded)?;
+    collect(src, "", 0, limits, exclusions, &mut files, &mut excluded)?;
     files.sort_by(|a, b| a.0.cmp(&b.0));
     excluded.sort();
     check_file_set(&files, limits)?;
@@ -209,6 +229,7 @@ fn collect(
     rel: &str,
     depth: usize,
     limits: &PackageLimits,
+    exclusions: Exclusions,
     files: &mut Vec<(String, PathBuf)>,
     excluded: &mut Vec<String>,
 ) -> Result<(), PackageError> {
@@ -234,7 +255,7 @@ fn collect(
         if file_type.is_symlink() {
             return Err(PackageError::Symlink { name: child_rel });
         }
-        if is_excluded_name(name, meta.is_dir()) {
+        if exclusions == Exclusions::Apply && is_excluded_name(name, meta.is_dir()) {
             excluded.push(child_rel);
             continue;
         }
@@ -250,6 +271,7 @@ fn collect(
                 &child_rel,
                 depth + 1,
                 limits,
+                exclusions,
                 files,
                 excluded,
             )?;
