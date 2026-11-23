@@ -21,3 +21,6 @@ Thumbs.db
 .env
 .env.*
 *.log
+
+# Agent worktrees (local only)
+/.claude/worktrees/
