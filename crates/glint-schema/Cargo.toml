@@ -1,0 +1,17 @@
+[package]
+name = "glint-schema"
+description = "Proposed glint.json v1 theme manifest types and strict parser."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+semver = "1"
+serde = "1"
+serde_json = "1"
+
+[lints]
+workspace = true
