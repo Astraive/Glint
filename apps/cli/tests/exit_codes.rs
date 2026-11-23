@@ -190,6 +190,48 @@ fn validate_accepts_the_bundled_default_theme() {
 }
 
 #[test]
+fn invalid_surfaces_exit_4_with_the_surface_code_and_pointer() {
+    let dir = tempfile::tempdir().unwrap();
+    let theme = dir.path().join("theme");
+    let source = repo_root().join("themes/default");
+    for rel in [
+        "glint.json",
+        "LICENSE",
+        "assets/preview.svg",
+        "surfaces/panel/index.html",
+        "surfaces/panel/panel.css",
+        "theme/tokens.json",
+    ] {
+        let to = theme.join(rel);
+        fs::create_dir_all(to.parent().unwrap()).unwrap();
+        fs::copy(source.join(rel), &to).unwrap();
+    }
+    let manifest = fs::read_to_string(theme.join("glint.json")).unwrap();
+    let manifest = manifest.replace(
+        r#""entry": "surfaces/panel/index.html""#,
+        r#""entry": "surfaces/panel/index.html", "placement": { "kind": "desktop" }"#,
+    );
+    fs::write(theme.join("glint.json"), manifest).unwrap();
+
+    let envelope = json(
+        &["theme", "validate", theme.to_str().unwrap()],
+        INVALID_PACKAGE,
+    );
+    assert_eq!(error_kind(&envelope), "invalid-package");
+    assert_eq!(
+        envelope["error"]["code"],
+        "GLINT_SURFACE_UNSUPPORTED_PLACEMENT"
+    );
+    let details = &envelope["error"]["details"];
+    assert_eq!(details["packageCode"], "GLINT_PACKAGE_INVALID_SURFACE");
+    assert_eq!(
+        details["surfaceCode"],
+        "GLINT_SURFACE_UNSUPPORTED_PLACEMENT"
+    );
+    assert_eq!(details["pointer"], "/surfaces/panel/placement/kind");
+}
+
+#[test]
 fn invalid_packages_exit_4_with_the_underlying_code() {
     let dir = tempfile::tempdir().unwrap();
 

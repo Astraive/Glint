@@ -71,8 +71,9 @@ Validates a theme directory or a `.glint` archive (default: the current
 directory) through the same pipeline the installer uses: `glint-sources`
 `LocalSource` packs a directory deterministically and hands the archive to
 the strict `glint-package` reader, which checks the archive structure, the
-`glint.json` manifest (`glint-schema`), capability IDs, referenced files,
-executable content and remote references. The private staging copy is
+`glint.json` manifest (`glint-schema`), capability IDs, surface definitions
+(`glint-surfaces`), referenced files and surface entrypoints, executable
+content, remote references and active SVG content. The private staging copy is
 removed afterwards; nothing is installed and no package script runs.
 
 Not checked yet (CRT-003): host version compatibility, surface build output
@@ -89,9 +90,9 @@ and forbidden APIs. `data.notChecked` lists them.
 | `checked`, `notChecked` | Check names that ran and that are deferred |
 
 Failures keep the most specific library code in `error.code`
-(`GLINT_MANIFEST_*` over `GLINT_PACKAGE_*` over `GLINT_SOURCE_*`) and the
-whole chain in `error.details` (`sourceCode`, `packageCode`, `manifestCode`,
-`pointer`).
+(`GLINT_MANIFEST_*` or `GLINT_SURFACE_*` over `GLINT_PACKAGE_*` over
+`GLINT_SOURCE_*`) and the whole chain in `error.details` (`sourceCode`,
+`packageCode`, `manifestCode` or `surfaceCode`, `pointer`).
 
 ## Exit codes
 

@@ -248,7 +248,7 @@ fn theme_validate(path: &Path) -> Result<Success, CliError> {
             "files": staged.candidate.files.len(),
             "totalUncompressed": staged.candidate.total_uncompressed,
         },
-        "checked": ["archive-structure", "manifest-schema", "capability-ids", "referenced-files", "executable-content", "remote-references"],
+        "checked": ["archive-structure", "manifest-schema", "capability-ids", "surface-definitions", "referenced-files", "surface-entrypoints", "executable-content", "remote-references", "active-content"],
         "notChecked": ["host-version-compatibility", "surface-build-output", "forbidden-apis"],
     });
     let text = format!(
@@ -299,6 +299,11 @@ pub fn source_error(error: &SourceError) -> CliError {
             code = manifest.code().as_str().to_owned();
             cli_error_details.push(("manifestCode", Value::from(code.clone())));
             cli_error_details.push(("pointer", Value::from(manifest.pointer())));
+        }
+        if let Some(surface) = package.surface_error() {
+            code = surface.code().as_str().to_owned();
+            cli_error_details.push(("surfaceCode", Value::from(code.clone())));
+            cli_error_details.push(("pointer", Value::from(surface.pointer())));
         }
     }
     // The library display starts with its own code; the CLI shows codes
