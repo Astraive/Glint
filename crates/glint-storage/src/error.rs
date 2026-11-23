@@ -23,6 +23,18 @@ pub enum ErrorCode {
     PathNotDirectory,
     /// A path that Glint was asked to write lies outside the resolved roots.
     PathOutsideRoots,
+    /// A SQLite operation failed.
+    Database,
+    /// A schema migration failed and was rolled back; the database is
+    /// unchanged at its previous version.
+    MigrationFailed,
+    /// The database was written by a newer Glint (schema version above the
+    /// newest migration this build knows). It is left untouched.
+    SchemaTooNew,
+    /// The database is corrupt and could not be recovered.
+    DatabaseCorrupt,
+    /// A value (profile ID, digest) is not acceptable for storage.
+    InvalidValue,
 }
 
 impl ErrorCode {
@@ -33,6 +45,11 @@ impl ErrorCode {
         ErrorCode::PathNotAbsolute,
         ErrorCode::PathNotDirectory,
         ErrorCode::PathOutsideRoots,
+        ErrorCode::Database,
+        ErrorCode::MigrationFailed,
+        ErrorCode::SchemaTooNew,
+        ErrorCode::DatabaseCorrupt,
+        ErrorCode::InvalidValue,
     ];
 
     /// The stable string form, e.g. `GLINT_STORAGE_PATH_UNAVAILABLE`.
@@ -43,6 +60,11 @@ impl ErrorCode {
             ErrorCode::PathNotAbsolute => "GLINT_STORAGE_PATH_NOT_ABSOLUTE",
             ErrorCode::PathNotDirectory => "GLINT_STORAGE_PATH_NOT_DIRECTORY",
             ErrorCode::PathOutsideRoots => "GLINT_STORAGE_PATH_OUTSIDE_ROOTS",
+            ErrorCode::Database => "GLINT_STORAGE_DATABASE",
+            ErrorCode::MigrationFailed => "GLINT_STORAGE_MIGRATION_FAILED",
+            ErrorCode::SchemaTooNew => "GLINT_STORAGE_SCHEMA_TOO_NEW",
+            ErrorCode::DatabaseCorrupt => "GLINT_STORAGE_DATABASE_CORRUPT",
+            ErrorCode::InvalidValue => "GLINT_STORAGE_INVALID_VALUE",
         }
     }
 }
@@ -99,6 +121,38 @@ pub enum StorageError {
     PathNotDirectory(PathBuf),
     /// A path outside the resolved roots.
     PathOutsideRoots(PathBuf),
+    /// A SQLite operation failed.
+    Database {
+        /// The step that failed.
+        context: &'static str,
+        /// The underlying error.
+        source: rusqlite::Error,
+    },
+    /// A migration failed and was rolled back.
+    MigrationFailed {
+        /// The migration's version.
+        version: u32,
+        /// The migration's name.
+        name: &'static str,
+        /// The underlying error.
+        source: rusqlite::Error,
+    },
+    /// The database schema is newer than this build supports.
+    SchemaTooNew {
+        /// The database's `user_version`.
+        found: u32,
+        /// The newest version this build knows.
+        supported: u32,
+    },
+    /// The database is corrupt and recovery failed.
+    DatabaseCorrupt(String),
+    /// An unacceptable value.
+    InvalidValue {
+        /// What the value is.
+        what: &'static str,
+        /// Why it was refused.
+        reason: &'static str,
+    },
 }
 
 impl StorageError {
@@ -110,6 +164,11 @@ impl StorageError {
             StorageError::PathNotAbsolute { .. } => ErrorCode::PathNotAbsolute,
             StorageError::PathNotDirectory(_) => ErrorCode::PathNotDirectory,
             StorageError::PathOutsideRoots(_) => ErrorCode::PathOutsideRoots,
+            StorageError::Database { .. } => ErrorCode::Database,
+            StorageError::MigrationFailed { .. } => ErrorCode::MigrationFailed,
+            StorageError::SchemaTooNew { .. } => ErrorCode::SchemaTooNew,
+            StorageError::DatabaseCorrupt(_) => ErrorCode::DatabaseCorrupt,
+            StorageError::InvalidValue { .. } => ErrorCode::InvalidValue,
         }
     }
 
@@ -117,12 +176,24 @@ impl StorageError {
     pub fn category(&self) -> ErrorCategory {
         match self {
             StorageError::Io { source, .. } => io_category(source),
-            StorageError::PathUnavailable { .. } | StorageError::PathNotDirectory(_) => {
-                ErrorCategory::Unavailable
-            }
-            StorageError::PathNotAbsolute { .. } | StorageError::PathOutsideRoots(_) => {
-                ErrorCategory::Failure
-            }
+            StorageError::PathUnavailable { .. }
+            | StorageError::PathNotDirectory(_)
+            | StorageError::DatabaseCorrupt(_) => ErrorCategory::Unavailable,
+            StorageError::Database { source, .. }
+            | StorageError::MigrationFailed { source, .. } => sqlite_category(source),
+            StorageError::SchemaTooNew { .. } => ErrorCategory::Unsupported,
+            StorageError::PathNotAbsolute { .. }
+            | StorageError::PathOutsideRoots(_)
+            | StorageError::InvalidValue { .. } => ErrorCategory::Failure,
+        }
+    }
+
+    /// The SQLite primary error code behind a database or migration error.
+    pub fn sqlite_code(&self) -> Option<rusqlite::ErrorCode> {
+        match self {
+            StorageError::Database { source, .. }
+            | StorageError::MigrationFailed { source, .. } => source.sqlite_error_code(),
+            _ => None,
         }
     }
 
@@ -136,6 +207,25 @@ impl StorageError {
             path,
             source,
         }
+    }
+
+    pub(crate) fn db(context: &'static str) -> impl FnOnce(rusqlite::Error) -> StorageError {
+        move |source| StorageError::Database { context, source }
+    }
+}
+
+/// Map a SQLite error to a category.
+pub(crate) fn sqlite_category(error: &rusqlite::Error) -> ErrorCategory {
+    use rusqlite::ErrorCode as Sql;
+    match error.sqlite_error_code() {
+        Some(Sql::DatabaseBusy | Sql::DatabaseLocked) => ErrorCategory::Timeout,
+        Some(Sql::PermissionDenied | Sql::ReadOnly | Sql::AuthorizationForStatementDenied) => {
+            ErrorCategory::PermissionDenied
+        }
+        Some(Sql::CannotOpen | Sql::NotADatabase | Sql::DatabaseCorrupt) => {
+            ErrorCategory::Unavailable
+        }
+        _ => ErrorCategory::Failure,
     }
 }
 
@@ -175,6 +265,23 @@ impl fmt::Display for StorageError {
             StorageError::PathOutsideRoots(path) => {
                 write!(f, "{} is outside Glint's directories", path.display())
             }
+            StorageError::Database { context, source } => write!(f, "{context}: {source}"),
+            StorageError::MigrationFailed {
+                version,
+                name,
+                source,
+            } => write!(
+                f,
+                "migration {version:03} ({name}) failed and was rolled back: {source}"
+            ),
+            StorageError::SchemaTooNew { found, supported } => write!(
+                f,
+                "database schema version {found} is newer than this build supports ({supported})"
+            ),
+            StorageError::DatabaseCorrupt(detail) => {
+                write!(f, "database is corrupt and recovery failed: {detail}")
+            }
+            StorageError::InvalidValue { what, reason } => write!(f, "invalid {what}: {reason}"),
         }
     }
 }
@@ -183,6 +290,8 @@ impl std::error::Error for StorageError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             StorageError::Io { source, .. } => Some(source),
+            StorageError::Database { source, .. }
+            | StorageError::MigrationFailed { source, .. } => Some(source),
             _ => None,
         }
     }

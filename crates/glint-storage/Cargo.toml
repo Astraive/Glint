@@ -13,6 +13,11 @@ publish.workspace = true
 # SHGetKnownFolderPath on Windows, Standard Directories on macOS. Glint adds
 # its own application sub-paths on top; see src/paths.rs.
 dirs = "7.0.0"
+# SQLite state database (INS-002, ADR 0008). `bundled` compiles the SQLite
+# amalgamation into the binary, so every host runs the same tested SQLite
+# version and no system library is needed. No default features: no
+# statement cache, no optional type integrations.
+rusqlite = { version = "0.43.0", default-features = false, features = ["bundled"] }
 
 [dev-dependencies]
 tempfile = "3.27.0"
