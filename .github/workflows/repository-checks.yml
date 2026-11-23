@@ -53,7 +53,7 @@ jobs:
         run: python scripts/check-conventions.py --title "$PR_TITLE"
 
   rust-workspace:
-    name: Rust workspace (${{ matrix.os }})
+    name: Rust workspace (${{ matrix.os }}${{ matrix.os != 'windows-latest' && ', compile and test only' || '' }})
     # Rust steps run only once a Cargo workspace exists; until then the job
     # reports that no workspace is present instead of claiming a pass.
     runs-on: ${{ matrix.os }}
@@ -90,17 +90,37 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Run Rust Clippy
         if: steps.workspace.outputs.present == 'true'
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - name: Run workspace tests
         if: steps.workspace.outputs.present == 'true'
-        run: cargo test --workspace
+        run: cargo test --workspace --locked
 
       # PKG-002: the non-negotiable package security fixture suite, run as its
       # own named step on every OS because path semantics differ. Fixtures are
       # generated at test time; see docs/security/package-fixtures.md.
       - name: Run package security fixture suite
         if: steps.workspace.outputs.present == 'true'
-        run: cargo test -p glint-package --test security --test roundtrip -- --nocapture
+        run: cargo test --locked -p glint-package --test security --test roundtrip -- --nocapture
+
+      # PRJ-003: a green job here is hosted-runner evidence only. It never marks
+      # a platform supported; see docs/quality/test-matrix.md.
+      - name: Record what this result does and does not show
+        if: steps.workspace.outputs.present == 'true'
+        shell: bash
+        env:
+          RUNNER_OS_LABEL: ${{ matrix.os }}
+        run: |
+          {
+            echo "### Rust workspace on ${RUNNER_OS_LABEL}"
+            echo
+            if [ "${RUNNER_OS_LABEL}" = "windows-latest" ]; then
+              echo "Hosted-runner compile and test result. Hands-on Windows 11 checks are recorded separately."
+            else
+              echo "Compile and test only on a hosted runner; no hands-on hardware exists for this OS."
+            fi
+            echo
+            echo "CI result is not native platform verification. A green job never marks a platform supported; see docs/quality/test-matrix.md."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   theme-schema:
     name: TypeScript theme schema
@@ -128,6 +148,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Check generated manifest types for drift
         run: pnpm --filter @glint/theme-schema check
+      - name: Lint TypeScript workspace
+        run: pnpm lint
       - name: Type-check the theme-schema package
         run: pnpm --filter @glint/theme-schema typecheck
       - name: Run manifest corpus parity and unit tests

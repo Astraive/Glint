@@ -17,7 +17,7 @@ Status values: `real` (executed and recorded), `ci` (runs on a hosted runner onl
 
 Runner images are not pinned to a fixed version; CI records `rustc --version` and `cargo --version` in each Rust job so the actual compiler is visible in the log. Pin a runner image only when a failure is traced to an image change.
 
-CI is not native-platform verification. The Rust jobs run only when a `Cargo.toml` exists; otherwise they report "not applicable", which is not a pass (see [repository-checks.yml](../../.github/workflows/repository-checks.yml)).
+CI is not native-platform verification. Linux and macOS Rust jobs are named "compile and test only", every Rust job writes that caveat to its step summary, and cargo runs with `--locked` so `Cargo.lock` is enforced. The Rust jobs run only when a `Cargo.toml` exists; otherwise they report "not applicable", which is not a pass (see [repository-checks.yml](../../.github/workflows/repository-checks.yml)).
 
 ## Matrix: OS and environment by check
 
@@ -45,6 +45,7 @@ Every row without hardware is **pending** and stays `not-run` until someone runs
 | Rust | 1.95.0, components `rustfmt` and `clippy`, minimal profile | [rust-toolchain.toml](../../rust-toolchain.toml); applied on CI by the Rust setup action |
 | Node.js | `>=24.0.0` | `engines` in [package.json](../../package.json) |
 | pnpm | 10.18.0 | `packageManager` in [package.json](../../package.json) |
+| Biome (TypeScript lint) | 2.6.8, exact | `devDependencies` in [package.json](../../package.json) and [biome.json](../../biome.json); run with `pnpm lint` |
 | Python | 3.12 on CI (repository checks); 3.12+ locally | `python-version` in [repository-checks.yml](../../.github/workflows/repository-checks.yml); [development guide](../development.md) |
 | PowerShell | 7+ (`pwsh`) | [development guide](../development.md) |
 
