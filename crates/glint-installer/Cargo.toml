@@ -10,11 +10,15 @@ publish.workspace = true
 
 [dependencies]
 glint-package = { path = "../glint-package" }
+# Package identity and the ADR 0006 collision policy (INS-004).
+glint-schema = { path = "../glint-schema" }
 glint-sources = { path = "../glint-sources" }
 glint-storage = { path = "../glint-storage" }
 # Re-verifies store entries against their content address when the package
 # index is rebuilt; the same version glint-package uses.
 sha2 = "0.11.1"
+# Installed versions are compared by SemVer precedence (classify_install).
+semver = "1"
 
 [dev-dependencies]
 tempfile = "3.27.0"

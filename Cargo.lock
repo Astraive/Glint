@@ -197,8 +197,10 @@ name = "glint-installer"
 version = "0.0.0"
 dependencies = [
  "glint-package",
+ "glint-schema",
  "glint-sources",
  "glint-storage",
+ "semver",
  "sha2",
  "tempfile",
 ]

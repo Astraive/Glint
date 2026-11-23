@@ -38,6 +38,13 @@ pub enum ErrorCode {
     /// A fault injector stopped the operation at a named point, simulating a
     /// crash: nothing was cleaned up.
     Interrupted,
+    /// The release conflicts with an installed one under the identity
+    /// policy (ADR 0006): the same package key from another origin, or the
+    /// same origin and version with a different digest. Nothing changed;
+    /// see [`InstallError::identity_outcome`].
+    IdentityConflict,
+    /// The source's origin cannot be expressed as an ADR 0006 origin.
+    InvalidOrigin,
 }
 
 impl ErrorCode {
@@ -53,6 +60,8 @@ impl ErrorCode {
         ErrorCode::InUse,
         ErrorCode::StoreConflict,
         ErrorCode::Interrupted,
+        ErrorCode::IdentityConflict,
+        ErrorCode::InvalidOrigin,
     ];
 
     /// The stable string form, e.g. `GLINT_INSTALL_IN_USE`.
@@ -68,6 +77,8 @@ impl ErrorCode {
             ErrorCode::InUse => "GLINT_INSTALL_IN_USE",
             ErrorCode::StoreConflict => "GLINT_INSTALL_STORE_CONFLICT",
             ErrorCode::Interrupted => "GLINT_INSTALL_INTERRUPTED",
+            ErrorCode::IdentityConflict => "GLINT_INSTALL_IDENTITY_CONFLICT",
+            ErrorCode::InvalidOrigin => "GLINT_INSTALL_INVALID_ORIGIN",
         }
     }
 }
@@ -112,6 +123,18 @@ pub enum InstallError {
     StoreConflict(PathBuf),
     /// Stopped by a fault injector (simulated crash).
     Interrupted(FaultPoint),
+    /// Refused by the identity policy.
+    IdentityConflict {
+        /// The `glint-schema` classification (`DigestConflict` or
+        /// `OriginCollision`, with the installed origin or digest).
+        outcome: Box<glint_schema::InstallOutcome>,
+        /// The candidate's origin.
+        candidate_origin: String,
+        /// The candidate's digest (`sha256:...`).
+        candidate_digest: String,
+    },
+    /// The origin cannot be mapped.
+    InvalidOrigin(String),
 }
 
 impl InstallError {
@@ -130,6 +153,8 @@ impl InstallError {
             InstallError::InUse { .. } => ErrorCode::InUse,
             InstallError::StoreConflict(_) => ErrorCode::StoreConflict,
             InstallError::Interrupted(_) => ErrorCode::Interrupted,
+            InstallError::IdentityConflict { .. } => ErrorCode::IdentityConflict,
+            InstallError::InvalidOrigin(_) => ErrorCode::InvalidOrigin,
         }
     }
 
@@ -149,6 +174,15 @@ impl InstallError {
             },
             InstallError::Busy(_) => ErrorCategory::Unavailable,
             _ => ErrorCategory::Failure,
+        }
+    }
+
+    /// The identity classification behind [`ErrorCode::IdentityConflict`];
+    /// its `code()` is the `GLINT_IDENTITY_*` code.
+    pub fn identity_outcome(&self) -> Option<&glint_schema::InstallOutcome> {
+        match self {
+            InstallError::IdentityConflict { outcome, .. } => Some(outcome),
+            _ => None,
         }
     }
 
@@ -222,6 +256,24 @@ impl fmt::Display for InstallError {
             InstallError::Interrupted(point) => {
                 write!(f, "interrupted at {point:?} (simulated crash)")
             }
+            InstallError::IdentityConflict {
+                outcome,
+                candidate_origin,
+                candidate_digest,
+            } => match outcome.as_ref() {
+                glint_schema::InstallOutcome::OriginCollision { installed } => write!(
+                    f,
+                    "{}: already installed from {installed}; {candidate_origin} ({candidate_digest}) needs an explicit decision",
+                    outcome.code()
+                ),
+                glint_schema::InstallOutcome::DigestConflict { installed } => write!(
+                    f,
+                    "{}: this version from {candidate_origin} is installed as {installed}, not {candidate_digest}",
+                    outcome.code()
+                ),
+                other => write!(f, "{}", other.code()),
+            },
+            InstallError::InvalidOrigin(detail) => write!(f, "invalid origin: {detail}"),
         }
     }
 }

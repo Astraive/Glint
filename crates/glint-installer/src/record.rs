@@ -26,6 +26,13 @@ pub(crate) struct StoreRecord {
     pub source_kind: String,
     pub source_locator: String,
     pub installed_at: i64,
+    /// ADR 0006 origin (`local`, `git:<url>`, ...).
+    pub origin: String,
+    pub registry: Option<String>,
+    pub git_commit: Option<String>,
+    pub local_path: Option<String>,
+    pub signing: String,
+    pub retrieved_at: i64,
 }
 
 impl StoreRecord {
@@ -33,7 +40,7 @@ impl StoreRecord {
     pub(crate) fn write_new(&self, dir: &Path) -> Result<(), InstallError> {
         let path = dir.join(RECORD_NAME);
         let text = format!(
-            "{HEADER}\ndigest={}\nkind={}\nid={}\nversion={}\narchive_size={}\nsource_kind={}\nsource_locator={}\ninstalled_at={}\n",
+            "{HEADER}\ndigest={}\nkind={}\nid={}\nversion={}\narchive_size={}\nsource_kind={}\nsource_locator={}\ninstalled_at={}\norigin={}\nregistry={}\ngit_commit={}\nlocal_path={}\nsigning={}\nretrieved_at={}\n",
             escape(&self.digest),
             escape(&self.kind),
             escape(&self.package_id),
@@ -42,6 +49,12 @@ impl StoreRecord {
             escape(&self.source_kind),
             escape(&self.source_locator),
             self.installed_at,
+            escape(&self.origin),
+            escape(self.registry.as_deref().unwrap_or("")),
+            escape(self.git_commit.as_deref().unwrap_or("")),
+            escape(self.local_path.as_deref().unwrap_or("")),
+            escape(&self.signing),
+            self.retrieved_at,
         );
         let mut file = OpenOptions::new()
             .write(true)
@@ -78,6 +91,12 @@ impl StoreRecord {
             source_kind: take("source_kind")?,
             source_locator: take("source_locator")?,
             installed_at: take("installed_at")?.parse().ok()?,
+            origin: take("origin")?,
+            registry: take("registry").filter(|v| !v.is_empty()),
+            git_commit: take("git_commit").filter(|v| !v.is_empty()),
+            local_path: take("local_path").filter(|v| !v.is_empty()),
+            signing: take("signing")?,
+            retrieved_at: take("retrieved_at")?.parse().ok()?,
         })
     }
 }

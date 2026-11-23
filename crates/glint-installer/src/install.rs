@@ -71,6 +71,19 @@ pub struct InstalledPackage {
     pub archive_path: PathBuf,
     /// Unix time of installation.
     pub installed_at: i64,
+    /// Identity origin (ADR 0006): `local`, `registry:<url>`,
+    /// `git:<url>[#subpath]` or `artifact:<url>`.
+    pub origin: String,
+    /// Registry name for registry sources.
+    pub registry: Option<String>,
+    /// Pinned Git commit for Git sources.
+    pub git_commit: Option<String>,
+    /// Canonical local path for local sources.
+    pub local_path: Option<String>,
+    /// Signing status (`unsigned` until SEC-005).
+    pub signing: String,
+    /// Unix time the source was read.
+    pub retrieved_at: i64,
 }
 
 /// Options for [`Installer::install_with`].
@@ -225,9 +238,11 @@ impl Installer {
         let digest = candidate.sha256_hex();
         let staging_dir = candidate.staging_dir().to_path_buf();
         self.check_candidate(&candidate, &origin, &staging_dir)?;
+        // Identity policy (INS-004) first: an existing digest from another
+        // origin is an OriginCollision, not an idempotent re-install.
+        let identity = self.check_identity(&candidate, &origin)?;
 
         if let Some(existing) = self.package(&digest)? {
-            self.check_identity(&candidate, &origin, Some(&existing))?;
             // `candidate` drops here and removes its staging copy.
             drop(candidate);
             if let Some(profile) = &options.activate_profile {
@@ -235,8 +250,6 @@ impl Installer {
             }
             return Ok(existing);
         }
-        self.check_identity(&candidate, &origin, None)?;
-
         let store_entry = self.paths.store_dir().join(&digest);
         if fs::symlink_metadata(&store_entry).is_ok() {
             return Err(InstallError::StoreConflict(store_entry));
@@ -250,6 +263,18 @@ impl Installer {
             source_kind: origin.kind.as_str().to_owned(),
             source_locator: origin.locator.clone(),
             installed_at: unix_now(),
+            origin: identity.as_str().to_owned(),
+            registry: origin.registry.clone(),
+            git_commit: origin.git_commit.clone(),
+            local_path: origin
+                .local_path
+                .as_ref()
+                .map(|p| p.to_string_lossy().into_owned()),
+            signing: crate::provenance::signing_name(origin.signing).to_owned(),
+            retrieved_at: origin
+                .retrieved_at
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |d| i64::try_from(d.as_secs()).unwrap_or(i64::MAX)),
         };
         record.write_new(&staging_dir)?;
 
@@ -528,18 +553,18 @@ impl Installer {
         Ok(())
     }
 
-    /// Identity policy hook (INS-004): decides whether a release with this
-    /// ID from this origin may be installed next to what is installed.
-    /// Until the identity policy lands it never refuses; the store never
-    /// overwrites anything either way, because entries are addressed by
-    /// digest and an existing digest is returned unchanged.
+    /// Identity policy (INS-004, ADR 0006): classify the candidate against
+    /// the installed releases of its package key and refuse a digest
+    /// conflict or an origin collision. Returns the candidate's origin.
     fn check_identity(
         &self,
-        _candidate: &PackageCandidate,
-        _origin: &SourceOrigin,
-        _existing: Option<&InstalledPackage>,
-    ) -> Result<(), InstallError> {
-        Ok(())
+        candidate: &PackageCandidate,
+        origin: &SourceOrigin,
+    ) -> Result<glint_schema::PackageOrigin, InstallError> {
+        let package_origin = crate::provenance::package_origin(origin)?;
+        let release = crate::provenance::candidate_release(candidate, package_origin.clone())?;
+        crate::provenance::classify(&self.installed()?, &release)?;
+        Ok(package_origin)
     }
 
     pub(crate) fn journal_insert(
@@ -580,6 +605,12 @@ impl Installer {
             path: entry.join(ROOT_DIR),
             archive_path: entry.join(ARCHIVE_NAME),
             installed_at: record.installed_at,
+            origin: record.origin.clone(),
+            registry: record.registry.clone(),
+            git_commit: record.git_commit.clone(),
+            local_path: record.local_path.clone(),
+            signing: record.signing.clone(),
+            retrieved_at: record.retrieved_at,
         }
     }
 
@@ -593,13 +624,19 @@ impl Installer {
             source_kind: row.get(5)?,
             source_locator: row.get(6)?,
             installed_at: row.get(7)?,
+            origin: row.get(8)?,
+            registry: row.get(9)?,
+            git_commit: row.get(10)?,
+            local_path: row.get(11)?,
+            signing: row.get(12)?,
+            retrieved_at: row.get(13)?,
         };
         Ok(self.installed_from(&record))
     }
 }
 
-const PACKAGE_COLUMNS: &str =
-    "digest, kind, package_id, version, archive_size, source_kind, source_locator, installed_at";
+const PACKAGE_COLUMNS: &str = "digest, kind, package_id, version, archive_size, source_kind, \
+     source_locator, installed_at, origin, registry, git_commit, local_path, signing, retrieved_at";
 
 pub(crate) fn insert_package(
     conn: &glint_storage::rusqlite::Connection,
@@ -607,8 +644,9 @@ pub(crate) fn insert_package(
 ) -> Result<(), InstallError> {
     conn.execute(
         "INSERT INTO packages (digest, kind, package_id, version, store_name, archive_size,
-                               source_kind, source_locator, installed_at)
-              VALUES (?1, ?2, ?3, ?4, ?1, ?5, ?6, ?7, ?8)",
+                               source_kind, source_locator, installed_at, origin, registry,
+                               git_commit, local_path, signing, retrieved_at)
+              VALUES (?1, ?2, ?3, ?4, ?1, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
         params![
             record.digest,
             record.kind,
@@ -618,6 +656,12 @@ pub(crate) fn insert_package(
             record.source_kind,
             record.source_locator,
             record.installed_at,
+            record.origin,
+            record.registry,
+            record.git_commit,
+            record.local_path,
+            record.signing,
+            record.retrieved_at,
         ],
     )
     .map_err(InstallError::db("insert package"))?;

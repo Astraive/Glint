@@ -46,6 +46,7 @@ mod error;
 mod fault;
 mod fsutil;
 mod install;
+mod provenance;
 mod record;
 mod recover;
 mod rollback;
@@ -53,6 +54,7 @@ mod rollback;
 pub use error::{ErrorCode, InstallError};
 pub use fault::{FaultInjector, FaultPoint};
 pub use install::{InstallOptions, InstalledPackage, Installer};
+pub use provenance::package_origin;
 pub use recover::RecoveryReport;
 pub use rollback::{
     ApplyError, ApplyErrorCode, ApplyOutcome, ApplyPlan, NativeAdapter, NativeChange, NativeError,
