@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:glint:schema:glint-profile-lock:v1",
+  "$comment": "PROPOSED format (SCH-006): not a frozen standard. It may change until stabilized by tests and an ADR. The Rust parser in crates/glint-schema (src/profile.rs) is authoritative where this schema and the parser disagree. Each entry pins one release as defined by proposed ADR 0006 (docs/adr/0006-package-identity-and-origin-collisions.md); every field, including the digest, is required, and a (kind, id) appears at most once (checked by the parser, not expressible here). Origins must be in canonical form.",
+  "x-glint-status": "proposed",
+  "title": "Glint profile lock (profile.lock) v1",
+  "description": "Exact releases pinned for one profile, so the profile resolves to the same bytes on every load.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "profile",
+    "packages"
+  ],
+  "properties": {
+    "$schema": {
+      "description": "Editor hint only; Glint never dereferences it.",
+      "type": "string",
+      "maxLength": 2048
+    },
+    "schemaVersion": {
+      "description": "Profile lock format version.",
+      "const": 1
+    },
+    "profile": {
+      "description": "Id of the locked profile.",
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)*$"
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "id",
+          "version",
+          "origin",
+          "digest"
+        ],
+        "properties": {
+          "kind": {
+            "description": "Package kind. Only \"theme\" exists in v1.",
+            "const": "theme"
+          },
+          "id": {
+            "type": "string",
+            "maxLength": 128,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$"
+          },
+          "version": {
+            "description": "Exact semantic version (SemVer 2.0), not a range.",
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+          },
+          "origin": {
+            "description": "Canonical origin: local, registry:<https-url>, git:<https-url>[#subpath] or artifact:<https-url>. No credentials, query or fragment in the URL.",
+            "type": "string",
+            "maxLength": 2100,
+            "pattern": "^(?:local|(?:registry|artifact):https://[^\\s@/?#]+(?:/[^\\s?#]*)?|git:https://[^\\s@/?#]+(?:/[^\\s?#]*)?(?:#[^\\s#]+)?)$"
+          },
+          "digest": {
+            "description": "SHA-256 of the verified archive.",
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      }
+    }
+  }
+}

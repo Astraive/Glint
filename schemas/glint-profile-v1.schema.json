@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:glint:schema:glint-profile:v1",
+  "$comment": "PROPOSED format (SCH-006): not a frozen standard. It may change until stabilized by tests and an ADR. The Rust parser in crates/glint-schema (src/profile.rs) is authoritative where this schema and the parser disagree; tests keep their field sets aligned. Unknown fields are rejected everywhere except inside monitor placement objects, whose shape the surface/layout engine owns. A wallpaper path is a private user file: local-only and stripped on export, as are monitor keys other than primary and secondary.",
+  "x-glint-status": "proposed",
+  "title": "Glint profile (profile.json) v1",
+  "description": "The user's active composition: base theme, per-surface override themes, wallpaper, per-monitor placement overrides and semantic token overrides. Exact releases (origin and digest) are pinned by the matching profile.lock.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "name"
+  ],
+  "properties": {
+    "$schema": {
+      "description": "Editor hint only; Glint never dereferences it.",
+      "type": "string",
+      "maxLength": 2048
+    },
+    "schemaVersion": {
+      "description": "Profile format version.",
+      "const": 1
+    },
+    "id": {
+      "description": "Local profile id: dot-separated lowercase segments, e.g. default, work-setup or profile.custom-mix.",
+      "$ref": "#/$defs/profileId"
+    },
+    "name": {
+      "description": "Display name.",
+      "$ref": "#/$defs/text",
+      "maxLength": 128
+    },
+    "description": {
+      "$ref": "#/$defs/text",
+      "maxLength": 2048
+    },
+    "baseTheme": {
+      "description": "Base theme. When absent only the built-in default safe theme applies.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/packageId"
+        },
+        "version": {
+          "$ref": "#/$defs/exactVersion"
+        }
+      }
+    },
+    "surfaces": {
+      "description": "Surface overrides: each named surface is provided by another theme; other surfaces are unaffected.",
+      "type": "object",
+      "propertyNames": {
+        "maxLength": 136,
+        "pattern": "^(?:[a-z][a-z0-9]*(?:-[a-z0-9]+)*|custom:[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+)$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "theme",
+          "version"
+        ],
+        "properties": {
+          "theme": {
+            "$ref": "#/$defs/packageId"
+          },
+          "version": {
+            "$ref": "#/$defs/exactVersion"
+          }
+        }
+      }
+    },
+    "wallpaper": {
+      "description": "Exactly one of path (a private user file relative to the profile directory; local-only, stripped on export) or asset (a named asset of the base theme).",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path"
+          ],
+          "properties": {
+            "path": {
+              "$ref": "#/$defs/relativePath"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "asset"
+          ],
+          "properties": {
+            "asset": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+            }
+          }
+        }
+      ]
+    },
+    "monitors": {
+      "description": "Per-monitor placement overrides: monitor key, then surface ID, then a placement object whose shape the surface/layout engine owns. primary and secondary are portable roles; other keys are machine-specific and local-only.",
+      "type": "object",
+      "propertyNames": {
+        "maxLength": 64,
+        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "propertyNames": {
+          "maxLength": 136,
+          "pattern": "^(?:[a-z][a-z0-9]*(?:-[a-z0-9]+)*|custom:[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+)$"
+        },
+        "additionalProperties": {
+          "type": "object"
+        }
+      }
+    },
+    "tokenOverrides": {
+      "description": "Semantic token overrides, e.g. background.default.",
+      "type": "object",
+      "propertyNames": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z][A-Za-z0-9_-]*(?:\\.[A-Za-z][A-Za-z0-9_-]*)*$"
+      },
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/text",
+            "maxLength": 256
+          },
+          {
+            "type": "number"
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "profileId": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)*$"
+    },
+    "packageId": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$"
+    },
+    "exactVersion": {
+      "description": "Exact semantic version (SemVer 2.0), not a range.",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "relativePath": {
+      "description": "Relative, /-separated path inside the package: no leading /, no empty, . or .. segments, no backslash or colon, no Windows-reserved characters or device names, no segment ending in . or space.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!/)(?!.*//)(?!.*/$)(?!(?:.*/)?\\.{1,2}(?:/|$))[^\\\\:*?\"<>|\\u0000-\\u001F\\u007F]+$",
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "[. ](?:/|$)"
+          },
+          {
+            "pattern": "(?:^|/)(?:[cC][oO][nN]|[pP][rR][nN]|[aA][uU][xX]|[nN][uU][lL]|[cC][oO][mM][1-9]|[lL][pP][tT][1-9])(?:\\.|/|$)"
+          }
+        ]
+      }
+    }
+  }
+}
