@@ -20,6 +20,13 @@
 //!   apart. Feature unavailable or permission required never masquerades as
 //!   success: [`Availability::check`] returns the typed error.
 //!
+//! - [`CapabilityService`] (CAP-002): discovers capabilities through a
+//!   [`CapabilityAdapter`], keeps the current [`CapabilitySnapshot`] and
+//!   sends a [`CapabilityChange`] to every subscriber on each availability
+//!   transition (device removed, permission revoked, adapter down). It fails
+//!   closed: undiscovered, unadvertised and stale capabilities are never
+//!   reported usable. [`mock::MockAdapter`] reaches every state.
+//!
 //! Every type round-trips through JSON (serde); the shapes are documented on
 //! each type and are *proposed* until stabilized by an ADR.
 
@@ -28,9 +35,14 @@
 
 mod capabilities;
 mod error;
+pub mod mock;
+mod service;
 
 pub use capabilities::{
     Availability, Capability, CapabilityId, CapabilityIdError, EmptyReason, IntegrationEffect,
     Namespace, UnavailableKind, UnavailableReason,
 };
 pub use error::{CapabilityError, CapabilityErrorCode, ErrorCategory, UnknownErrorCode};
+pub use service::{
+    CapabilityAdapter, CapabilityChange, CapabilityService, CapabilitySnapshot, ChangeKind,
+};

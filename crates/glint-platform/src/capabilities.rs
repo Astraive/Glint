@@ -300,6 +300,12 @@ impl UnavailableReason {
         Ok(Self { kind, detail })
     }
 
+    /// For details built inside this crate, which are never blank.
+    pub(crate) fn internal(kind: UnavailableKind, detail: String) -> Self {
+        debug_assert!(!detail.trim().is_empty());
+        Self { kind, detail }
+    }
+
     /// The typed reason.
     pub fn kind(&self) -> UnavailableKind {
         self.kind
