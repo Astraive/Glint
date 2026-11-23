@@ -179,6 +179,17 @@ fn validate_accepts_a_valid_package() {
 }
 
 #[test]
+fn validate_accepts_the_bundled_default_theme() {
+    let theme = repo_root().join("themes/default");
+    let envelope = json(&["theme", "validate", theme.to_str().unwrap()], OK);
+    assert_eq!(envelope["data"]["package"]["id"], "official.default");
+    assert_eq!(
+        envelope["data"]["package"]["requiredCapabilities"],
+        Value::Array(Vec::new())
+    );
+}
+
+#[test]
 fn invalid_packages_exit_4_with_the_underlying_code() {
     let dir = tempfile::tempdir().unwrap();
 

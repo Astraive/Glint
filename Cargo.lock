@@ -150,6 +150,7 @@ dependencies = [
  "crc32fast",
  "flate2",
  "glint-schema",
+ "semver",
  "sha2",
  "tempfile",
  "zip",
