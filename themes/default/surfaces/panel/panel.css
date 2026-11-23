@@ -1,0 +1,48 @@
+/* Static fallback panel (THM-001). Values mirror theme/tokens.json; the
+   SDK-driven panel replaces this surface in THM-002. No script, no remote
+   content, system fonts only. */
+
+:root {
+  --glint-surface: #1b1c20;
+  --glint-border: #3b3e45;
+  --glint-text: #f5f6f7;
+  --glint-text-muted: #a9adb5;
+  --glint-font-family: system-ui, "Segoe UI", Ubuntu, Cantarell, "Noto Sans", sans-serif;
+  --glint-panel-height: 36px;
+  color-scheme: dark;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--glint-surface);
+  color: var(--glint-text);
+  font: 400 13px/1 var(--glint-font-family);
+}
+
+.panel {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: var(--glint-panel-height);
+  padding: 0 16px;
+  border-bottom: 1px solid var(--glint-border);
+}
+
+.brand {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.status {
+  color: var(--glint-text-muted);
+}
+
+@media (forced-colors: active) {
+  .panel {
+    border-bottom-color: CanvasText;
+  }
+}

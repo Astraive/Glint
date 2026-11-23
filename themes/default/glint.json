@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "theme",
+  "id": "official.default",
+  "name": "Glint Default",
+  "version": "0.1.0",
+  "author": { "name": "Astraive" },
+  "description": "Bundled fallback theme: graphite and silver, works offline, needs no system capability.",
+  "license": "MIT",
+  "compatibility": {
+    "glint": ">=0.0.0",
+    "platforms": ["windows", "linux", "macos"]
+  },
+  "renderer": {
+    "kind": "glint-web",
+    "entrypointVersion": 1
+  },
+  "optionalCapabilities": ["surface.panel"],
+  "tokens": "theme/tokens.json",
+  "assets": {
+    "preview": "assets/preview.svg"
+  },
+  "surfaces": {
+    "panel": {
+      "entry": "surfaces/panel/index.html"
+    }
+  }
+}
