@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `glint-surfaces` crate (no OS-specific dependency): the portable surface catalog (panel, dock, launcher, control-center, notification, notification-center, desktop, calendar, power-menu, workspace-switcher, window-switcher, volume-osd, brightness-osd, media-overlay and namespaced `custom:<namespace>.<name>` kinds) with required `surface.*` and optional provider capabilities, and a parser that validates each manifest surface's entrypoint (package-local `.html` only, never `file://` or remote pages) and its *proposed* `placement` and `behavior` objects into a `SurfaceDefinition`, with stable `GLINT_SURFACE_*` codes and JSON Pointers. The manifest surface object accepts an optional raw `behavior` object (JSON Schema, TypeScript validator and fixtures updated). `@glint/types` gains `src/surfaces.ts`, generated from the Rust catalog with a `cargo test` drift check. Specified in [docs/architecture/surfaces.md](docs/architecture/surfaces.md) (`[SRF-001]`).
 - OS test matrix and environment pinning: [docs/quality/test-matrix.md](docs/quality/test-matrix.md), with honest `not-run` rows for Linux and macOS hardware (`[QA-007]`).
 - Architecture decision records: [docs/adr/](docs/adr/README.md) with the process, a template and ADRs 0001 to 0005 recording decisions already made (`[DOC-001]`).
 - Initial repository MIT license ([LICENSE](LICENSE), `Copyright (c) 2026 Astraive`).
