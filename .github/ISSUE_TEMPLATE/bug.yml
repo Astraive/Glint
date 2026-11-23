@@ -1,0 +1,126 @@
+name: Bug report
+description: Report a reproducible defect against implemented code, scripts, schemas, or documentation.
+title: "[Bug] "
+labels: ["type:bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        File one bug per issue and search open issues first.
+        - **Security vulnerabilities:** Do **not** file a public bug. Use [private vulnerability reporting](https://github.com/Astraive/Glint/security/advisories/new) per [SECURITY.md](https://github.com/Astraive/Glint/blob/main/SECURITY.md).
+        - **Current repository scope:** Glint is in a planning and infrastructure stage with no implemented application. Do not report missing binaries or unimplemented features as regressions; verify against [SUPPORT.md](https://github.com/Astraive/Glint/blob/main/SUPPORT.md).
+        - **Privacy:** Never attach secrets, tokens, proprietary fonts or icons, trademarked assets, or unredacted local paths, Wi-Fi SSIDs, or window titles.
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Priority / Impact
+      description: Initial impact classification (`priority:P0` through `priority:P3`); triage may adjust it.
+      options:
+        - P0 · Blocker, data loss, desktop or shell lockout, sandbox escape, or security-adjacent
+        - P1 · High-impact failure in a claimed supported capability
+        - P2 · Standard defect with clear workaround or limited scope
+        - P3 · Minor or cosmetic issue
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Target area
+      options:
+        - "Documentation & Plans"
+        - Repository / Backlog Scripts (Python / PowerShell)
+        - "CI & GitHub Infrastructure"
+        - Core / CLI (once implemented)
+        - Renderer / SDK bridge (once implemented)
+        - Platform host or shell surface (once implemented)
+        - Package / Manifest Validation (once implemented)
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Version or commit SHA
+      description: Observed commit SHA (or future released version and target triple).
+      placeholder: e.g. commit abc1234 (or future Glint v0.x.y)
+    validations:
+      required: true
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: Affected platforms
+      description: Platform targets where the issue reproduces.
+      multiple: true
+      options:
+        - all
+        - windows
+        - macos
+        - linux
+        - wayland
+        - x11
+        - hyprland
+        - kde
+        - gnome
+        - sway
+        - cli
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment tuple
+      description: Exact OS build, session type, compositor or shell version, WebView runtime, GPU/driver, or tool versions (Python/PowerShell). Do not include SSIDs or window titles.
+      placeholder: e.g. Windows 11 24H2 (26100), WebView2 runtime version, Python 3.12.x / pwsh 7.4.x
+    validations:
+      required: true
+  - type: input
+    id: area
+    attributes:
+      label: Area (optional)
+      description: Best-guess `area:*` label such as area:renderer or area:installer; triage assigns the canonical one.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Minimal numbered steps starting from a clean state.
+      value: |
+        1.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Distinguish a regression in a claimed supported capability from a capability the platform does not support.
+    validations:
+      required: true
+  - type: input
+    id: frequency
+    attributes:
+      label: Reproducibility
+      description: How often the issue reproduces (`x of y` runs).
+      placeholder: e.g. 5 of 5
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics or command output
+      description: Paste redacted command stdout/stderr or sanitized Glint diagnostics output (once implemented). Redact home paths, SSIDs, and window titles.
+  - type: textarea
+    id: fixture
+    attributes:
+      label: Minimal rights-cleared fixture or theme
+      description: Smallest synthetic or rights-cleared `.glint` package or configuration that reproduces the failure. Never attach themes that include proprietary fonts, icons, or trademarked assets.
+  - type: checkboxes
+    id: privacy-confirm
+    attributes:
+      label: Disclosure safety
+      options:
+        - label: I confirm this report contains no undisclosed security exploit, secrets, proprietary fonts or icons, trademarked assets, or unredacted private paths, SSIDs, or window titles.
+          required: true

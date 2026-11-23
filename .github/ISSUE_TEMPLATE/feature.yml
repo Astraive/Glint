@@ -1,0 +1,98 @@
+name: Feature proposal
+description: Propose a new runtime capability, SDK hook, surface, package-format change, or workflow improvement.
+title: "[Feature] "
+labels: ["type:feature", "kind:task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Review the [plan index](https://github.com/Astraive/Glint/blob/main/docs/plan/README.md) and [Issue conventions](https://github.com/Astraive/Glint/blob/main/docs/issue-conventions.md) before opening a proposal.
+        Glint keeps strict invariants: the core works offline, theme code runs in a sandboxed renderer and reaches the system only through a permission-scoped SDK bridge, `.glint` packages carry no executable install scripts or native binaries, and unsupported capabilities are reported honestly with a safe fallback.
+        Never attach secrets, tokens, proprietary fonts or icons, trademarked assets, or unredacted local paths, Wi-Fi SSIDs, or window titles.
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Target milestone
+      options:
+        - Needs triage
+        - "M0 — Foundation & Feasibility"
+        - "M1 — Core Package & Safe Preview"
+        - M2 — Programmable Surface Runtime
+        - M3 — Platform Shell Integration
+        - "M4 — Official Library & Open Distribution"
+        - "M5 — Power-User & Ecosystem"
+    validations:
+      required: true
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: Target platforms
+      multiple: true
+      options:
+        - all
+        - windows
+        - macos
+        - linux
+        - wayland
+        - x11
+        - hyprland
+        - kde
+        - gnome
+        - sway
+        - cli
+    validations:
+      required: true
+  - type: input
+    id: area
+    attributes:
+      label: Canonical area label
+      description: Exact `area:*` label owning this deliverable.
+      placeholder: e.g. area:renderer
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What user or creator workflow, runtime limitation, or platform capability gap does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior and fallback
+      description: Describe requested vs. effective behavior and graceful degradation when a host capability is absent, unsupported, or denied by the user.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      value: |
+        ### In scope
+        -
+        
+        ### Out of scope
+        -
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Offline, privacy, and security boundaries
+      description: Confirm how the proposal preserves offline core behavior, sandboxing, permission-scoped bridge access, capability honesty, and rollback or safe mode.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Proposed acceptance criteria
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to `docs/plan/` sections or stable ticket IDs (do not fabricate GitHub issue numbers).

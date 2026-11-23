@@ -1,0 +1,89 @@
+name: Research or risk spike
+description: Time-boxed technical investigation or disposable proof-of-concept ending in observed evidence and a go/no-go decision.
+title: "[Research] "
+labels: ["type:research", "kind:task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Spikes follow the [plan](https://github.com/Astraive/Glint/blob/main/docs/plan/README.md) and its decisions and open questions.
+        A spike answers one bounded question with observed evidence; never promote disposable spike hacks directly as a claimed production feature. Linux and macOS spikes stay pending until verified on real hardware.
+        Never attach secrets, tokens, proprietary fonts or icons, trademarked assets, or unredacted local paths, Wi-Fi SSIDs, or window titles.
+  - type: input
+    id: ticket
+    attributes:
+      label: Stable ticket ID (optional)
+      placeholder: e.g. SPK-001
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Milestone
+      options:
+        - "M0 — Foundation & Feasibility"
+        - "M1 — Core Package & Safe Preview"
+        - M2 — Programmable Surface Runtime
+        - M3 — Platform Shell Integration
+        - "M4 — Official Library & Open Distribution"
+        - "M5 — Power-User & Ecosystem"
+    validations:
+      required: true
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: Target platforms
+      multiple: true
+      options:
+        - all
+        - windows
+        - macos
+        - linux
+        - wayland
+        - x11
+        - hyprland
+        - kde
+        - gnome
+        - sway
+        - cli
+    validations:
+      required: true
+  - type: input
+    id: area
+    attributes:
+      label: Canonical area label
+      description: Exact `area:*` label owning this deliverable.
+      placeholder: e.g. area:renderer
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Research question
+      description: Single concrete technical, renderer, sandbox, or desktop-integration question to settle.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Target environment tuple
+      description: Exact OS build, compositor/shell, WebView runtime, GPU backend, toolchain, or dependency versions under test.
+    validations:
+      required: true
+  - type: textarea
+    id: boundary
+    attributes:
+      label: Spike boundary and safety guardrails
+      description: What makes this experiment disposable and safe (no production claims, isolated fixtures, no privileged workarounds, no shell replacement without a recovery path).
+    validations:
+      required: true
+  - type: textarea
+    id: exit-criteria
+    attributes:
+      label: Pass/fail exit evidence and fallback path
+      description: Observable pass evidence, failure signals, and the documented fallback architecture if the hypothesis fails.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Primary sources and docs
+      description: Cite relevant `docs/plan/` files and primary upstream documentation.

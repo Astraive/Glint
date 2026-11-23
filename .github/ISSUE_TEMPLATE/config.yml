@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability (Private Report Only)
+    url: https://github.com/Astraive/Glint/security/advisories/new
+    about: Report undisclosed security issues, sandbox or package-escape triggers, or supply-chain concerns privately. Never open a public issue; see SECURITY.md.
+  - name: Theme Submissions & Official Library
+    url: https://github.com/Astraive/glint-library
+    about: Submit themes, previews, and attribution records to the companion Astraive/glint-library repository.
+  - name: Questions, Support & Discussions
+    url: https://github.com/Astraive/Glint/discussions
+    about: Ask questions or discuss designs. Read SUPPORT.md first; no executable Glint release exists yet.
+  - name: Documentation & Issue Conventions
+    url: https://github.com/Astraive/Glint/blob/main/docs/issue-conventions.md
+    about: Read stable ticket IDs, label taxonomy, and backlog conventions before opening engineering tasks.
