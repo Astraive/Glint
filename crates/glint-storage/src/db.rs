@@ -74,6 +74,12 @@ pub const MIGRATIONS: &[Migration] = &[
         sql: include_str!("migrations/003_apply_journal.sql"),
         tables: &["apply_journal", "apply_native"],
     },
+    Migration {
+        version: 4,
+        name: "provenance",
+        sql: include_str!("migrations/004_provenance.sql"),
+        tables: &["packages"],
+    },
 ];
 
 /// The schema version this build migrates to.
