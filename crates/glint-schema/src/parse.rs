@@ -40,10 +40,10 @@ const TOP_LEVEL_FIELDS: &[&str] = &[
 const CAPABILITY_NAMESPACES: &[&str] = &["surface", "system", "desktop", "native", "host"];
 
 const MAX_ID_LEN: usize = 128;
-const MAX_NAME_LEN: usize = 128;
-const MAX_DESCRIPTION_LEN: usize = 2048;
-const MAX_SHORT_TEXT_LEN: usize = 256;
-const MAX_URL_LEN: usize = 2048;
+pub(crate) const MAX_NAME_LEN: usize = 128;
+pub(crate) const MAX_DESCRIPTION_LEN: usize = 2048;
+pub(crate) const MAX_SHORT_TEXT_LEN: usize = 256;
+pub(crate) const MAX_URL_LEN: usize = 2048;
 const MAX_VERSION_LEN: usize = 64;
 const MAX_PATH_LEN: usize = 512;
 const MAX_KEY_LEN: usize = 64;
@@ -52,14 +52,22 @@ const MAX_CAPABILITY_LEN: usize = 128;
 /// Size limit, byte-order mark, strict JSON and root type: the document-level
 /// rules shared by the full parser and the version-envelope probe.
 pub(crate) fn load_document(text: &str) -> Result<Map<String, Value>> {
-    if text.len() > MAX_MANIFEST_BYTES {
+    load_json_object(text, MAX_MANIFEST_BYTES, "manifest")
+}
+
+/// The document-level rules for any strict JSON document Glint reads
+/// (`what` names it in messages): size limit, optional BOM, no duplicate
+/// keys, object root.
+pub(crate) fn load_json_object(
+    text: &str,
+    max_bytes: usize,
+    what: &str,
+) -> Result<Map<String, Value>> {
+    if text.len() > max_bytes {
         return Err(ManifestError::new(
             ErrorCode::TooLarge,
             "",
-            format!(
-                "manifest is {} bytes; the limit is {MAX_MANIFEST_BYTES}",
-                text.len()
-            ),
+            format!("{what} is {} bytes; the limit is {max_bytes}", text.len()),
         ));
     }
     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
@@ -68,7 +76,7 @@ pub(crate) fn load_document(text: &str) -> Result<Map<String, Value>> {
         _ => Err(ManifestError::new(
             ErrorCode::NotAnObject,
             "",
-            "manifest root must be a JSON object",
+            format!("{what} root must be a JSON object"),
         )),
     }
 }
@@ -199,7 +207,7 @@ impl<'a> Obj<'a> {
             .transpose()
     }
 
-    fn deny_unknown(&self, allowed: &[&str]) -> Result<()> {
+    pub(crate) fn deny_unknown(&self, allowed: &[&str]) -> Result<()> {
         match self.map.keys().find(|k| !allowed.contains(&k.as_str())) {
             Some(key) => Err(ManifestError::new(
                 ErrorCode::UnknownField,
@@ -230,7 +238,7 @@ impl<'a> Obj<'a> {
 }
 
 /// RFC 6901 child pointer: `~` becomes `~0` and `/` becomes `~1`.
-fn child_pointer(parent: &str, key: &str) -> String {
+pub(crate) fn child_pointer(parent: &str, key: &str) -> String {
     format!("{parent}/{}", key.replace('~', "~0").replace('/', "~1"))
 }
 
@@ -272,20 +280,20 @@ pub(crate) fn as_object(value: &Value, pointer: String) -> Result<Obj<'_>> {
     }
 }
 
-fn as_str<'v>(value: &'v Value, pointer: &str) -> Result<&'v str> {
+pub(crate) fn as_str<'v>(value: &'v Value, pointer: &str) -> Result<&'v str> {
     value
         .as_str()
         .ok_or_else(|| wrong_type(value, pointer, "a string"))
 }
 
-fn as_array<'v>(value: &'v Value, pointer: &str) -> Result<&'v Vec<Value>> {
+pub(crate) fn as_array<'v>(value: &'v Value, pointer: &str) -> Result<&'v Vec<Value>> {
     value
         .as_array()
         .ok_or_else(|| wrong_type(value, pointer, "an array"))
 }
 
 /// Non-blank display text without control characters, at most `max` characters.
-fn text_value(value: &Value, pointer: &str, max: usize) -> Result<String> {
+pub(crate) fn text_value(value: &Value, pointer: &str, max: usize) -> Result<String> {
     let text = as_str(value, pointer)?;
     if text.trim().is_empty() {
         return Err(invalid(
@@ -357,7 +365,7 @@ fn kind(root: &Obj<'_>) -> Result<PackageKind> {
 }
 
 /// `[a-z0-9]+(-[a-z0-9]+)*`
-fn is_id_segment(segment: &str) -> bool {
+pub(crate) fn is_id_segment(segment: &str) -> bool {
     !segment.is_empty()
         && !segment.starts_with('-')
         && !segment.ends_with('-')
@@ -371,7 +379,7 @@ pub(crate) fn is_valid_id(id: &str) -> bool {
     id.len() <= MAX_ID_LEN && id.split('.').count() >= 2 && id.split('.').all(is_id_segment)
 }
 
-fn package_id(value: &Value, pointer: &str) -> Result<String> {
+pub(crate) fn package_id(value: &Value, pointer: &str) -> Result<String> {
     let id = as_str(value, pointer)?;
     if !is_valid_id(id) {
         return Err(invalid(
@@ -386,7 +394,7 @@ fn package_id(value: &Value, pointer: &str) -> Result<String> {
     Ok(id.to_owned())
 }
 
-fn version(value: &Value, pointer: &str) -> Result<Version> {
+pub(crate) fn version(value: &Value, pointer: &str) -> Result<Version> {
     let text = as_str(value, pointer)?;
     if text.len() > MAX_VERSION_LEN {
         return Err(invalid(
@@ -537,7 +545,7 @@ fn renderer(obj: &Obj<'_>) -> Result<Renderer> {
 }
 
 /// `[a-z][a-z0-9]*(-[a-z0-9]+)*`
-fn is_name_segment(segment: &str) -> bool {
+pub(crate) fn is_name_segment(segment: &str) -> bool {
     segment
         .as_bytes()
         .first()
@@ -644,7 +652,7 @@ pub(crate) fn path_problem(path: &str) -> Option<&'static str> {
     None
 }
 
-fn package_path(value: &Value, pointer: &str) -> Result<String> {
+pub(crate) fn package_path(value: &Value, pointer: &str) -> Result<String> {
     let path = as_str(value, pointer)?;
     match path_problem(path) {
         Some(problem) => Err(invalid(
@@ -668,7 +676,7 @@ fn check_key(key: &str, pointer: &str, valid: bool) -> Result<()> {
     }
 }
 
-fn is_valid_key(key: &str) -> bool {
+pub(crate) fn is_valid_key(key: &str) -> bool {
     key.len() <= MAX_KEY_LEN && is_name_segment(key)
 }
 
@@ -685,7 +693,7 @@ fn path_map(root: &Obj<'_>, key: &str) -> Result<BTreeMap<String, String>> {
     Ok(out)
 }
 
-fn is_valid_surface_id(id: &str) -> bool {
+pub(crate) fn is_valid_surface_id(id: &str) -> bool {
     match id.strip_prefix("custom:") {
         Some(rest) => is_valid_id(rest),
         None => is_valid_key(id),

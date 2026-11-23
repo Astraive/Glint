@@ -88,6 +88,12 @@
 //!   ADR 0006: one origin per (`kind`, `id`), immutable versions per origin,
 //!   and the same `id` from another origin is a collision, never a trusted
 //!   duplicate (SCH-004).
+//! - **Profiles** ([`parse_profile`], [`parse_profile_lock`],
+//!   [`verify_profile_lock`]) follow the *proposed* `profile.json` and
+//!   `profile.lock` v1 formats (SCH-006) with stable `GLINT_PROFILE_*` codes;
+//!   every lock entry pins an exact release including its digest, and private
+//!   user assets are reported by [`Profile::local_only_refs`] for stripping
+//!   on export.
 //! - **Limits**: documents over [`MAX_MANIFEST_BYTES`] are refused; duplicate
 //!   object keys are refused; a single leading UTF-8 byte-order mark is
 //!   tolerated.
@@ -100,6 +106,7 @@ mod error;
 mod identity;
 mod manifest;
 mod parse;
+mod profile;
 mod strict_json;
 
 pub use compat::{
@@ -115,6 +122,12 @@ pub use identity::{
 pub use manifest::{
     Author, Compatibility, PackageKind, ParsedManifest, Platform, Renderer, RendererKind, Surface,
     ThemeManifest,
+};
+pub use profile::{
+    LocalOnlyReason, LocalOnlyRef, LockProblem, LockProblemCode, MAX_PROFILE_BYTES,
+    PORTABLE_MONITOR_KEYS, Profile, ProfileError, ProfileErrorCode, ProfileLock,
+    SUPPORTED_PROFILE_SCHEMA_VERSION, ThemeRef, TokenValue, Wallpaper, parse_profile,
+    parse_profile_lock, verify_profile_lock,
 };
 
 /// Stability label of the v1 manifest format. It stays `"proposed"` until the
