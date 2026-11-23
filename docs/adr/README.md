@@ -11,6 +11,7 @@ ADRs are the additive change log for decisions about Glint. The planning archive
 | [0003](0003-ui-sdk-for-glint-manager-ui.md) | UI SDK for Glint's own manager and settings UI | Accepted | 2026-11-23 |
 | [0004](0004-plan-docs-frozen-changes-via-adrs.md) | Plan docs are a frozen baseline; changes go through ADRs | Accepted | 2026-11-23 |
 | [0005](0005-conventional-commits-with-ticket-ids.md) | Conventional commits with external ticket IDs | Accepted | 2026-11-23 |
+| [0006](0006-package-identity-and-origin-collisions.md) | Package identity and cross-origin collision policy | Proposed | 2026-11-23 |
 
 Every new ADR must add a row to this table in the same change. The original plan-era register of what was decided versus only recommended stays at [`docs/plan/00-history/decisions-and-open-questions.md`](../plan/00-history/decisions-and-open-questions.md); ADRs 0001 to 0005 record the decisions already made at that snapshot.
 
