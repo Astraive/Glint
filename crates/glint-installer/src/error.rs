@@ -45,6 +45,15 @@ pub enum ErrorCode {
     IdentityConflict,
     /// The source's origin cannot be expressed as an ADR 0006 origin.
     InvalidOrigin,
+    /// A store entry no longer matches its content address or record
+    /// (tampered with or damaged on disk). Reinstall the package.
+    StoreCorrupt,
+    /// Exporting failed: the package could not be re-packed or the exported
+    /// archive did not pass the reader; see [`InstallError::package_error`].
+    ExportFailed,
+    /// The export destination is not a file path (a directory, or no file
+    /// name).
+    ExportDestinationInvalid,
 }
 
 impl ErrorCode {
@@ -62,6 +71,9 @@ impl ErrorCode {
         ErrorCode::Interrupted,
         ErrorCode::IdentityConflict,
         ErrorCode::InvalidOrigin,
+        ErrorCode::StoreCorrupt,
+        ErrorCode::ExportFailed,
+        ErrorCode::ExportDestinationInvalid,
     ];
 
     /// The stable string form, e.g. `GLINT_INSTALL_IN_USE`.
@@ -79,6 +91,9 @@ impl ErrorCode {
             ErrorCode::Interrupted => "GLINT_INSTALL_INTERRUPTED",
             ErrorCode::IdentityConflict => "GLINT_INSTALL_IDENTITY_CONFLICT",
             ErrorCode::InvalidOrigin => "GLINT_INSTALL_INVALID_ORIGIN",
+            ErrorCode::StoreCorrupt => "GLINT_INSTALL_STORE_CORRUPT",
+            ErrorCode::ExportFailed => "GLINT_INSTALL_EXPORT_FAILED",
+            ErrorCode::ExportDestinationInvalid => "GLINT_INSTALL_EXPORT_DESTINATION_INVALID",
         }
     }
 }
@@ -135,6 +150,17 @@ pub enum InstallError {
     },
     /// The origin cannot be mapped.
     InvalidOrigin(String),
+    /// A store entry does not match its digest or record.
+    StoreCorrupt {
+        /// The package digest.
+        digest: String,
+        /// What did not match.
+        reason: &'static str,
+    },
+    /// Re-packing or reading back an export failed.
+    Export(glint_package::PackageError),
+    /// The export destination is unusable.
+    ExportDestinationInvalid(PathBuf),
 }
 
 impl InstallError {
@@ -155,6 +181,9 @@ impl InstallError {
             InstallError::Interrupted(_) => ErrorCode::Interrupted,
             InstallError::IdentityConflict { .. } => ErrorCode::IdentityConflict,
             InstallError::InvalidOrigin(_) => ErrorCode::InvalidOrigin,
+            InstallError::StoreCorrupt { .. } => ErrorCode::StoreCorrupt,
+            InstallError::Export(_) => ErrorCode::ExportFailed,
+            InstallError::ExportDestinationInvalid(_) => ErrorCode::ExportDestinationInvalid,
         }
     }
 
@@ -173,6 +202,11 @@ impl InstallError {
                 _ => ErrorCategory::Failure,
             },
             InstallError::Busy(_) => ErrorCategory::Unavailable,
+            InstallError::Export(glint_package::PackageError::Io { source, .. })
+                if source.kind() == io::ErrorKind::PermissionDenied =>
+            {
+                ErrorCategory::PermissionDenied
+            }
             _ => ErrorCategory::Failure,
         }
     }
@@ -182,6 +216,14 @@ impl InstallError {
     pub fn identity_outcome(&self) -> Option<&glint_schema::InstallOutcome> {
         match self {
             InstallError::IdentityConflict { outcome, .. } => Some(outcome),
+            _ => None,
+        }
+    }
+
+    /// The package error behind [`ErrorCode::ExportFailed`].
+    pub fn package_error(&self) -> Option<&glint_package::PackageError> {
+        match self {
+            InstallError::Export(error) => Some(error),
             _ => None,
         }
     }
@@ -274,6 +316,16 @@ impl fmt::Display for InstallError {
                 other => write!(f, "{}", other.code()),
             },
             InstallError::InvalidOrigin(detail) => write!(f, "invalid origin: {detail}"),
+            InstallError::StoreCorrupt { digest, reason } => write!(
+                f,
+                "store entry {digest} is damaged ({reason}); reinstall the package"
+            ),
+            InstallError::Export(error) => write!(f, "export failed: {error}"),
+            InstallError::ExportDestinationInvalid(path) => write!(
+                f,
+                "export destination {} is not a file path",
+                path.display()
+            ),
         }
     }
 }
@@ -283,6 +335,7 @@ impl std::error::Error for InstallError {
         match self {
             InstallError::Storage(error) => Some(error),
             InstallError::Io { source, .. } => Some(source),
+            InstallError::Export(error) => Some(error),
             _ => None,
         }
     }

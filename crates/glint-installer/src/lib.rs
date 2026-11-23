@@ -12,6 +12,8 @@
 //! the rest. Installing does not activate unless asked
 //! ([`InstallOptions::activate`]); [`Installer::remove`] refuses a release
 //! that the active profile or any profile still references.
+//! [`Installer::export`] (PKG-005) writes an installed release back out as a
+//! canonical `.glint` without any locally added data.
 //!
 //! [`Installer::apply`] activates a profile together with native preference
 //! changes under an apply journal with per-adapter snapshots
@@ -43,6 +45,7 @@
 #![warn(missing_docs)]
 
 mod error;
+mod export;
 mod fault;
 mod fsutil;
 mod install;
@@ -52,6 +55,7 @@ mod recover;
 mod rollback;
 
 pub use error::{ErrorCode, InstallError};
+pub use export::ExportedPackage;
 pub use fault::{FaultInjector, FaultPoint};
 pub use install::{InstallOptions, InstalledPackage, Installer};
 pub use provenance::package_origin;
