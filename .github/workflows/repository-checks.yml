@@ -1,0 +1,81 @@
+name: Repository checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository-quality:
+    name: Repository quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Check Markdown, JSON, local links, fences, and repository file policy
+        run: python scripts/check-repository.py
+      - name: Parse workflow and issue-form YAML
+        run: |
+          ruby -ryaml -e 'Dir.glob(".github/**/*.{yml,yaml}").sort.each { |f| YAML.safe_load(File.read(f, encoding: "UTF-8")); puts "YAML OK: #{f}" }'
+      - name: Parse all repository PowerShell scripts without executing them
+        shell: pwsh
+        run: ./scripts/check-powershell.ps1
+      - name: Exercise durable publication ledger creation and replacement
+        shell: pwsh
+        run: ./scripts/test-publisher-ledger.ps1
+      - name: Exercise create-missing scope selection and read-only preservation
+        shell: pwsh
+        run: ./scripts/test-publisher-scope.ps1
+      - name: Exercise project view audit layout orientation and vector canonicalization
+        shell: pwsh
+        run: ./scripts/test-project-view-audit.ps1
+      - name: Check pull request title
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: python scripts/check-conventions.py --title "$PR_TITLE"
+
+  rust-workspace:
+    name: Rust workspace (${{ matrix.os }})
+    # Skipped truthfully until a Cargo workspace exists in the repository.
+    if: hashFiles('Cargo.toml') != ''
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    timeout-minutes: 25
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@a188e68d0fd2bd36ad51dccb2b07ba6e75105f30 # v2.0.1
+      - name: Record installed compiler versions
+        run: |
+          rustc --version
+          cargo --version
+      - name: Check Rust formatting
+        run: cargo fmt --all -- --check
+      - name: Run Rust Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Run workspace tests
+        run: cargo test --workspace
