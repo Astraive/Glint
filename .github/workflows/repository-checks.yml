@@ -154,3 +154,9 @@ jobs:
         run: pnpm --filter @glint/theme-schema typecheck
       - name: Run manifest corpus parity and unit tests
         run: pnpm --filter @glint/theme-schema test
+      # src/surfaces.ts drift is checked by `cargo test -p glint-surfaces --test typegen`
+      # in the Rust job; these steps check the generated types on the TypeScript side.
+      - name: Type-check the shared types package
+        run: pnpm --filter @glint/types typecheck
+      - name: Run surface type tests
+        run: pnpm --filter @glint/types test
