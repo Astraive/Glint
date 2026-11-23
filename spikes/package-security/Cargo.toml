@@ -1,0 +1,26 @@
+[package]
+name = "glint-spike-package-security"
+description = "SPK-007 throwaway spike: bounded .glint (ZIP) validator against hostile fixtures. Never shipped."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# Attack-surface reduction: no default features. Only Stored + Deflate (pure-Rust
+# zlib-rs backend) are compiled; aes-crypto, bzip2, deflate64, lzma, ppmd, time,
+# xz, zstd and zopfli are excluded. Other methods surface as unsupported.
+zip = { version = "=9.8.1", default-features = false, features = ["deflate-flate2-zlib-rs"] }
+sha2 = "0.11.1"
+serde_json = "1.0.154"
+
+[dev-dependencies]
+# Used only by the in-test raw ZIP builder that generates hostile fixtures.
+flate2 = { version = "1.1.11", default-features = false, features = ["zlib-rs"] }
+crc32fast = "1.5.5"
+tempfile = "3.27.0"
+
+[lints]
+workspace = true
