@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../schemas/glint-profile-lock-v1.schema.json",
+  "schemaVersion": 1,
+  "profile": "profile.custom-mix",
+  "packages": [
+    {
+      "kind": "theme",
+      "id": "official.mono",
+      "version": "1.0.0",
+      "origin": "registry:https://registry.example/glint-library",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000001"
+    },
+    {
+      "kind": "theme",
+      "id": "community.glassdock",
+      "version": "1.1.0",
+      "origin": "git:https://git.example/community/themes#themes/glassdock",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000002"
+    },
+    {
+      "kind": "theme",
+      "id": "me.minimal-notifs",
+      "version": "0.4.0",
+      "origin": "local",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000003"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../schemas/glint-profile-v1.schema.json",
+  "schemaVersion": 1,
+  "id": "profile.custom-mix",
+  "name": "Custom Mix",
+  "baseTheme": { "id": "official.mono", "version": "1.0.0" },
+  "surfaces": {
+    "dock": { "theme": "community.glassdock", "version": "1.1.0" },
+    "notification": { "theme": "me.minimal-notifs", "version": "0.4.0" }
+  },
+  "wallpaper": { "path": "user-assets/wallpaper.png" },
+  "monitors": {
+    "primary": { "panel": { "edge": "top", "height": 44 } },
+    "secondary": { "dock": { "visible": false } }
+  },
+  "tokenOverrides": { "background.default": "#0B0C0F" }
+}

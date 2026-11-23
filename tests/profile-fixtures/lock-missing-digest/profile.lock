@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "profile": "profile.custom-mix",
+  "packages": [
+    {
+      "kind": "theme",
+      "id": "official.mono",
+      "version": "1.0.0",
+      "origin": "registry:https://registry.example/glint-library"
+    }
+  ]
+}
