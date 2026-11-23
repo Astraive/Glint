@@ -21,7 +21,7 @@ Release identity follows the *proposed* [ADR 0006](../adr/0006-package-identity-
 | `glint.json` | One self-contained package | `glint-theme-v1` |
 | `profile.json` | The user's active composition | `glint-profile-v1` |
 | `profile.lock` | The exact releases a profile resolves to | `glint-profile-lock-v1` |
-| `config.toml` | The application (SCH-007) | `glint-config-v1` |
+| `config.toml` | The application ([application config](application-config.md)) | `glint-config-v1` |
 
 None embeds another: a profile names themes by `id` and exact version; only
 the lock records origin and digest.
