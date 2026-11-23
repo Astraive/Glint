@@ -10,7 +10,11 @@
 //!
 //! - before the first successful discovery nothing is usable;
 //! - a capability the adapter does not advertise is
-//!   [`UnavailableKind::NotAdvertised`] (`unknown-capability`);
+//!   [`UnavailableKind::NotAdvertised`] (`unknown-capability`), and so is any
+//!   ID outside the frozen [`crate::registry`];
+//! - a report that contains an unregistered ID is refused as
+//!   `adapter-failure` (handled like any other failed discovery), so an
+//!   adapter can never introduce a capability the registry does not define;
 //! - when discovery fails (timeout, adapter failure, contradictory report)
 //!   every known capability becomes [`UnavailableKind::TemporaryUnavailable`]
 //!   until a later refresh succeeds: the last known `Supported` is never
@@ -25,6 +29,7 @@ use crate::capabilities::{
     Availability, Capability, CapabilityId, UnavailableKind, UnavailableReason,
 };
 use crate::error::{CapabilityError, CapabilityErrorCode};
+use crate::registry;
 
 /// A source of host capabilities: a native OS adapter, or
 /// [`crate::mock::MockAdapter`] in tests.
@@ -145,6 +150,16 @@ fn index(
     let mut map = BTreeMap::new();
     for capability in capabilities {
         let id = capability.id.clone();
+        if !registry::is_registered(id.as_str()) {
+            return Err(CapabilityError::new(
+                CapabilityErrorCode::AdapterFailure,
+                Some(id),
+                format!(
+                    "adapter {adapter} reported a capability outside the v{} registry",
+                    registry::REGISTRY_VERSION
+                ),
+            ));
+        }
         if map.insert(id.clone(), capability).is_some() {
             return Err(CapabilityError::new(
                 CapabilityErrorCode::AdapterFailure,
@@ -194,8 +209,20 @@ impl CapabilitySnapshot {
     }
 
     /// The capability's availability; a capability the adapter does not
-    /// advertise is `Unavailable` with [`UnavailableKind::NotAdvertised`].
+    /// advertise, or one outside the frozen [`crate::registry`], is
+    /// `Unavailable` with [`UnavailableKind::NotAdvertised`].
     pub fn availability(&self, id: &CapabilityId) -> Availability {
+        if !registry::is_registered(id.as_str()) {
+            return Availability::Unavailable {
+                reason: UnavailableReason::internal(
+                    UnavailableKind::NotAdvertised,
+                    format!(
+                        "not in the v{} capability registry",
+                        registry::REGISTRY_VERSION
+                    ),
+                ),
+            };
+        }
         match self.capabilities.get(id) {
             Some(capability) => capability.availability.clone(),
             None => self.not_advertised(),

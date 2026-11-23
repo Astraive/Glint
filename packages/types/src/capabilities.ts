@@ -1,0 +1,442 @@
+// GENERATED FILE - DO NOT EDIT.
+// Source: crates/glint-platform/src/registry.rs (frozen v1 capability registry, CAP-005).
+// Regenerate: GLINT_UPDATE_TYPES=1 cargo test -p glint-platform --test registry
+// `cargo test` fails when this file differs from the generator output.
+
+/** Version of the frozen capability registry. */
+export const CAPABILITY_REGISTRY_VERSION = 1;
+
+/** Capability namespaces. */
+export const CAPABILITY_NAMESPACES = [
+  "surface",
+  "system",
+  "desktop",
+  "native",
+  "host",
+] as const;
+export type CapabilityNamespace = (typeof CAPABILITY_NAMESPACES)[number];
+
+/** Every v1 capability ID, in registry order. Any other ID is unknown and refused. */
+export const CAPABILITY_IDS = [
+  "surface.panel",
+  "surface.dock",
+  "surface.launcher",
+  "surface.control-center",
+  "surface.notification",
+  "surface.notification-center",
+  "surface.desktop",
+  "surface.calendar",
+  "surface.power-menu",
+  "surface.workspace-switcher",
+  "surface.window-switcher",
+  "surface.volume-osd",
+  "surface.brightness-osd",
+  "surface.media-overlay",
+  "surface.custom",
+  "system.audio.read",
+  "system.audio.write",
+  "system.brightness.read",
+  "system.brightness.write",
+  "system.network.read",
+  "system.network.toggle",
+  "system.network.ssid",
+  "system.bluetooth.read",
+  "system.bluetooth.toggle",
+  "system.battery.read",
+  "system.power.source.read",
+  "system.power.sleep",
+  "system.power.shutdown",
+  "system.media.read",
+  "system.media.control",
+  "desktop.windows.list",
+  "desktop.windows.focus",
+  "desktop.workspaces.read",
+  "desktop.workspaces.switch",
+  "native.wallpaper.set",
+  "native.system-theme.apply",
+  "native.taskbar.modify",
+  "native.status-item.create",
+  "host.layer-shell",
+  "host.appbar",
+  "host.desktop-layer",
+  "host.transparent-overlay",
+  "host.global-hotkey",
+] as const;
+export type CapabilityId = (typeof CAPABILITY_IDS)[number];
+
+/** Read/write split: `read` observes, `write` changes state, `present` shows Glint-owned UI or uses a host mechanism. */
+export const CAPABILITY_ACCESS = [
+  "read",
+  "write",
+  "present",
+] as const;
+export type CapabilityAccess = (typeof CAPABILITY_ACCESS)[number];
+
+/** Privacy and impact classes. */
+export const CAPABILITY_SENSITIVITIES = [
+  "low",
+  "moderate",
+  "high",
+] as const;
+export type CapabilitySensitivity = (typeof CAPABILITY_SENSITIVITIES)[number];
+
+/** Whether using a capability affects Glint-owned UI or an OS-managed setting. */
+export type IntegrationEffect = "glint-owned-ui" | "os-managed-setting";
+
+/** One registry entry. */
+export interface CapabilitySpec {
+  namespace: CapabilityNamespace;
+  access: CapabilityAccess;
+  sensitivity: CapabilitySensitivity;
+  effect: IntegrationEffect;
+  summary: string;
+  platformNotes: string;
+}
+
+/** The frozen v1 capability registry. */
+export const CAPABILITY_REGISTRY: { readonly [K in CapabilityId]: CapabilitySpec } = {
+  "surface.panel": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the panel surface (pinned desktop toolbar).",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.dock": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the dock surface (running and pinned apps).",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.launcher": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the launcher surface (searchable app picker).",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.control-center": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the Glint control center surface (quick settings); it never replaces the OS one.",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.notification": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show toast notifications for Glint-visible events.",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.notification-center": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the notification history surface inside Glint.",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.desktop": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the desktop surface (background canvas and widgets).",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.calendar": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the calendar popup surface.",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.power-menu": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the power menu surface; the actions need `system.power.*`.",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.workspace-switcher": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the workspace switcher surface.",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.window-switcher": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the window switcher overlay surface.",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.volume-osd": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the volume on-screen display.",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.brightness-osd": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the brightness on-screen display.",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.media-overlay": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show the media overlay surface.",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "surface.custom": {
+    namespace: "surface",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show author-defined `custom:<namespace>.<name>` surfaces.",
+    platformNotes: "Glint-owned window; which placements the host can realise is reported by the surface backend (SRF-002).",
+  },
+  "system.audio.read": {
+    namespace: "system",
+    access: "read",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Read the default output device's volume and mute state, and receive change and device-change events.",
+    platformNotes: "Windows: supported (Core Audio endpoint volume, SPK-010 evidence); no device is unavailable. Linux (PipeWire/PulseAudio), macOS: planned.",
+  },
+  "system.audio.write": {
+    namespace: "system",
+    access: "write",
+    sensitivity: "moderate",
+    effect: "os-managed-setting",
+    summary: "Set the default output device's volume and mute state.",
+    platformNotes: "Windows: supported without a prompt for unpackaged processes (SPK-010); a denied write is permission-required. Linux, macOS: planned.",
+  },
+  "system.brightness.read": {
+    namespace: "system",
+    access: "read",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Read display brightness.",
+    platformNotes: "Windows: not yet evidenced; external displays are often hardware-unavailable. Linux, macOS: planned.",
+  },
+  "system.brightness.write": {
+    namespace: "system",
+    access: "write",
+    sensitivity: "moderate",
+    effect: "os-managed-setting",
+    summary: "Set display brightness.",
+    platformNotes: "Windows: not yet evidenced; external displays are often hardware-unavailable. Linux, macOS: planned.",
+  },
+  "system.network.read": {
+    namespace: "system",
+    access: "read",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Read connectivity level, interface type and cost, and receive change events. Excludes the SSID.",
+    platformNotes: "Windows: supported (NLM and NetworkInformation, SPK-010). Linux (NetworkManager), macOS: planned.",
+  },
+  "system.network.toggle": {
+    namespace: "system",
+    access: "write",
+    sensitivity: "high",
+    effect: "os-managed-setting",
+    summary: "Turn a network radio (Wi-Fi) on or off.",
+    platformNotes: "Windows: unavailable in SPK-010 (no toggle path; Windows.Devices.Radios not evaluated). Linux, macOS: planned.",
+  },
+  "system.network.ssid": {
+    namespace: "system",
+    access: "read",
+    sensitivity: "high",
+    effect: "glint-owned-ui",
+    summary: "Read the connected Wi-Fi SSID. Reveals location; separate from system.network.read and redacted in diagnostics.",
+    platformNotes: "Windows: supported when location consent allows it, otherwise permission-required (SPK-010). Linux, macOS: planned.",
+  },
+  "system.bluetooth.read": {
+    namespace: "system",
+    access: "read",
+    sensitivity: "moderate",
+    effect: "glint-owned-ui",
+    summary: "Read Bluetooth radio state and paired device names.",
+    platformNotes: "Windows: not yet evidenced. Linux (BlueZ), macOS: planned.",
+  },
+  "system.bluetooth.toggle": {
+    namespace: "system",
+    access: "write",
+    sensitivity: "high",
+    effect: "os-managed-setting",
+    summary: "Turn the Bluetooth radio on or off.",
+    platformNotes: "Windows: not yet evidenced. Linux, macOS: planned.",
+  },
+  "system.battery.read": {
+    namespace: "system",
+    access: "read",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Read battery level, charging state and estimates, and receive change events.",
+    platformNotes: "Windows: supported (GetSystemPowerStatus, PowerManager, SPK-010); a desktop without a battery is unavailable, not an error. Linux (UPower), macOS: planned.",
+  },
+  "system.power.source.read": {
+    namespace: "system",
+    access: "read",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Read whether the device runs on AC power.",
+    platformNotes: "Windows: supported (ACLineStatus, SPK-010), also on desktops without a battery. Linux, macOS: planned.",
+  },
+  "system.power.sleep": {
+    namespace: "system",
+    access: "write",
+    sensitivity: "high",
+    effect: "os-managed-setting",
+    summary: "Put the device to sleep.",
+    platformNotes: "Windows: not yet evidenced. Linux, macOS: planned.",
+  },
+  "system.power.shutdown": {
+    namespace: "system",
+    access: "write",
+    sensitivity: "high",
+    effect: "os-managed-setting",
+    summary: "Shut down or restart the device.",
+    platformNotes: "Windows: not yet evidenced. Linux, macOS: planned.",
+  },
+  "system.media.read": {
+    namespace: "system",
+    access: "read",
+    sensitivity: "high",
+    effect: "glint-owned-ui",
+    summary: "Read the current media session's track metadata and playback state.",
+    platformNotes: "Windows: not yet evidenced (system media transport controls). Linux (MPRIS), macOS: planned.",
+  },
+  "system.media.control": {
+    namespace: "system",
+    access: "write",
+    sensitivity: "moderate",
+    effect: "os-managed-setting",
+    summary: "Play, pause and skip in the current media session.",
+    platformNotes: "Windows: not yet evidenced. Linux (MPRIS), macOS: planned.",
+  },
+  "desktop.windows.list": {
+    namespace: "desktop",
+    access: "read",
+    sensitivity: "high",
+    effect: "glint-owned-ui",
+    summary: "List top-level windows with titles and app names, and receive window events.",
+    platformNotes: "Windows: not yet evidenced. Linux: compositor-dependent. macOS: needs the accessibility permission (permission-required).",
+  },
+  "desktop.windows.focus": {
+    namespace: "desktop",
+    access: "write",
+    sensitivity: "moderate",
+    effect: "os-managed-setting",
+    summary: "Bring a listed window to the foreground.",
+    platformNotes: "Windows: not yet evidenced (foreground-lock rules apply). Linux: compositor-dependent. macOS: needs the accessibility permission.",
+  },
+  "desktop.workspaces.read": {
+    namespace: "desktop",
+    access: "read",
+    sensitivity: "moderate",
+    effect: "glint-owned-ui",
+    summary: "List workspaces (virtual desktops) and the active one, and receive change events.",
+    platformNotes: "Windows: not yet evidenced (virtual desktops have no public enumeration API). Linux: compositor-dependent. macOS: planned.",
+  },
+  "desktop.workspaces.switch": {
+    namespace: "desktop",
+    access: "write",
+    sensitivity: "moderate",
+    effect: "os-managed-setting",
+    summary: "Switch the active workspace.",
+    platformNotes: "Windows: not yet evidenced. Linux: compositor-dependent. macOS: planned.",
+  },
+  "native.wallpaper.set": {
+    namespace: "native",
+    access: "write",
+    sensitivity: "high",
+    effect: "os-managed-setting",
+    summary: "Set the desktop wallpaper per display, with restore.",
+    platformNotes: "Windows: planned (IDesktopWallpaper). Linux: desktop-dependent. macOS: planned.",
+  },
+  "native.system-theme.apply": {
+    namespace: "native",
+    access: "write",
+    sensitivity: "high",
+    effect: "os-managed-setting",
+    summary: "Apply OS light/dark mode or accent colour.",
+    platformNotes: "Windows: planned. Linux: desktop-dependent. macOS: planned.",
+  },
+  "native.taskbar.modify": {
+    namespace: "native",
+    access: "write",
+    sensitivity: "high",
+    effect: "os-managed-setting",
+    summary: "Change supported OS taskbar settings (auto-hide, alignment).",
+    platformNotes: "Windows: planned, supported settings only; the native taskbar is never replaced. Linux, macOS: unsupported or desktop-dependent.",
+  },
+  "native.status-item.create": {
+    namespace: "native",
+    access: "write",
+    sensitivity: "moderate",
+    effect: "os-managed-setting",
+    summary: "Create a notification-area (tray) or menu-bar status item.",
+    platformNotes: "Windows: planned (notification area). Linux (StatusNotifierItem), macOS (menu bar): planned.",
+  },
+  "host.layer-shell": {
+    namespace: "host",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Place surfaces with the Wayland layer-shell protocol.",
+    platformNotes: "Linux Wayland only, when the compositor advertises it; unsupported-platform on Windows and macOS.",
+  },
+  "host.appbar": {
+    namespace: "host",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Reserve a screen edge as an application desktop toolbar.",
+    platformNotes: "Windows only (SHAppBarMessage); unsupported-platform elsewhere.",
+  },
+  "host.desktop-layer": {
+    namespace: "host",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Place a surface on the desktop layer, below normal windows.",
+    platformNotes: "Windows: planned (WorkerW). Linux: layer-shell background or X11 desktop type. macOS: planned.",
+  },
+  "host.transparent-overlay": {
+    namespace: "host",
+    access: "present",
+    sensitivity: "low",
+    effect: "glint-owned-ui",
+    summary: "Show transparent, optionally click-through overlay windows.",
+    platformNotes: "Windows: planned (layered windows). Linux, macOS: planned.",
+  },
+  "host.global-hotkey": {
+    namespace: "host",
+    access: "present",
+    sensitivity: "moderate",
+    effect: "glint-owned-ui",
+    summary: "Register system-wide keyboard shortcuts that open Glint surfaces.",
+    platformNotes: "Windows: planned (RegisterHotKey). Linux: portal or compositor-dependent. macOS: planned.",
+  },
+};

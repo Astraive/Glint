@@ -34,6 +34,14 @@
 //!   `optionalCapabilities` that are unusable only disable controls
 //!   ([`ActivationReport::disabled`]). The gate changes no state.
 //!
+//! - The frozen v1 capability registry (CAP-005, [`registry`]): every
+//!   capability ID that exists in SDK v1 with its read/write/present
+//!   [`registry::Access`], [`registry::Sensitivity`], integration effect and
+//!   platform notes. Unregistered IDs fail closed everywhere: the service
+//!   refuses an adapter report that contains one, a snapshot reports one as
+//!   `unknown-capability`, and the activation gate refuses a theme that
+//!   declares one.
+//!
 //! Every type round-trips through JSON (serde); the shapes are documented on
 //! each type and are *proposed* until stabilized by an ADR.
 
@@ -44,6 +52,7 @@ mod capabilities;
 mod capability_gate;
 mod error;
 pub mod mock;
+pub mod registry;
 mod service;
 
 pub use capabilities::{

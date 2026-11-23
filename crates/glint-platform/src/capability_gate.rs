@@ -33,6 +33,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::capabilities::{Availability, CapabilityId};
 use crate::error::{CapabilityError, CapabilityErrorCode};
+use crate::registry;
 use crate::service::CapabilitySnapshot;
 
 /// Whether the theme declared a capability as required or optional.
@@ -67,23 +68,21 @@ pub struct CapabilityRequirements {
 impl CapabilityRequirements {
     /// The requirements a validated manifest declares, with no fallbacks.
     ///
-    /// `glint-schema` already enforces the capability ID syntax; should an ID
-    /// still fail [`CapabilityId::parse`] the gate fails closed and refuses
-    /// activation, listing each such ID as `unknown-capability`.
+    /// `glint-schema` enforces only the capability ID syntax. Every ID,
+    /// required or optional, must also be in the frozen
+    /// [`crate::registry`]; otherwise the gate fails closed and refuses
+    /// activation, listing each such ID as `unknown-capability`. An unknown
+    /// optional ID is refused too: it is never silently ignored.
     pub fn from_manifest(manifest: &ThemeManifest) -> Result<Self, ActivationRefusal> {
         let mut invalid = Vec::new();
         let mut parse_all = |raw: &[String]| -> Vec<CapabilityId> {
             raw.iter()
-                .filter_map(|s| match CapabilityId::parse(s) {
-                    Ok(id) => Some(id),
-                    Err(e) => {
+                .filter_map(|s| match registry::require_registered(s) {
+                    Ok(spec) => Some(spec.capability_id()),
+                    Err(error) => {
                         invalid.push(Blocker {
                             capability: s.clone(),
-                            error: CapabilityError::new(
-                                CapabilityErrorCode::UnknownCapability,
-                                None,
-                                format!("{s:?} is not a capability id: {e}"),
-                            ),
+                            error,
                             fallbacks: Vec::new(),
                         });
                         None
