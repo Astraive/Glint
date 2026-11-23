@@ -15,8 +15,7 @@
 mod support;
 
 use glint_package::{
-    ErrorCode as C, PROVIDER_CAPABILITIES, PackageError, PackageLimits, inspect_archive_in,
-    known_capabilities,
+    ErrorCode as C, PackageError, PackageLimits, inspect_archive_in, known_capabilities,
 };
 use glint_schema::ErrorCode as M;
 use glint_surfaces::{CATALOG, SurfaceErrorCode as S};
@@ -271,7 +270,7 @@ fn valid_placement_behavior_and_custom_surface_are_accepted() {
     assert_eq!(manifest.surfaces.len(), 2);
 }
 
-// ---- Capability IDs: catalog accepted, unknown refused (fail closed) ------------
+// ---- Capability IDs: registry accepted, unknown refused (fail closed) -----------
 
 #[test]
 fn every_known_capability_is_accepted_by_schema_and_reader() {
@@ -291,16 +290,23 @@ fn surface_catalog_capabilities_are_accepted() {
 }
 
 #[test]
-fn provider_capabilities_are_known() {
+fn every_registered_capability_is_known() {
     let known = known_capabilities();
-    for id in PROVIDER_CAPABILITIES {
-        assert!(known.contains(id), "{id}");
+    for spec in glint_platform::registry::REGISTRY {
+        assert!(known.contains(spec.id), "{}", spec.id);
     }
+    assert_eq!(known.len(), glint_platform::registry::REGISTRY.len());
 }
 
 rejects!(
     unknown_surface_capability,
     with_manifest(&capabilities(&["surface.taskbar"], &[])),
+    UnknownCapability
+);
+// CAP-005: the plan spelling superseded by the catalog name is not registered.
+rejects!(
+    unregistered_plan_alias_capability,
+    with_manifest(&capabilities(&[], &["surface.notification-overlay"])),
     UnknownCapability
 );
 rejects!(

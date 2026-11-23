@@ -5,8 +5,9 @@
 //!
 //! 1. `glint.json` is UTF-8 and passes `glint-schema`
 //!    (`GLINT_PACKAGE_MANIFEST_NOT_UTF8`, `GLINT_PACKAGE_INVALID_MANIFEST`).
-//! 2. Every declared capability is known ([`is_known_capability`]); an
-//!    unknown ID is refused, never ignored or granted
+//! 2. Every declared capability, required or optional, is in the frozen v1
+//!    capability registry ([`is_known_capability`]); an unknown ID is
+//!    refused, never ignored or granted
 //!    (`GLINT_PACKAGE_UNKNOWN_CAPABILITY`).
 //! 3. Every surface passes `glint_surfaces::surface_definitions`: standard or
 //!    namespaced custom kind, placement and behaviour allowed for that kind,
@@ -22,50 +23,21 @@
 
 use std::collections::BTreeSet;
 
+use glint_platform::registry;
 use glint_schema::ThemeManifest;
-use glint_surfaces::{CATALOG, CUSTOM_SURFACE_CAPABILITY};
 
 use crate::error::PackageError;
 
-/// Provider capability IDs the reader accepts in addition to the ones the
-/// surface catalog implies.
-///
-/// The accepted set is [`known_capabilities`]: this list plus every
-/// `surface.*` capability and every optional provider capability in
-/// `glint_surfaces::CATALOG` (and `surface.custom`), so a manifest that
-/// declares catalog capabilities is never refused. Everything else is refused
+/// Every capability ID the reader accepts: the frozen v1 capability
+/// registry (`glint_platform::registry`, CAP-005). Anything else is refused
 /// (fail closed).
-///
-/// This is provisional. The frozen v1 capability registry is owned by the CAP
-/// epic (CAP-005, not yet built); when it exists it replaces this list and the
-/// catalog derivation.
-pub const PROVIDER_CAPABILITIES: &[&str] = &[
-    "system.audio.read",
-    "system.audio.write",
-    "desktop.workspaces.read",
-    "desktop.workspaces.switch",
-];
-
-/// Every capability ID the reader accepts: [`PROVIDER_CAPABILITIES`] plus the
-/// surface catalog's required and optional capabilities and
-/// `surface.custom`.
 pub fn known_capabilities() -> BTreeSet<&'static str> {
-    let mut known: BTreeSet<&'static str> = PROVIDER_CAPABILITIES.iter().copied().collect();
-    known.insert(CUSTOM_SURFACE_CAPABILITY);
-    for entry in CATALOG {
-        known.insert(entry.capability);
-        known.extend(entry.optional_capabilities.iter().copied());
-    }
-    known
+    registry::registered_ids().collect()
 }
 
-/// True when `id` is in [`known_capabilities`].
+/// True when `id` is in the frozen v1 capability registry.
 pub fn is_known_capability(id: &str) -> bool {
-    PROVIDER_CAPABILITIES.contains(&id)
-        || id == CUSTOM_SURFACE_CAPABILITY
-        || CATALOG
-            .iter()
-            .any(|entry| entry.capability == id || entry.optional_capabilities.contains(&id))
+    registry::is_registered(id)
 }
 
 /// Parse `glint.json` bytes and cross-check them against the package's
@@ -113,12 +85,22 @@ fn file_references(manifest: &ThemeManifest) -> impl Iterator<Item = &str> {
 
 #[cfg(test)]
 mod tests {
+    use glint_surfaces::{CATALOG, CUSTOM_SURFACE_CAPABILITY};
+
     use super::*;
 
     #[test]
-    fn every_catalog_capability_is_known() {
+    fn known_capabilities_are_exactly_the_registry() {
         let known = known_capabilities();
-        assert!(known.contains(CUSTOM_SURFACE_CAPABILITY));
+        assert_eq!(known.len(), registry::REGISTRY.len());
+        for spec in registry::REGISTRY {
+            assert!(is_known_capability(spec.id), "{}", spec.id);
+        }
+    }
+
+    #[test]
+    fn every_catalog_capability_is_known() {
+        assert!(is_known_capability(CUSTOM_SURFACE_CAPABILITY));
         for entry in CATALOG {
             assert!(
                 is_known_capability(entry.capability),
@@ -129,20 +111,16 @@ mod tests {
                 assert!(is_known_capability(id), "{id}");
             }
         }
-        for id in &known {
-            assert!(is_known_capability(id), "{id}");
-        }
     }
 
     #[test]
-    fn provider_capabilities_are_known_and_others_are_not() {
-        for id in PROVIDER_CAPABILITIES {
-            assert!(is_known_capability(id), "{id}");
-        }
+    fn unregistered_ids_are_not_known() {
         for id in [
             "system.shell.exec",
             "system.files.write",
             "surface.taskbar",
+            "surface.notification-overlay",
+            "desktop.windows.close",
             "",
         ] {
             assert!(!is_known_capability(id), "{id}");

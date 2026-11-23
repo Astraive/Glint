@@ -58,7 +58,7 @@ pub use path::{
 pub use reader::{
     PackageCandidate, PackageFile, default_staging_root, inspect_archive, inspect_archive_in,
 };
-pub use validate::{PROVIDER_CAPABILITIES, is_known_capability, known_capabilities};
+pub use validate::{is_known_capability, known_capabilities};
 pub use writer::{
     EXCLUDED_DIR_NAMES, EXCLUDED_FILE_NAMES, EXCLUDED_FILE_PREFIXES, PackageDigest,
     is_excluded_name, pack_directory, pack_directory_with_limits,

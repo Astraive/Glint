@@ -10,6 +10,9 @@ publish.workspace = true
 
 [dependencies]
 glint-schema = { path = "../glint-schema" }
+# The frozen v1 capability registry decides which declared capabilities are
+# accepted (CAP-005).
+glint-platform = { path = "../glint-platform" }
 # Surface placement/behaviour validation and the catalog capability IDs
 # (PKG-004). glint-surfaces depends on glint-schema and glint-platform only,
 # so there is no cycle.
