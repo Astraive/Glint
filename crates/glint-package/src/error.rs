@@ -82,6 +82,11 @@ pub enum ErrorCode {
     /// Something unexpected already exists, or appeared, inside the private
     /// staging directory.
     StagingConflict,
+    /// The directory to pack is missing, not a directory or a link.
+    PackSourceInvalid,
+    /// The pack destination is unusable (inside the source tree, or its
+    /// parent directory is missing).
+    PackDestinationInvalid,
 }
 
 impl ErrorCode {
@@ -117,6 +122,8 @@ impl ErrorCode {
         ErrorCode::RemoteReference,
         ErrorCode::StagingRootInvalid,
         ErrorCode::StagingConflict,
+        ErrorCode::PackSourceInvalid,
+        ErrorCode::PackDestinationInvalid,
     ];
 
     /// The stable string form, e.g. `GLINT_PACKAGE_UNSAFE_PATH`.
@@ -152,6 +159,8 @@ impl ErrorCode {
             ErrorCode::RemoteReference => "GLINT_PACKAGE_REMOTE_REFERENCE",
             ErrorCode::StagingRootInvalid => "GLINT_PACKAGE_STAGING_ROOT_INVALID",
             ErrorCode::StagingConflict => "GLINT_PACKAGE_STAGING_CONFLICT",
+            ErrorCode::PackSourceInvalid => "GLINT_PACKAGE_PACK_SOURCE_INVALID",
+            ErrorCode::PackDestinationInvalid => "GLINT_PACKAGE_PACK_DESTINATION_INVALID",
         }
     }
 }
@@ -356,6 +365,10 @@ pub enum PackageError {
     StagingRootInvalid(PathBuf),
     /// Something unexpected exists inside private staging.
     StagingConflict(PathBuf),
+    /// The directory to pack is unusable.
+    PackSourceInvalid(PathBuf),
+    /// The pack destination is unusable.
+    PackDestinationInvalid(PathBuf),
 }
 
 impl PackageError {
@@ -392,6 +405,8 @@ impl PackageError {
             PackageError::RemoteReference { .. } => ErrorCode::RemoteReference,
             PackageError::StagingRootInvalid(_) => ErrorCode::StagingRootInvalid,
             PackageError::StagingConflict(_) => ErrorCode::StagingConflict,
+            PackageError::PackSourceInvalid(_) => ErrorCode::PackSourceInvalid,
+            PackageError::PackDestinationInvalid(_) => ErrorCode::PackDestinationInvalid,
         }
     }
 
@@ -498,6 +513,18 @@ impl fmt::Display for PackageError {
             PackageError::StagingConflict(path) => {
                 write!(f, "unexpected entry in staging: {}", path.display())
             }
+            PackageError::PackSourceInvalid(path) => {
+                write!(
+                    f,
+                    "{} is not a directory that can be packed",
+                    path.display()
+                )
+            }
+            PackageError::PackDestinationInvalid(path) => write!(
+                f,
+                "cannot write the package to {} (inside the source, or no parent directory)",
+                path.display()
+            ),
         }
     }
 }

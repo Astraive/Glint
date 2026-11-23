@@ -686,7 +686,7 @@ fn forbidden_extra_id(field: &ExtraField) -> Option<u16> {
     }
 }
 
-fn check_ratio(
+pub(crate) fn check_ratio(
     name: &str,
     uncompressed: u64,
     compressed: u64,
@@ -747,6 +747,21 @@ fn read_manifest<R: Read + Seek>(
         let entry = archive.by_index(meta.index).map_err(malformed)?;
         bounded_copy(entry, meta, limits, Some(&mut bytes), &mut io::sink())?;
     }
+    let files: BTreeSet<&str> = metas
+        .iter()
+        .filter(|m| !m.is_dir)
+        .map(|m| m.path.as_str())
+        .collect();
+    check_manifest(bytes, &files)
+}
+
+/// Parse `glint.json` bytes and cross-check them against the package's file
+/// set: known capabilities and every referenced path present as a file.
+/// Shared by the reader and the packer.
+pub(crate) fn check_manifest(
+    bytes: Vec<u8>,
+    files: &BTreeSet<&str>,
+) -> Result<ThemeManifest, PackageError> {
     let text = String::from_utf8(bytes).map_err(|_| PackageError::ManifestNotUtf8)?;
     let manifest =
         glint_schema::parse_theme_manifest(&text).map_err(PackageError::InvalidManifest)?;
@@ -761,11 +776,6 @@ fn read_manifest<R: Read + Seek>(
         }
     }
 
-    let files: BTreeSet<&str> = metas
-        .iter()
-        .filter(|m| !m.is_dir)
-        .map(|m| m.path.as_str())
-        .collect();
     for reference in manifest_references(&manifest) {
         if !files.contains(reference) {
             return Err(PackageError::MissingReferencedFile(reference.to_owned()));

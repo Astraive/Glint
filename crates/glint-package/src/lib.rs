@@ -1,11 +1,14 @@
-//! Strict, bounded reader for `.glint` theme packages (PKG-001).
+//! Strict, bounded reader (PKG-001) and deterministic writer (PKG-003) for
+//! `.glint` theme packages.
 //!
 //! A `.glint` file is a ZIP archive with a `glint.json` manifest at its root.
 //! Packages are untrusted input: [`inspect_archive`] (or
 //! [`inspect_archive_in`] with an explicit staging root) validates one and
 //! extracts it into an immutable, Glint-owned staging directory, returning a
 //! [`PackageCandidate`]. Nothing is activated or installed here; that is the
-//! installer's job (INS).
+//! installer's job (INS). [`pack_directory`] writes a byte-for-byte
+//! reproducible archive from a theme directory and returns its
+//! [`PackageDigest`]; its output always passes the reader.
 //!
 //! The design follows the SPK-007 spike
 //! (`docs/research/spikes/package-security.md`): the archive is identified by
@@ -41,6 +44,7 @@ mod path;
 mod reader;
 mod scan;
 mod staging;
+mod writer;
 
 pub use error::{ErrorCode, PackageError, PathRejection};
 pub use limits::PackageLimits;
@@ -51,6 +55,10 @@ pub use path::{
 pub use reader::{
     KNOWN_CAPABILITIES, PackageCandidate, PackageFile, default_staging_root, inspect_archive,
     inspect_archive_in,
+};
+pub use writer::{
+    EXCLUDED_DIR_NAMES, EXCLUDED_FILE_NAMES, EXCLUDED_FILE_PREFIXES, PackageDigest,
+    is_excluded_name, pack_directory, pack_directory_with_limits,
 };
 
 /// Lowercase hexadecimal encoding of a digest.
