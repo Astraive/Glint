@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Glint spike panel</title>
+  <link rel="stylesheet" href="spike.css">
+  <script src="panel.js" defer></script>
+</head>
+<body class="panel">
+  <span class="brand">Glint spike</span>
+  <span class="note">SPK-001 throwaway appbar &middot; bundled content only</span>
+  <span class="spacer"></span>
+  <time id="clock">--:--</time>
+  <button id="cc-toggle" type="button" aria-expanded="false" aria-controls="control-center">Control center</button>
+  <button id="quit" type="button">Quit spike</button>
+</body>
+</html>
