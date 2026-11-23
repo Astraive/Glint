@@ -22,7 +22,11 @@ then validates their shape and returns one `SurfaceDefinition` per surface:
 SurfaceDefinition { id, kind, entrypoint, placement, behavior, capabilities }
 ```
 
-A host must call it before mounting any surface. `SurfaceDefinition::parse(id,
+The package reader and packer (`glint-package`, PKG-004) already call it
+on every imported or packed theme and refuse a failure as
+`GLINT_PACKAGE_INVALID_SURFACE`, keeping the `GLINT_SURFACE_*` code and
+pointer; they also require each entrypoint to be a file in the archive. A
+host must still call it before mounting any surface. `SurfaceDefinition::parse(id,
 &value)` validates a single entry the same way. Checks stop at the first
 problem, in this order: ID, object type, unknown fields, `entry`,
 `placement`, `behavior`. Unknown keys are rejected at every level (a surface

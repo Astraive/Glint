@@ -55,11 +55,14 @@ validators' behaviour identical.
 service and the activation gate. Notes on the current split:
 
 - **Registry of known capability IDs.** The CAP epic owns it (CAP-005, not
-  yet built). Until then `glint-package` keeps a provisional
-  `KNOWN_CAPABILITIES` list that its reader uses to refuse unknown IDs; it is
-  deliberately left in place. Follow-up for CAP-005: move the list into
-  `glint-platform` as the frozen v1 registry and have `glint-package`
-  consume it. Doing it now would change what the package reader accepts
+  yet built). Until then `glint-package` refuses unknown IDs against a
+  provisional set, `known_capabilities()`: every required (`surface.*`) and
+  optional capability in the `glint-surfaces` catalog (plus
+  `surface.custom`), so manifests declaring catalog capabilities are never
+  refused, and a short `PROVIDER_CAPABILITIES` list (PKG-004). Anything else
+  is refused. Follow-up for CAP-005: freeze the v1 registry in
+  `glint-platform` and have `glint-package` and `glint-surfaces` consume
+  it. Doing it now would change what the package reader accepts
   (the plan's namespace list is larger than the provisional one) without
   the registry's review. Until then the gate fails closed on its own: a
   capability the host adapter does not advertise is `unknown-capability`.

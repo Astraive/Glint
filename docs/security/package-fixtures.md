@@ -1,9 +1,12 @@
 # Package security fixture suite
 
-Status: **implemented** (PKG-001, PKG-002, PKG-003). This page lists every
-hostile `.glint` fixture in
+Status: **implemented** (PKG-001, PKG-002, PKG-003, PKG-004). This page
+lists every hostile `.glint` fixture in
 [`crates/glint-package/tests/security.rs`](../../crates/glint-package/tests/security.rs)
-and the stable error code it must produce. The rules behind the codes come
+and
+[`crates/glint-package/tests/references.rs`](../../crates/glint-package/tests/references.rs)
+(manifest references and static content restrictions, PKG-004) and the
+stable error code each must produce. The rules behind the codes come
 from the [package security spike](../research/spikes/package-security.md).
 
 ## How the suite works
@@ -16,8 +19,9 @@ from the [package security spike](../research/spikes/package-security.md).
   that file; license MIT (repository license).
 - **Specific code.** Each hostile case asserts one `GLINT_PACKAGE_*` code,
   plus the `PathRejection` rule for unsafe names and the `GLINT_MANIFEST_*`
-  code from `glint-schema` for invalid manifests. "Some error" is never
-  accepted.
+  code from `glint-schema` for invalid manifests and the `GLINT_SURFACE_*`
+  code plus JSON Pointer from `glint-surfaces` for invalid surfaces. "Some
+  error" is never accepted.
 - **No writes.** Each case runs `inspect_archive_in` inside a fresh temporary
   sandbox (`input/fixture.glint` plus an empty `staging/` root) and snapshots
   the whole sandbox before and after. The tree must be identical afterwards
@@ -35,6 +39,7 @@ from the [package security spike](../research/spikes/package-security.md).
 
 ```sh
 cargo test -p glint-package --test security
+cargo test -p glint-package --test references
 cargo test -p glint-package --test roundtrip
 ```
 
@@ -48,7 +53,7 @@ Results recorded so far:
 
 | Host | Result |
 |---|---|
-| Windows 11 (hands-on host, Rust 1.95.0) | `security`: 135 passed; `roundtrip`: 21 passed; no skips (the file-symlink test created a symlink, so it ran) |
+| Windows 11 (hands-on host, Rust 1.95.0) | `security`: 135 passed; `references`: 37 passed; `roundtrip`: 24 passed; no skips (the file-symlink test created a symlink, so it ran) |
 | Linux, macOS | **Not run locally.** CI only; record the CI run before claiming a pass |
 
 ## Platform-specific and skippable tests
@@ -242,6 +247,56 @@ All produce `GLINT_PACKAGE_EXECUTABLE_CONTENT`.
 | `manifest_references_missing_asset` | `assets.wallpaper` missing | `GLINT_PACKAGE_MISSING_REFERENCED_FILE` |
 | `manifest_reference_differs_in_case` | `theme/Tokens.json` vs `theme/tokens.json` | `GLINT_PACKAGE_MISSING_REFERENCED_FILE` |
 
+### Surface entrypoints and page entries (`references.rs`, PKG-004)
+
+Every token, asset and layout path, then every surface HTML entrypoint, must
+be a regular file in the archive (exact, case-sensitive match). A theme
+missing a declared surface entrypoint is refused.
+
+| Fixture | Change | Expected |
+|---|---|---|
+| `missing_surface_entrypoint` | extra `launcher` surface whose entry is not in the archive | `GLINT_PACKAGE_MISSING_REFERENCED_FILE` |
+| `surface_entrypoint_differs_in_case` | `dist/panel/Index.html` vs `index.html` | `GLINT_PACKAGE_MISSING_REFERENCED_FILE` |
+| `surface_entrypoint_is_a_directory` | entry `dist/shell.html` is a directory | `GLINT_PACKAGE_MISSING_REFERENCED_FILE` |
+| `missing_entrypoint_remote_script_and_executables_have_distinct_codes` | missing entry; remote `<script src>`; `bin/tool.exe`; `install.sh` | `MISSING_REFERENCED_FILE`, `REMOTE_REFERENCE`, `EXECUTABLE_CONTENT` (three distinct codes) |
+| `file_url_entrypoint` | entry `file:///C:/...` | `GLINT_PACKAGE_INVALID_MANIFEST` / `GLINT_MANIFEST_INVALID_PATH` |
+| `data_url_entrypoint` | entry `data:text/html,...` | `GLINT_PACKAGE_INVALID_MANIFEST` / `GLINT_MANIFEST_INVALID_PATH` |
+| `absolute_entrypoint` | entry `/srv/panel/index.html` | `GLINT_PACKAGE_INVALID_MANIFEST` / `GLINT_MANIFEST_INVALID_PATH` |
+| `install_script_field` | top-level `scripts.postinstall` | `GLINT_PACKAGE_INVALID_MANIFEST` / `GLINT_MANIFEST_UNKNOWN_FIELD` |
+
+### Surface definitions (`references.rs`, PKG-004)
+
+The reader and the packer run `glint_surfaces::surface_definitions` on the
+parsed manifest. Failures produce `GLINT_PACKAGE_INVALID_SURFACE`;
+`PackageError::surface_error()` carries the code and pointer below.
+
+| Fixture | Change | `GLINT_SURFACE_*` | Pointer |
+|---|---|---|---|
+| `unknown_surface_kind` | surface `taskbar` | `UNKNOWN_KIND` | `/surfaces/taskbar` |
+| `surface_placement_out_of_range` | panel `height: 99999` | `OUT_OF_RANGE` | `/surfaces/panel/placement/height` |
+| `surface_placement_unknown_field` | panel `placement.zIndex` | `UNKNOWN_FIELD` | `/surfaces/panel/placement/zIndex` |
+| `surface_placement_kind_not_allowed` | panel `placement.kind: "desktop"` | `UNSUPPORTED_PLACEMENT` | `/surfaces/panel/placement/kind` |
+| `surface_behavior_conflict` | panel `behavior.clickThrough: true` | `CONFLICT` | `/surfaces/panel/behavior/clickThrough` |
+| `surface_check_runs_before_the_entrypoint_existence_check` | `height: 0` and a missing entry | `OUT_OF_RANGE` | |
+
+Accepted: `valid_placement_behavior_and_custom_surface_are_accepted` (a
+bottom-edge panel reserving the work area plus a floating
+`custom:dev.example.clock`).
+
+### Capability IDs and the surface catalog (`references.rs`, PKG-004)
+
+The accepted set is `known_capabilities()`: the provisional
+`PROVIDER_CAPABILITIES` plus every required (`surface.*`) and optional
+capability in the `glint-surfaces` catalog, and `surface.custom`. Anything
+else is refused (fail closed). The frozen v1 registry remains CAP-005's.
+
+| Fixture | Change | Expected |
+|---|---|---|
+| `every_known_capability_is_accepted_by_schema_and_reader` | every known ID as required, then as optional | accepted |
+| `surface_catalog_capabilities_are_accepted` | each catalog row's capabilities, and `surface.custom` | accepted |
+| `unknown_surface_capability` | `surface.taskbar` | `GLINT_PACKAGE_UNKNOWN_CAPABILITY` |
+| `unknown_provider_capability_next_to_catalog_ones` | `desktop.windows.close` next to `surface.dock` | `GLINT_PACKAGE_UNKNOWN_CAPABILITY` |
+
 ### Remote references in UI files
 
 All produce `GLINT_PACKAGE_REMOTE_REFERENCE`. The scan is a heuristic; the
@@ -258,6 +313,32 @@ renderer CSP (RND) is the real control.
 | `js_static_remote_import` | `import React from 'https://...'` |
 | `js_dynamic_remote_import` | `await import("https://...")` |
 | `unc_reference_in_html` | `<img src="\\attacker\share\pixel.png">` |
+| `script_src_after_slash` (`references.rs`) | `<script/src="https://...">` |
+| `file_url_script_src` (`references.rs`) | `<script src="file:///C:/...">` |
+| `remote_stylesheet_after_quoted_attribute` (`references.rs`) | `<link rel="stylesheet"href="https://...">` |
+| `anchor_ping_beacon` (`references.rs`) | `<a href="#top" ping="https://...">` |
+| `css_remote_image_set` (`references.rs`) | CSS `image-set("https://..." 1x)` |
+| `css_remote_import_without_url` (`references.rs`) | CSS `@import "https://..."` |
+| `js_remote_websocket` (`references.rs`) | `new WebSocket('wss://...')` |
+| `svg_remote_image` (`references.rs`) | SVG `<image href="https://...">` |
+| `svg_remote_stylesheet_instruction` (`references.rs`) | `<?xml-stylesheet href="https://..."?>` |
+
+### Active content in SVG images (`references.rs`, PKG-004)
+
+SVG files are images, so they must be inert data. All produce
+`GLINT_PACKAGE_ACTIVE_CONTENT` (reader and packer). HTML entrypoints are
+sandboxed UI governed by the renderer CSP and are not checked for inline
+script.
+
+| Fixture | Change |
+|---|---|
+| `svg_script` | `<script>` |
+| `svg_foreign_object` | `<foreignObject>` |
+| `svg_event_handler` | `onload="..."` |
+| `svg_javascript_url` | `href="javascript:..."` |
+| `svg_entity_declaration` | `<!ENTITY ...>` in the internal DTD |
+
+Accepted: `inert_svg_is_accepted`, and the default theme's `preview.svg`.
 
 ### Staging discipline and accepted controls
 
@@ -289,9 +370,15 @@ additionally checks that packed output always passes these rules.
 - **Handle-relative staging.** Staging creates files component by component
   with `create_new` and re-checks every directory for links, but does not use
   handle-relative opens (`openat`, `cap-std`); see the `staging` module docs.
-- **Capability registry.** `KNOWN_CAPABILITIES` is the reader's provisional
-  copy until the CAP epic owns the registry.
-- **Remote-reference scan** is a heuristic (no `eval`, string-built URLs or
-  `fetch(variable)`); the renderer CSP is the control.
+- **Capability registry.** `known_capabilities()` (the provisional
+  `PROVIDER_CAPABILITIES` plus the surface catalog's IDs) stands in until the
+  CAP epic freezes the v1 registry (CAP-005).
+- **Remote-reference and active-content scans** are heuristics (no `eval`,
+  string-built URLs, `fetch(variable)`, HTML character references or CSS
+  escapes); the renderer CSP is the control. Gzipped `.svgz` files are not
+  scanned.
+- **References inside UI files.** Only paths in `glint.json` are checked for
+  existence; a local `<script src="./missing.js">` inside an entrypoint is
+  not (CRT-003 build output checks).
 - **"Untrusted renderer cannot call unauthorized daemon commands"** is out of
   scope for an archive reader (RND/CAP).
