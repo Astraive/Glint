@@ -5,6 +5,7 @@ use std::io;
 use std::path::PathBuf;
 
 use glint_schema::ManifestError;
+use glint_surfaces::SurfaceError;
 
 /// Stable, machine-readable package error codes.
 ///
@@ -73,7 +74,9 @@ pub enum ErrorCode {
     InvalidManifest,
     /// The manifest lists a capability Glint does not know.
     UnknownCapability,
-    /// A path the manifest references is not a file in the archive.
+    /// A path the manifest references (token file, asset, layout or surface
+    /// HTML entrypoint) is not a regular file in the archive. A theme missing
+    /// a declared surface entrypoint is refused with this code.
     MissingReferencedFile,
     /// A UI file loads content from the network or a share.
     RemoteReference,
@@ -87,6 +90,14 @@ pub enum ErrorCode {
     /// The pack destination is unusable (inside the source tree, or its
     /// parent directory is missing).
     PackDestinationInvalid,
+    /// A manifest surface fails `glint-surfaces` validation (kind, placement,
+    /// behaviour or entrypoint); see [`PackageError::surface_error`] for the
+    /// `GLINT_SURFACE_*` code and JSON Pointer.
+    InvalidSurface,
+    /// A static asset that must be inert data (an SVG image) contains active
+    /// content: a script, `foreignObject`, an event-handler attribute, a
+    /// `javascript:` URL or an XML entity declaration.
+    ActiveContent,
 }
 
 impl ErrorCode {
@@ -124,6 +135,8 @@ impl ErrorCode {
         ErrorCode::StagingConflict,
         ErrorCode::PackSourceInvalid,
         ErrorCode::PackDestinationInvalid,
+        ErrorCode::InvalidSurface,
+        ErrorCode::ActiveContent,
     ];
 
     /// The stable string form, e.g. `GLINT_PACKAGE_UNSAFE_PATH`.
@@ -161,6 +174,8 @@ impl ErrorCode {
             ErrorCode::StagingConflict => "GLINT_PACKAGE_STAGING_CONFLICT",
             ErrorCode::PackSourceInvalid => "GLINT_PACKAGE_PACK_SOURCE_INVALID",
             ErrorCode::PackDestinationInvalid => "GLINT_PACKAGE_PACK_DESTINATION_INVALID",
+            ErrorCode::InvalidSurface => "GLINT_PACKAGE_INVALID_SURFACE",
+            ErrorCode::ActiveContent => "GLINT_PACKAGE_ACTIVE_CONTENT",
         }
     }
 }
@@ -369,6 +384,15 @@ pub enum PackageError {
     PackSourceInvalid(PathBuf),
     /// The pack destination is unusable.
     PackDestinationInvalid(PathBuf),
+    /// A manifest surface fails `glint-surfaces` validation.
+    InvalidSurface(SurfaceError),
+    /// Active content in a file that must be inert data.
+    ActiveContent {
+        /// The file containing it.
+        name: String,
+        /// The offending construct, e.g. `<script`.
+        construct: String,
+    },
 }
 
 impl PackageError {
@@ -407,6 +431,8 @@ impl PackageError {
             PackageError::StagingConflict(_) => ErrorCode::StagingConflict,
             PackageError::PackSourceInvalid(_) => ErrorCode::PackSourceInvalid,
             PackageError::PackDestinationInvalid(_) => ErrorCode::PackDestinationInvalid,
+            PackageError::InvalidSurface(_) => ErrorCode::InvalidSurface,
+            PackageError::ActiveContent { .. } => ErrorCode::ActiveContent,
         }
     }
 
@@ -414,6 +440,16 @@ impl PackageError {
     pub fn manifest_error(&self) -> Option<&ManifestError> {
         match self {
             PackageError::InvalidManifest(error) => Some(error),
+            _ => None,
+        }
+    }
+
+    /// The `glint-surfaces` diagnostic behind [`ErrorCode::InvalidSurface`]:
+    /// its `GLINT_SURFACE_*` code and a JSON Pointer relative to the manifest
+    /// root (e.g. `/surfaces/panel/placement/height`).
+    pub fn surface_error(&self) -> Option<&SurfaceError> {
+        match self {
+            PackageError::InvalidSurface(error) => Some(error),
             _ => None,
         }
     }
@@ -525,6 +561,10 @@ impl fmt::Display for PackageError {
                 "cannot write the package to {} (inside the source, or no parent directory)",
                 path.display()
             ),
+            PackageError::InvalidSurface(error) => write!(f, "invalid surface: {error}"),
+            PackageError::ActiveContent { name, construct } => {
+                write!(f, "{name:?} contains active content {construct:?}")
+            }
         }
     }
 }
@@ -534,6 +574,7 @@ impl std::error::Error for PackageError {
         match self {
             PackageError::Io { source, .. } => Some(source),
             PackageError::InvalidManifest(error) => Some(error),
+            PackageError::InvalidSurface(error) => Some(error),
             _ => None,
         }
     }

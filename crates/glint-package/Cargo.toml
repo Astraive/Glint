@@ -10,6 +10,10 @@ publish.workspace = true
 
 [dependencies]
 glint-schema = { path = "../glint-schema" }
+# Surface placement/behaviour validation and the catalog capability IDs
+# (PKG-004). glint-surfaces depends on glint-schema and glint-platform only,
+# so there is no cycle.
+glint-surfaces = { path = "../glint-surfaces" }
 # Pinned exactly (SPK-007): an upgrade must re-run the spike's
 # zip_crate_behaviour.rs evidence. No default features: only Stored + Deflate
 # (pure-Rust zlib-rs backend) are compiled; every other method surfaces as

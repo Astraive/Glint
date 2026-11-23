@@ -17,13 +17,15 @@
 //!    and central header disagreement, extra fields, names, file types,
 //!    encryption, methods, declared sizes, ratios, executables and
 //!    case-folded collisions. Nothing is inflated.
-//! 5. **Manifest**: `glint.json` is inflated (bounded), parsed with
-//!    `glint-schema`, its capabilities are checked against
-//!    [`KNOWN_CAPABILITIES`] and every path it references must be a file in
-//!    the archive.
+//! 5. **Manifest** (PKG-004, `validate` module): `glint.json` is inflated
+//!    (bounded), parsed with `glint-schema`, its capabilities must be
+//!    [known](crate::is_known_capability), every surface must pass
+//!    `glint_surfaces::surface_definitions`, every token, asset and layout
+//!    path must be a file in the archive, and so must every surface
+//!    entrypoint.
 //! 6. **Extraction** into `<staging>/root`, one bounded entry at a time, with
 //!    a SHA-256 per file and checks on the bytes actually produced (size,
-//!    total, executable magic, remote references).
+//!    total, executable magic, remote references, active SVG content).
 //! 7. The extracted tree and the private copy are made read-only.
 //!
 //! Any failure removes the whole staging directory, so a rejected archive
@@ -49,20 +51,7 @@ use crate::scan;
 use crate::staging::{
     self, EXTRACTED_DIR_NAME, SOURCE_COPY_NAME, StagingDir, create_private_dir, ensure_dirs,
 };
-
-/// Capability IDs Glint currently knows, from the SDK `CapabilityId`
-/// proposal. An unknown capability is refused instead of being silently
-/// ignored or granted. The capability registry is owned by the CAP epic; this
-/// list is the reader's provisional copy until that registry exists.
-pub const KNOWN_CAPABILITIES: &[&str] = &[
-    "surface.panel",
-    "surface.launcher",
-    "surface.control-center",
-    "system.audio.read",
-    "system.audio.write",
-    "desktop.workspaces.read",
-    "desktop.workspaces.switch",
-];
+use crate::validate::check_manifest;
 
 const ZIP_LOCAL_MAGIC: &[u8; 4] = b"PK\x03\x04";
 const S_IFMT: u32 = 0o170_000;
@@ -755,47 +744,6 @@ fn read_manifest<R: Read + Seek>(
     check_manifest(bytes, &files)
 }
 
-/// Parse `glint.json` bytes and cross-check them against the package's file
-/// set: known capabilities and every referenced path present as a file.
-/// Shared by the reader and the packer.
-pub(crate) fn check_manifest(
-    bytes: Vec<u8>,
-    files: &BTreeSet<&str>,
-) -> Result<ThemeManifest, PackageError> {
-    let text = String::from_utf8(bytes).map_err(|_| PackageError::ManifestNotUtf8)?;
-    let manifest =
-        glint_schema::parse_theme_manifest(&text).map_err(PackageError::InvalidManifest)?;
-
-    for id in manifest
-        .required_capabilities
-        .iter()
-        .chain(&manifest.optional_capabilities)
-    {
-        if !KNOWN_CAPABILITIES.contains(&id.as_str()) {
-            return Err(PackageError::UnknownCapability(id.clone()));
-        }
-    }
-
-    for reference in manifest_references(&manifest) {
-        if !files.contains(reference) {
-            return Err(PackageError::MissingReferencedFile(reference.to_owned()));
-        }
-    }
-    Ok(manifest)
-}
-
-/// Every package-relative path a manifest references.
-pub(crate) fn manifest_references(manifest: &ThemeManifest) -> Vec<&str> {
-    manifest
-        .tokens
-        .iter()
-        .map(String::as_str)
-        .chain(manifest.assets.values().map(String::as_str))
-        .chain(manifest.layouts.values().map(String::as_str))
-        .chain(manifest.surfaces.values().map(|s| s.entry.as_str()))
-        .collect()
-}
-
 type Extracted = (Vec<PackageFile>, Vec<String>, u64);
 
 /// Step 6: extract every entry, bounded, hashing as it goes.
@@ -829,12 +777,20 @@ fn extract<R: Read + Seek>(
             .ok_or(PackageError::TotalTooLarge {
                 limit: limits.max_total_uncompressed,
             })?;
-        if let Some(text) = text
-            && let Some(reference) = scan::find_remote_reference(&meta.path, &text)
+        if let Some(text) = text.as_deref()
+            && let Some(reference) = scan::find_remote_reference(&meta.path, text)
         {
             return Err(PackageError::RemoteReference {
                 name: meta.path.clone(),
                 reference,
+            });
+        }
+        if let Some(text) = text.as_deref()
+            && let Some(construct) = scan::find_active_content(&meta.path, text)
+        {
+            return Err(PackageError::ActiveContent {
+                name: meta.path.clone(),
+                construct,
             });
         }
         files.push(PackageFile {

@@ -23,7 +23,9 @@
 //! Every failure is a [`PackageError`] with a stable [`ErrorCode`] whose
 //! string form is `GLINT_PACKAGE_*`. Manifest problems carry the underlying
 //! `GLINT_MANIFEST_*` diagnostic from `glint-schema`
-//! ([`PackageError::manifest_error`]).
+//! ([`PackageError::manifest_error`]); surface problems carry the
+//! `GLINT_SURFACE_*` diagnostic from `glint-surfaces`
+//! ([`PackageError::surface_error`]).
 //!
 //! # Example
 //!
@@ -44,6 +46,7 @@ mod path;
 mod reader;
 mod scan;
 mod staging;
+mod validate;
 mod writer;
 
 pub use error::{ErrorCode, PackageError, PathRejection};
@@ -53,9 +56,9 @@ pub use path::{
     validate_entry_name,
 };
 pub use reader::{
-    KNOWN_CAPABILITIES, PackageCandidate, PackageFile, default_staging_root, inspect_archive,
-    inspect_archive_in,
+    PackageCandidate, PackageFile, default_staging_root, inspect_archive, inspect_archive_in,
 };
+pub use validate::{PROVIDER_CAPABILITIES, is_known_capability, known_capabilities};
 pub use writer::{
     EXCLUDED_DIR_NAMES, EXCLUDED_FILE_NAMES, EXCLUDED_FILE_PREFIXES, PackageDigest,
     is_excluded_name, pack_directory, pack_directory_with_limits,

@@ -39,9 +39,10 @@ use crate::path::{
     MANIFEST_NAME, fold_key, is_executable_magic, is_executable_name, is_scanned_text,
     validate_entry_name,
 };
-use crate::reader::{check_manifest, check_ratio};
+use crate::reader::check_ratio;
 use crate::scan;
 use crate::staging;
+use crate::validate::check_manifest;
 
 /// Directory names skipped at any depth: dependency and build caches.
 pub const EXCLUDED_DIR_NAMES: &[&str] =
@@ -395,6 +396,12 @@ fn write_archive(
                 return Err(PackageError::RemoteReference {
                     name: rel.clone(),
                     reference,
+                });
+            }
+            if let Some(construct) = scan::find_active_content(rel, &data) {
+                return Err(PackageError::ActiveContent {
+                    name: rel.clone(),
+                    construct,
                 });
             }
         }
