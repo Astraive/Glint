@@ -211,6 +211,8 @@ pub struct CatalogEntry {
     pub default_dismiss: &'static [DismissTrigger],
     /// Auto-hide delay used when `behavior.autoHideMs` is omitted.
     pub default_auto_hide_ms: Option<u32>,
+    /// Edge thickness (logical px) used when an `edge` placement omits it.
+    pub default_thickness: Option<u32>,
     /// One-line role, from the plan's surface contract.
     pub summary: &'static str,
 }
@@ -238,6 +240,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::NonActivating,
         default_dismiss: &[],
         default_auto_hide_ms: None,
+        default_thickness: Some(40),
         summary: "Pinned desktop toolbar",
     },
     CatalogEntry {
@@ -249,6 +252,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::NonActivating,
         default_dismiss: &[],
         default_auto_hide_ms: None,
+        default_thickness: Some(64),
         summary: "Running and pinned apps",
     },
     CatalogEntry {
@@ -260,6 +264,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::Exclusive,
         default_dismiss: LIGHT_DISMISS,
         default_auto_hide_ms: None,
+        default_thickness: None,
         summary: "Searchable app picker",
     },
     CatalogEntry {
@@ -280,6 +285,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::OnDemand,
         default_dismiss: LIGHT_DISMISS,
         default_auto_hide_ms: None,
+        default_thickness: None,
         summary: "Quick settings",
     },
     CatalogEntry {
@@ -291,6 +297,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::None,
         default_dismiss: &[],
         default_auto_hide_ms: Some(5000),
+        default_thickness: None,
         summary: "Toasts for Glint-visible events",
     },
     CatalogEntry {
@@ -302,6 +309,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::OnDemand,
         default_dismiss: LIGHT_DISMISS,
         default_auto_hide_ms: None,
+        default_thickness: None,
         summary: "Notification history inside Glint",
     },
     CatalogEntry {
@@ -313,6 +321,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::None,
         default_dismiss: &[],
         default_auto_hide_ms: None,
+        default_thickness: None,
         summary: "Background canvas and widgets",
     },
     CatalogEntry {
@@ -324,6 +333,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::OnDemand,
         default_dismiss: LIGHT_DISMISS,
         default_auto_hide_ms: None,
+        default_thickness: None,
         summary: "Date and time popup",
     },
     CatalogEntry {
@@ -335,6 +345,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::Exclusive,
         default_dismiss: LIGHT_DISMISS,
         default_auto_hide_ms: None,
+        default_thickness: None,
         summary: "Sleep and shutdown options",
     },
     CatalogEntry {
@@ -346,6 +357,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::Exclusive,
         default_dismiss: LIGHT_DISMISS,
         default_auto_hide_ms: None,
+        default_thickness: None,
         summary: "Workspace UI",
     },
     CatalogEntry {
@@ -357,6 +369,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::Exclusive,
         default_dismiss: LIGHT_DISMISS,
         default_auto_hide_ms: None,
+        default_thickness: None,
         summary: "Window selection overlay",
     },
     CatalogEntry {
@@ -368,6 +381,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::None,
         default_dismiss: &[],
         default_auto_hide_ms: Some(1500),
+        default_thickness: None,
         summary: "Volume feedback",
     },
     CatalogEntry {
@@ -379,6 +393,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::None,
         default_dismiss: &[],
         default_auto_hide_ms: Some(1500),
+        default_thickness: None,
         summary: "Brightness feedback",
     },
     CatalogEntry {
@@ -390,6 +405,7 @@ pub const CATALOG: &[CatalogEntry] = &[
         default_focus: FocusPolicy::OnDemand,
         default_dismiss: LIGHT_DISMISS,
         default_auto_hide_ms: None,
+        default_thickness: None,
         summary: "Track metadata and playback",
     },
 ];

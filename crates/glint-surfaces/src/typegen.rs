@@ -274,6 +274,7 @@ pub fn typescript_module() -> String {
             ("defaultFocus", "FocusPolicy", false),
             ("defaultDismiss", "readonly DismissTrigger[]", false),
             ("defaultAutoHideMs", "number | null", false),
+            ("defaultThickness", "number | null", false),
             ("summary", "string", false),
         ],
     );
@@ -312,6 +313,10 @@ pub fn typescript_module() -> String {
             .default_auto_hide_ms
             .map_or("null".to_owned(), |ms| ms.to_string());
         writeln!(out, "    defaultAutoHideMs: {hide},").unwrap();
+        let thickness = entry
+            .default_thickness
+            .map_or("null".to_owned(), |px| px.to_string());
+        writeln!(out, "    defaultThickness: {thickness},").unwrap();
         writeln!(out, "    summary: {},", quote(entry.summary)).unwrap();
         writeln!(out, "  }},").unwrap();
     }

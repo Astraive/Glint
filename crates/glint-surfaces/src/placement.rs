@@ -269,11 +269,18 @@ pub(crate) fn parse(
                 }
             }
             if obj.get(thickness).is_none() {
-                return Err(SurfaceError::new(
-                    SurfaceErrorCode::MissingField,
-                    obj.child(thickness),
-                    format!("a `{anchor}` edge surface needs its thickness as `{thickness}`"),
-                ));
+                let Some(default) = entry.and_then(|entry| entry.default_thickness) else {
+                    return Err(SurfaceError::new(
+                        SurfaceErrorCode::MissingField,
+                        obj.child(thickness),
+                        format!("a `{anchor}` edge surface needs its thickness as `{thickness}`"),
+                    ));
+                };
+                if anchor.is_horizontal_edge() {
+                    out.height = Some(default);
+                } else {
+                    out.width = Some(default);
+                }
             }
             out.anchor = Some(anchor);
         }

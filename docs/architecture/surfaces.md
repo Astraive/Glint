@@ -86,8 +86,10 @@ same inputs.
 | `margin` | integer 0..1024 | all but desktop | 0 |
 
 - **edge** spans the anchored edge and needs its thickness: `height` on a
-  top/bottom edge, `width` on a left/right edge. The other size and all
-  min/max keys are refused.
+  top/bottom edge, `width` on a left/right edge. `panel` defaults it to 40
+  and `dock` to 64; custom surfaces must declare it. The other size and all
+  min/max keys are refused. A `panel` with only an `entry` (as in the
+  bundled default theme) is therefore a 40 px top edge.
 - **desktop** fills the monitor: `anchor`, sizes and `margin` are refused.
 - **floating, overlay, popup** may set any size; `min* <= max*` and the
   requested size must lie between them.

@@ -176,6 +176,7 @@ export interface SurfaceCatalogEntry {
   defaultFocus: FocusPolicy;
   defaultDismiss: readonly DismissTrigger[];
   defaultAutoHideMs: number | null;
+  defaultThickness: number | null;
   summary: string;
 }
 
@@ -192,6 +193,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "non-activating",
     defaultDismiss: [],
     defaultAutoHideMs: null,
+    defaultThickness: 40,
     summary: "Pinned desktop toolbar",
   },
   dock: {
@@ -202,6 +204,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "non-activating",
     defaultDismiss: [],
     defaultAutoHideMs: null,
+    defaultThickness: 64,
     summary: "Running and pinned apps",
   },
   launcher: {
@@ -212,6 +215,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "exclusive",
     defaultDismiss: ["escape", "outside-click"],
     defaultAutoHideMs: null,
+    defaultThickness: null,
     summary: "Searchable app picker",
   },
   "control-center": {
@@ -222,6 +226,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "on-demand",
     defaultDismiss: ["escape", "outside-click"],
     defaultAutoHideMs: null,
+    defaultThickness: null,
     summary: "Quick settings",
   },
   notification: {
@@ -232,6 +237,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "none",
     defaultDismiss: [],
     defaultAutoHideMs: 5000,
+    defaultThickness: null,
     summary: "Toasts for Glint-visible events",
   },
   "notification-center": {
@@ -242,6 +248,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "on-demand",
     defaultDismiss: ["escape", "outside-click"],
     defaultAutoHideMs: null,
+    defaultThickness: null,
     summary: "Notification history inside Glint",
   },
   desktop: {
@@ -252,6 +259,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "none",
     defaultDismiss: [],
     defaultAutoHideMs: null,
+    defaultThickness: null,
     summary: "Background canvas and widgets",
   },
   calendar: {
@@ -262,6 +270,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "on-demand",
     defaultDismiss: ["escape", "outside-click"],
     defaultAutoHideMs: null,
+    defaultThickness: null,
     summary: "Date and time popup",
   },
   "power-menu": {
@@ -272,6 +281,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "exclusive",
     defaultDismiss: ["escape", "outside-click"],
     defaultAutoHideMs: null,
+    defaultThickness: null,
     summary: "Sleep and shutdown options",
   },
   "workspace-switcher": {
@@ -282,6 +292,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "exclusive",
     defaultDismiss: ["escape", "outside-click"],
     defaultAutoHideMs: null,
+    defaultThickness: null,
     summary: "Workspace UI",
   },
   "window-switcher": {
@@ -292,6 +303,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "exclusive",
     defaultDismiss: ["escape", "outside-click"],
     defaultAutoHideMs: null,
+    defaultThickness: null,
     summary: "Window selection overlay",
   },
   "volume-osd": {
@@ -302,6 +314,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "none",
     defaultDismiss: [],
     defaultAutoHideMs: 1500,
+    defaultThickness: null,
     summary: "Volume feedback",
   },
   "brightness-osd": {
@@ -312,6 +325,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "none",
     defaultDismiss: [],
     defaultAutoHideMs: 1500,
+    defaultThickness: null,
     summary: "Brightness feedback",
   },
   "media-overlay": {
@@ -322,6 +336,7 @@ export const SURFACE_CATALOG = {
     defaultFocus: "on-demand",
     defaultDismiss: ["escape", "outside-click"],
     defaultAutoHideMs: null,
+    defaultThickness: null,
     summary: "Track metadata and playback",
   },
 } as const satisfies Record<StandardSurfaceKind, SurfaceCatalogEntry>;

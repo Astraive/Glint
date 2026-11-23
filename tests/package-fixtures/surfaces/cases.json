@@ -14,6 +14,18 @@
       }
     },
     {
+      "name": "panel with only an entry uses the default top edge and thickness",
+      "id": "panel",
+      "surface": { "entry": "surfaces/panel/index.html" },
+      "expect": { "placement": { "kind": "edge", "anchor": "top", "height": 40, "margin": 0 } }
+    },
+    {
+      "name": "dock on a vertical edge takes its default thickness as width",
+      "id": "dock",
+      "surface": { "entry": "dist/dock/index.html", "placement": { "kind": "edge", "anchor": "left" } },
+      "expect": { "placement": { "kind": "edge", "anchor": "left", "width": 64 } }
+    },
+    {
       "name": "panel reserving work area on every monitor",
       "id": "panel",
       "surface": {
@@ -155,8 +167,8 @@
     { "name": "unknown anchor", "id": "launcher", "surface": { "entry": "a.html", "placement": { "anchor": "middle" } }, "code": "GLINT_SURFACE_INVALID_VALUE", "pointer": "/surfaces/launcher/placement/anchor" },
     { "name": "corner anchor on an edge", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top-left", "height": 40 } }, "code": "GLINT_SURFACE_INVALID_VALUE", "pointer": "/surfaces/panel/placement/anchor" },
     { "name": "edge without anchor when not the catalog default", "id": "dock", "surface": { "entry": "a.html", "placement": { "kind": "edge", "height": 64 } }, "code": "GLINT_SURFACE_MISSING_FIELD", "pointer": "/surfaces/dock/placement/anchor" },
-    { "name": "edge without thickness", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top" } }, "code": "GLINT_SURFACE_MISSING_FIELD", "pointer": "/surfaces/panel/placement/height" },
-    { "name": "panel without placement still needs a thickness", "id": "panel", "surface": { "entry": "a.html" }, "code": "GLINT_SURFACE_MISSING_FIELD", "pointer": "/surfaces/panel/placement/height" },
+    { "name": "custom edge without thickness", "id": "custom:dev.example.bar", "surface": { "entry": "a.html", "placement": { "kind": "edge", "anchor": "top" }, "behavior": { "focus": "none" } }, "code": "GLINT_SURFACE_MISSING_FIELD", "pointer": "/surfaces/custom:dev.example.bar/placement/height" },
+    { "name": "custom vertical edge without thickness", "id": "custom:dev.example.rail", "surface": { "entry": "a.html", "placement": { "kind": "edge", "anchor": "left" }, "behavior": { "focus": "none" } }, "code": "GLINT_SURFACE_MISSING_FIELD", "pointer": "/surfaces/custom:dev.example.rail/placement/width" },
     { "name": "vertical edge without width", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "right", "height": 40 } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/panel/placement/height" },
     { "name": "width on a top edge", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top", "height": 40, "width": 800 } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/panel/placement/width" },
     { "name": "min size on an edge", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top", "height": 40, "minHeight": 30 } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/panel/placement/minHeight" },

@@ -313,6 +313,22 @@ fn shared_manifest_fixtures_with_surfaces() {
 }
 
 #[test]
+fn bundled_default_theme_surfaces_validate() {
+    // THM-001's fallback theme declares a panel with only an entry; the
+    // catalog defaults make it a 40 px top edge.
+    let text = std::fs::read_to_string(repo_root().join("themes/default/glint.json"))
+        .expect("default theme manifest");
+    let manifest = parse_theme_manifest(&text).expect("schema accepts");
+    let definitions = surface_definitions(&manifest).expect("surfaces validate");
+    let panel = definitions
+        .iter()
+        .find(|d| d.id == "panel")
+        .expect("default theme has a panel");
+    assert_eq!(panel.placement.kind, PlacementKind::Edge);
+    assert_eq!(panel.placement.height, Some(40));
+}
+
+#[test]
 fn entrypoint_rules_agree_with_the_manifest_parser() {
     let entries = [
         "dist/launcher/index.html",
