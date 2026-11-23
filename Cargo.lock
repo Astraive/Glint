@@ -357,6 +357,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "spike-windows-system-providers"
+version = "0.0.0"
+dependencies = [
+ "serde_json",
+ "windows",
+ "windows-core",
+]
+
+[[package]]
 name = "syn"
 version = "2.0.119"
 source = "registry+https://github.com/rust-lang/crates.io-index"

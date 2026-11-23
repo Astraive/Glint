@@ -1,0 +1,42 @@
+[package]
+name = "spike-windows-system-providers"
+description = "SPK-010 throwaway spike: Windows Core Audio, network and battery provider statuses. Never shipped."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "spike-windows-system-providers"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+serde_json = "1.0.154"
+
+# Same `windows` minor as spike-windows-appbar (via webview2-com) so the
+# workspace builds one copy. `windows-core` is a direct dependency because the
+# `#[implement]` macro expands to `windows_core::` paths.
+[target."cfg(windows)".dependencies]
+windows-core = "0.62.2"
+windows = { version = "0.62.2", features = [
+    "Devices_Power",
+    "Foundation",
+    "Networking_Connectivity",
+    "System_Power",
+    "Win32_Foundation",
+    "Win32_Media_Audio",
+    "Win32_Media_Audio_Endpoints",
+    "Win32_Networking_NetworkListManager",
+    "Win32_System_Com",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_System_Power",
+    "Win32_System_Registry",
+    "Win32_System_Threading",
+    "Win32_System_Variant",
+    "Win32_UI_WindowsAndMessaging",
+] }

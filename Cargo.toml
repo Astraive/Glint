@@ -9,6 +9,7 @@ members = [
     "crates/glint-schema",
     "spikes/windows-appbar",
     "spikes/package-security",
+    "spikes/windows-system-providers",
 ]
 
 [workspace.package]
