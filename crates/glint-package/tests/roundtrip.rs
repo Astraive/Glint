@@ -437,3 +437,50 @@ fn file_symlink_is_refused_when_the_host_allows_creating_one() {
     }
     assert_eq!(pack_err(&theme, &ws.out("x.glint")).code(), C::Symlink);
 }
+
+#[test]
+fn missing_surface_entrypoint_is_refused() {
+    let ws = Workspace::new();
+    let files: Vec<_> = THEME_FILES
+        .iter()
+        .copied()
+        .filter(|(rel, _)| *rel != "dist/panel/index.html")
+        .collect();
+    let theme = ws.theme("theme", &files);
+    let error = pack_err(&theme, &ws.out("x.glint"));
+    assert_eq!(error.code(), C::MissingReferencedFile, "{error}");
+    assert!(!ws.out("x.glint").exists());
+}
+
+#[test]
+fn invalid_surface_placement_is_refused() {
+    let ws = Workspace::new();
+    let manifest = GOOD_MANIFEST.replace(
+        r#"{ "entry": "dist/panel/index.html" }"#,
+        r#"{ "entry": "dist/panel/index.html", "placement": { "kind": "desktop" } }"#,
+    );
+    let mut files = THEME_FILES.to_vec();
+    files[0] = ("glint.json", &manifest);
+    let theme = ws.theme("theme", &files);
+    let error = pack_err(&theme, &ws.out("x.glint"));
+    assert_eq!(error.code(), C::InvalidSurface, "{error}");
+    assert_eq!(
+        error.surface_error().map(|e| e.pointer()),
+        Some("/surfaces/panel/placement/kind")
+    );
+}
+
+#[test]
+fn active_svg_content_is_refused() {
+    let ws = Workspace::new();
+    let theme = ws.theme("theme", THEME_FILES);
+    write(
+        &theme,
+        "assets/icon.svg",
+        b"<svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script></svg>",
+    );
+    assert_eq!(
+        pack_err(&theme, &ws.out("x.glint")).code(),
+        C::ActiveContent
+    );
+}
