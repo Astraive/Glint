@@ -85,6 +85,14 @@ jobs:
         run: |
           rustc --version
           cargo --version
+      # PRJ-004: dependency direction only, so one OS is enough; the check
+      # reads `cargo metadata --no-deps` and needs no build.
+      - name: Check crate dependency boundaries
+        if: steps.workspace.outputs.present == 'true' && matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          python3 scripts/check-crate-boundaries.py --self-test
+          python3 scripts/check-crate-boundaries.py
       - name: Check Rust formatting
         if: steps.workspace.outputs.present == 'true'
         run: cargo fmt --all -- --check
