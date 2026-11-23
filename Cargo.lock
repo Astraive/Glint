@@ -162,6 +162,7 @@ name = "glint-sources"
 version = "0.0.0"
 dependencies = [
  "glint-package",
+ "semver",
  "tempfile",
 ]
 

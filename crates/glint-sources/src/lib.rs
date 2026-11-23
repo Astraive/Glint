@@ -21,6 +21,17 @@
 //! Registry, Git and artifact URL backends are deferred to M4; staging those
 //! kinds returns [`SourceErrorCode::Unsupported`], never a fake success.
 //!
+//! # Source strings
+//!
+//! [`parse_theme_source`] (SRC-002) turns user input such as
+//! `official/mono`, `community/carbon@1.4.2`,
+//! `https://github.com/user/themes.git#v1.0.0:themes/midnight`,
+//! `./my-theme/` or `https://example.org/midnight.glint` into a
+//! [`ThemeSource`], refusing dangerous schemes, credentials, local and IP
+//! hosts and ambiguous forms with stable `GLINT_SOURCE_URL_*` codes. See the
+//! [`url`] module for the grammar. The Git `#ref:subpath` syntax is
+//! *proposed*, not final.
+//!
 //! # Errors
 //!
 //! Every failure is a [`SourceError`] with a stable [`SourceErrorCode`]
@@ -43,6 +54,7 @@
 
 mod error;
 mod local;
+pub mod url;
 
 use std::fmt;
 use std::path::{Path, PathBuf};
@@ -51,6 +63,10 @@ use std::time::SystemTime;
 pub use error::{SourceError, SourceErrorCode};
 pub use glint_package::PackageCandidate;
 pub use local::LocalSource;
+pub use url::{
+    MAX_SOURCE_LEN, ParseOptions, SourceUrlError, SourceUrlErrorCode, parse_theme_source,
+    parse_theme_source_with,
+};
 
 /// Where a theme comes from.
 ///

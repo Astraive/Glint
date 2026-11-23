@@ -10,6 +10,9 @@ publish.workspace = true
 
 [dependencies]
 glint-package = { path = "../glint-package" }
+# Exact SemVer versions in `registry/package@version` (SRC-002); the same
+# crate glint-schema already uses.
+semver = "1"
 
 [dev-dependencies]
 tempfile = "3.27.0"
