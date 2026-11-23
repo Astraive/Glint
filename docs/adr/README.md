@@ -14,6 +14,7 @@ ADRs are the additive change log for decisions about Glint. The planning archive
 | [0006](0006-package-identity-and-origin-collisions.md) | Package identity and cross-origin collision policy | Proposed | 2026-11-23 |
 | [0007](0007-dirs-for-os-path-resolution.md) | `dirs` for OS configuration, data and cache paths | Accepted | 2026-11-23 |
 | [0008](0008-rusqlite-with-bundled-sqlite-for-state.md) | rusqlite with bundled SQLite for the state database | Accepted | 2026-11-23 |
+| [0009](0009-frozen-v1-capability-registry.md) | Frozen v1 capability registry | Proposed | 2026-11-24 |
 
 Every new ADR must add a row to this table in the same change. The original plan-era register of what was decided versus only recommended stays at [`docs/plan/00-history/decisions-and-open-questions.md`](../plan/00-history/decisions-and-open-questions.md); ADRs 0001 to 0005 record the decisions already made at that snapshot.
 
