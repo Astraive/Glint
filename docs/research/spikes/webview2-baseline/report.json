@@ -1,0 +1,1319 @@
+{
+ "schema": "glint-spk008-host/1",
+ "host": {
+  "webview2Runtime": "157.0.4341.60",
+  "environmentVersion": "157.0.4341.60",
+  "dpiAwareness": "per-monitor-v2",
+  "windowDpi": 120,
+  "clientPx": "650x950",
+  "defaultBackground": "ok (ICoreWebView2Controller2, alpha 0)",
+  "dwmBackdrop": "DWMSBT_TRANSIENTWINDOW: ok; immersive dark mode: ok",
+  "dwmExtendFrame": "ok",
+  "navigation": {
+   "ms": 696,
+   "success": true,
+   "webErrorStatus": 0
+  },
+  "reportMs": 5268,
+  "foregroundAtReport": false,
+  "servedRequests": 7,
+  "blocked": [
+   "request https://glint.spike/favicon.ico"
+  ],
+  "rejectedMessages": 0,
+  "captures": [
+   "behind.bmp (650x950 at screen 49,78, BitBlt)",
+   "screen.bmp (650x950 at screen 49,78, BitBlt)",
+   "webview.png (156206 bytes, CapturePreview)"
+  ],
+  "exitCode": 0
+ },
+ "memory": {
+  "atReport": {
+   "processes": [
+    {
+     "kind": "host",
+     "pid": 48548,
+     "workingSetMiB": 18.3,
+     "privateMiB": 3.6
+    },
+    {
+     "kind": "renderer",
+     "pid": 900,
+     "workingSetMiB": 105.1,
+     "privateMiB": 55.6
+    },
+    {
+     "kind": "utility",
+     "pid": 35960,
+     "workingSetMiB": 19.9,
+     "privateMiB": 7.7
+    },
+    {
+     "kind": "utility",
+     "pid": 39352,
+     "workingSetMiB": 36.5,
+     "privateMiB": 12.3
+    },
+    {
+     "kind": "browser",
+     "pid": 42020,
+     "workingSetMiB": 120.9,
+     "privateMiB": 40.4
+    },
+    {
+     "kind": "gpu",
+     "pid": 42896,
+     "workingSetMiB": 106.5,
+     "privateMiB": 272.6
+    }
+   ],
+   "totalWorkingSetMiB": 407.2,
+   "totalPrivateMiB": 392.2
+  },
+  "afterUia": {
+   "processes": [
+    {
+     "kind": "host",
+     "pid": 48548,
+     "workingSetMiB": 24.6,
+     "privateMiB": 4.1
+    },
+    {
+     "kind": "renderer",
+     "pid": 900,
+     "workingSetMiB": 106.8,
+     "privateMiB": 56.2
+    },
+    {
+     "kind": "utility",
+     "pid": 35960,
+     "workingSetMiB": 19.9,
+     "privateMiB": 7.7
+    },
+    {
+     "kind": "utility",
+     "pid": 39352,
+     "workingSetMiB": 36.5,
+     "privateMiB": 12.3
+    },
+    {
+     "kind": "browser",
+     "pid": 42020,
+     "workingSetMiB": 123.5,
+     "privateMiB": 40.9
+    },
+    {
+     "kind": "gpu",
+     "pid": 42896,
+     "workingSetMiB": 111.0,
+     "privateMiB": 278.1
+    }
+   ],
+   "totalWorkingSetMiB": 422.5,
+   "totalPrivateMiB": 399.3
+  }
+ },
+ "uia": {
+  "attempts": 1,
+  "ms": 67,
+  "nodeCount": 39,
+  "error": null,
+  "expected": [
+   {
+    "name": "Start",
+    "authoredRole": "button",
+    "found": true,
+    "controlTypeId": 50000,
+    "localizedControlType": "button",
+    "ariaRole": "button"
+   },
+   {
+    "name": "Workspace 1",
+    "authoredRole": "button",
+    "found": true,
+    "controlTypeId": 50000,
+    "localizedControlType": "toggle button",
+    "ariaRole": "button"
+   },
+   {
+    "name": "Wi-Fi",
+    "authoredRole": "switch",
+    "found": true,
+    "controlTypeId": 50000,
+    "localizedControlType": "switch",
+    "ariaRole": "switch"
+   },
+   {
+    "name": "Volume",
+    "authoredRole": "slider",
+    "found": true,
+    "controlTypeId": 50015,
+    "localizedControlType": "slider",
+    "ariaRole": "slider"
+   },
+   {
+    "name": "Battery",
+    "authoredRole": "progressbar",
+    "found": true,
+    "controlTypeId": 50012,
+    "localizedControlType": "progress indicator",
+    "ariaRole": "progressbar"
+   },
+   {
+    "name": "Open control center",
+    "authoredRole": "button",
+    "found": true,
+    "controlTypeId": 50000,
+    "localizedControlType": "button",
+    "ariaRole": "button"
+   },
+   {
+    "name": "Glint probe panel",
+    "authoredRole": "toolbar",
+    "found": true,
+    "controlTypeId": 50021,
+    "localizedControlType": "tool bar",
+    "ariaRole": "toolbar"
+   },
+   {
+    "name": "Quick settings",
+    "authoredRole": "region",
+    "found": true,
+    "controlTypeId": 50026,
+    "localizedControlType": "region",
+    "ariaRole": "region"
+   }
+  ],
+  "namedNodes": [
+   {
+    "name": "Glint WebView2 baseline probe",
+    "controlTypeId": 50033,
+    "localizedControlType": "pane",
+    "ariaRole": ""
+   },
+   {
+    "name": "Glint WebView2 baseline probe - Web content",
+    "controlTypeId": 50033,
+    "localizedControlType": "region",
+    "ariaRole": "region"
+   },
+   {
+    "name": "",
+    "controlTypeId": 50033,
+    "localizedControlType": "region",
+    "ariaRole": "region"
+   },
+   {
+    "name": "",
+    "controlTypeId": 50033,
+    "localizedControlType": "region",
+    "ariaRole": "region"
+   },
+   {
+    "name": "",
+    "controlTypeId": 50033,
+    "localizedControlType": "region",
+    "ariaRole": "region"
+   },
+   {
+    "name": "",
+    "controlTypeId": 50033,
+    "localizedControlType": "region",
+    "ariaRole": "region"
+   },
+   {
+    "name": "Glint WebView2 baseline probe",
+    "controlTypeId": 50030,
+    "localizedControlType": "document",
+    "ariaRole": "document"
+   },
+   {
+    "name": "Glint probe panel",
+    "controlTypeId": 50021,
+    "localizedControlType": "tool bar",
+    "ariaRole": "toolbar"
+   },
+   {
+    "name": "Start",
+    "controlTypeId": 50000,
+    "localizedControlType": "button",
+    "ariaRole": "button"
+   },
+   {
+    "name": "Workspace 1",
+    "controlTypeId": 50000,
+    "localizedControlType": "toggle button",
+    "ariaRole": "button"
+   },
+   {
+    "name": "Workspace 2",
+    "controlTypeId": 50000,
+    "localizedControlType": "toggle button",
+    "ariaRole": "button"
+   },
+   {
+    "name": "Workspace 3",
+    "controlTypeId": 50000,
+    "localizedControlType": "toggle button",
+    "ariaRole": "button"
+   },
+   {
+    "name": "Workspace 4",
+    "controlTypeId": 50000,
+    "localizedControlType": "toggle button",
+    "ariaRole": "button"
+   },
+   {
+    "name": "Wi-Fi",
+    "controlTypeId": 50000,
+    "localizedControlType": "switch",
+    "ariaRole": "switch"
+   },
+   {
+    "name": "",
+    "controlTypeId": 50020,
+    "localizedControlType": "time",
+    "ariaRole": "time"
+   },
+   {
+    "name": "01:12 pm",
+    "controlTypeId": 50020,
+    "localizedControlType": "text",
+    "ariaRole": "description"
+   },
+   {
+    "name": "Open control center",
+    "controlTypeId": 50000,
+    "localizedControlType": "button",
+    "ariaRole": "button"
+   },
+   {
+    "name": "Quick settings",
+    "controlTypeId": 50026,
+    "localizedControlType": "region",
+    "ariaRole": "region"
+   },
+   {
+    "name": "SOUND",
+    "controlTypeId": 50020,
+    "localizedControlType": "heading",
+    "ariaRole": "heading"
+   },
+   {
+    "name": "Volume",
+    "controlTypeId": 50015,
+    "localizedControlType": "slider",
+    "ariaRole": "slider"
+   },
+   {
+    "name": "POWER",
+    "controlTypeId": 50020,
+    "localizedControlType": "heading",
+    "ariaRole": "heading"
+   },
+   {
+    "name": "Battery",
+    "controlTypeId": 50012,
+    "localizedControlType": "progress indicator",
+    "ariaRole": "progressbar"
+   },
+   {
+    "name": "TILES",
+    "controlTypeId": 50020,
+    "localizedControlType": "heading",
+    "ariaRole": "heading"
+   },
+   {
+    "name": "IMAGES",
+    "controlTypeId": 50020,
+    "localizedControlType": "heading",
+    "ariaRole": "heading"
+   },
+   {
+    "name": "PNG probe",
+    "controlTypeId": 50006,
+    "localizedControlType": "graphic",
+    "ariaRole": "img"
+   },
+   {
+    "name": "SVG probe",
+    "controlTypeId": 50006,
+    "localizedControlType": "graphic",
+    "ariaRole": "img"
+   },
+   {
+    "name": "WebP probe",
+    "controlTypeId": 50006,
+    "localizedControlType": "graphic",
+    "ariaRole": "img"
+   },
+   {
+    "name": "AVIF probe",
+    "controlTypeId": 50006,
+    "localizedControlType": "graphic",
+    "ariaRole": "img"
+   },
+   {
+    "name": "Picture element probe",
+    "controlTypeId": 50006,
+    "localizedControlType": "graphic",
+    "ariaRole": "img"
+   },
+   {
+    "name": "STATUS: DONE",
+    "controlTypeId": 50020,
+    "localizedControlType": "heading",
+    "ariaRole": "heading"
+   },
+   {
+    "name": "{\n \"schema\": \"glint-spk008-report/1\",\n \"env\": {\n  \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/53",
+    "controlTypeId": 50020,
+    "localizedControlType": "text",
+    "ariaRole": "description"
+   },
+   {
+    "name": "",
+    "controlTypeId": 50033,
+    "localizedControlType": "region",
+    "ariaRole": "region"
+   },
+   {
+    "name": "System",
+    "controlTypeId": 50010,
+    "localizedControlType": "menu bar",
+    "ariaRole": ""
+   },
+   {
+    "name": "System",
+    "controlTypeId": 50011,
+    "localizedControlType": "menu item",
+    "ariaRole": ""
+   },
+   {
+    "name": "Minimize",
+    "controlTypeId": 50000,
+    "localizedControlType": "button",
+    "ariaRole": ""
+   },
+   {
+    "name": "Maximize",
+    "controlTypeId": 50000,
+    "localizedControlType": "button",
+    "ariaRole": ""
+   },
+   {
+    "name": "Close",
+    "controlTypeId": 50000,
+    "localizedControlType": "button",
+    "ariaRole": ""
+   }
+  ]
+ },
+ "page": {
+  "schema": "glint-spk008-report/1",
+  "env": {
+   "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36 Edg/157.0.0.0",
+   "brands": [
+    "Chromium 157",
+    "Microsoft Edge WebView2 157",
+    "Not-A.Brand 99",
+    "Microsoft Edge 157"
+   ],
+   "fullVersionList": [
+    "Chromium 157.0.8103.80",
+    "Microsoft Edge WebView2 157.0.4341.60",
+    "Not-A.Brand 99.0.0.0",
+    "Microsoft Edge 157.0.4341.60"
+   ],
+   "platform": "Windows",
+   "platformVersion": "19.0.0",
+   "devicePixelRatio": 1.25,
+   "viewport": "520x760",
+   "screen": "1536x864",
+   "hardwareConcurrency": 20,
+   "webglRenderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025EC) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgpu": true,
+   "jsHeap": {
+    "usedMiB": 2.2,
+    "totalMiB": 3.5,
+    "limitMiB": 4192
+   },
+   "measureUserAgentSpecificMemory": false,
+   "timing": {
+    "domContentLoadedMs": 262.6
+   }
+  },
+  "fonts": {
+   "families": [
+    {
+     "family": "Segoe UI Variable Text",
+     "present": true,
+     "widthPx": 860.18
+    },
+    {
+     "family": "Segoe UI Variable Display",
+     "present": true,
+     "widthPx": 846.77
+    },
+    {
+     "family": "Segoe UI Variable Small",
+     "present": true,
+     "widthPx": 885.84
+    },
+    {
+     "family": "Segoe UI",
+     "present": true,
+     "widthPx": 867.87
+    },
+    {
+     "family": "Segoe UI Emoji",
+     "present": true,
+     "widthPx": 867.87
+    },
+    {
+     "family": "Segoe Fluent Icons",
+     "present": true,
+     "widthPx": 714.28
+    },
+    {
+     "family": "Segoe MDL2 Assets",
+     "present": true,
+     "widthPx": 712.45
+    },
+    {
+     "family": "Cascadia Mono",
+     "present": true,
+     "widthPx": 787.5
+    },
+    {
+     "family": "Cascadia Code",
+     "present": true,
+     "widthPx": 787.5
+    },
+    {
+     "family": "Consolas",
+     "present": true,
+     "widthPx": 738.94
+    },
+    {
+     "family": "Arial",
+     "present": true,
+     "widthPx": 861.38
+    },
+    {
+     "family": "Calibri",
+     "present": true,
+     "widthPx": 809.58
+    },
+    {
+     "family": "Cantarell",
+     "present": false,
+     "widthPx": null
+    },
+    {
+     "family": "Adwaita Sans",
+     "present": false,
+     "widthPx": null
+    },
+    {
+     "family": "Noto Sans",
+     "present": false,
+     "widthPx": null
+    },
+    {
+     "family": "DejaVu Sans",
+     "present": false,
+     "widthPx": null
+    },
+    {
+     "family": "SF Pro Text",
+     "present": false,
+     "widthPx": null
+    },
+    {
+     "family": "Helvetica Neue",
+     "present": false,
+     "widthPx": null
+    }
+   ],
+   "generics": {
+    "system-ui": 867.87,
+    "ui-sans-serif": 813.28,
+    "ui-serif": 813.28,
+    "ui-monospace": 813.28,
+    "ui-rounded": 813.28,
+    "sans-serif": 861.38,
+    "serif": 813.28,
+    "monospace": 738.94,
+    "cursive": 876.3,
+    "fantasy": 782.84,
+    "emoji": 813.28,
+    "math": 858.38
+   },
+   "sample": [
+    {
+     "font": "13px \"Segoe UI Variable Text\", system-ui",
+     "text": "Glint 12:34 Wi-Fi",
+     "widthPx": 92.85,
+     "ascent": 11,
+     "descent": 0
+    },
+    {
+     "font": "600 14px \"Segoe UI Variable Display\", system-ui",
+     "text": "Glint 12:34 Wi-Fi",
+     "widthPx": 101.8,
+     "ascent": 11,
+     "descent": 0
+    },
+    {
+     "font": "13px \"Cascadia Mono\", ui-monospace, monospace",
+     "text": "Glint 12:34 Wi-Fi",
+     "widthPx": 129.49,
+     "ascent": 10,
+     "descent": 0
+    },
+    {
+     "font": "13px system-ui",
+     "text": "Glint 12:34 Wi-Fi",
+     "widthPx": 94.94,
+     "ascent": 10,
+     "descent": 0
+    }
+   ],
+   "bodyFontFamily": "\"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, Cantarell, \"Adwaita Sans\", sans-serif"
+  },
+  "layout": {
+   "remPx": 13,
+   "panel": {
+    "x": 0,
+    "y": 0,
+    "w": 520,
+    "h": 40
+   },
+   "brand": {
+    "x": 18,
+    "y": 10.1,
+    "w": 30.31,
+    "h": 18.4
+   },
+   "clock": {
+    "x": 413.39,
+    "y": 10.9,
+    "w": 60.94,
+    "h": 18.2
+   },
+   "controlCenterButton": {
+    "x": 480.33,
+    "y": 6.9,
+    "w": 31.68,
+    "h": 26.2
+   },
+   "center": {
+    "x": 0,
+    "y": 40,
+    "w": 520,
+    "h": 490.4
+   },
+   "cardColumns": "245px 245px",
+   "firstCard": {
+    "x": 10,
+    "y": 50,
+    "w": 245,
+    "h": 82.6
+   },
+   "tile": {
+    "x": 22,
+    "y": 173,
+    "w": 39.4,
+    "h": 39.4
+   },
+   "translucency": {
+    "htmlBackground": "rgba(0, 0, 0, 0)",
+    "panelBackground": "rgba(32, 32, 36, 0.72)",
+    "panelBackdropFilter": "blur(20px) saturate(1.4)",
+    "cardBackdropFilter": "blur(20px) saturate(1.4)"
+   }
+  },
+  "css": [
+   {
+    "id": "backdrop-filter",
+    "group": "effects",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "blur(8px)"
+   },
+   {
+    "id": "-webkit-backdrop-filter",
+    "group": "effects",
+    "status": "unsupported",
+    "supports": false,
+    "applied": false,
+    "value": "",
+    "note": "WebKit historically needed the prefix; keep both in theme CSS"
+   },
+   {
+    "id": "filter: blur()",
+    "group": "effects",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "blur(4px)"
+   },
+   {
+    "id": "box-shadow (multi, inset)",
+    "group": "effects",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "rgba(0, 0, 0, 0.5) 0px 1px 2px 0px, rgb(255, 0, 0) 0px 0px 0px 1px inset"
+   },
+   {
+    "id": "text-shadow",
+    "group": "effects",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "rgb(0, 0, 0) 0px 1px 2px"
+   },
+   {
+    "id": "mask-image",
+    "group": "effects",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "linear-gradient(rgb(0, 0, 0), rgba(0, 0, 0, 0))"
+   },
+   {
+    "id": "-webkit-mask-image",
+    "group": "effects",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "linear-gradient(rgb(0, 0, 0), rgba(0, 0, 0, 0))"
+   },
+   {
+    "id": "clip-path: path()",
+    "group": "effects",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "path(\"M 0 0 L 10 0 L 10 10 Z\")"
+   },
+   {
+    "id": "mix-blend-mode",
+    "group": "effects",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "multiply"
+   },
+   {
+    "id": "linear-gradient",
+    "group": "gradients",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "linear-gradient(90deg, rgb(255, 0, 0), rgb(0, 0, 255))"
+   },
+   {
+    "id": "radial-gradient",
+    "group": "gradients",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "radial-gradient(circle, rgb(255, 0, 0), rgb(0, 0, 255))"
+   },
+   {
+    "id": "conic-gradient",
+    "group": "gradients",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "conic-gradient(from 90deg, rgb(255, 0, 0), rgb(0, 0, 255))"
+   },
+   {
+    "id": "gradient interpolation (in oklch)",
+    "group": "gradients",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "linear-gradient(in oklch, rgb(255, 0, 0), rgb(0, 0, 255))"
+   },
+   {
+    "id": ":has()",
+    "group": "selectors",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "7"
+   },
+   {
+    "id": "CSS nesting (&)",
+    "group": "selectors",
+    "status": "supported",
+    "supports": null,
+    "applied": true,
+    "value": "7",
+    "note": "no CSS.supports() form exists for nesting; computed check only"
+   },
+   {
+    "id": ":is()",
+    "group": "selectors",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "7"
+   },
+   {
+    "id": ":focus-visible",
+    "group": "selectors",
+    "status": "supported",
+    "supports": true,
+    "applied": null,
+    "value": null
+   },
+   {
+    "id": "@layer",
+    "group": "cascade",
+    "status": "supported",
+    "supports": null,
+    "applied": true,
+    "value": "7; api=true"
+   },
+   {
+    "id": "@property",
+    "group": "cascade",
+    "status": "supported",
+    "supports": null,
+    "applied": true,
+    "value": "42deg"
+   },
+   {
+    "id": "@scope",
+    "group": "cascade",
+    "status": "supported",
+    "supports": null,
+    "applied": true,
+    "value": "7"
+   },
+   {
+    "id": "@starting-style",
+    "group": "cascade",
+    "status": "supported",
+    "supports": null,
+    "applied": true,
+    "value": "true"
+   },
+   {
+    "id": "container size queries",
+    "group": "container",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "7"
+   },
+   {
+    "id": "container query units (cqi)",
+    "group": "container",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "150px"
+   },
+   {
+    "id": "container style queries",
+    "group": "container",
+    "status": "supported",
+    "supports": null,
+    "applied": true,
+    "value": "7",
+    "note": "custom-property style() queries only"
+   },
+   {
+    "id": "color-mix()",
+    "group": "color",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "color(srgb 0.5 0 0.5)"
+   },
+   {
+    "id": "light-dark()",
+    "group": "color",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "rgb(1, 2, 3)"
+   },
+   {
+    "id": "oklch()",
+    "group": "color",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "oklch(0.7 0.15 250)"
+   },
+   {
+    "id": "relative color syntax",
+    "group": "color",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "color(srgb 0.0392157 0.0784314 0.156863)"
+   },
+   {
+    "id": "color(display-p3)",
+    "group": "color",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "color(display-p3 1 0 0)"
+   },
+   {
+    "id": "subgrid",
+    "group": "layout",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "subgrid [] [] []"
+   },
+   {
+    "id": "aspect-ratio",
+    "group": "layout",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "20px"
+   },
+   {
+    "id": "inset shorthand",
+    "group": "layout",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "4px"
+   },
+   {
+    "id": "dynamic viewport units (dvh)",
+    "group": "layout",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "76px"
+   },
+   {
+    "id": "individual transform (translate)",
+    "group": "layout",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "3px 4px"
+   },
+   {
+    "id": "anchor positioning",
+    "group": "layout",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "--pr-anchor"
+   },
+   {
+    "id": "content-visibility",
+    "group": "layout",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "auto"
+   },
+   {
+    "id": "field-sizing",
+    "group": "layout",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "content"
+   },
+   {
+    "id": "interpolate-size",
+    "group": "layout",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "allow-keywords"
+   },
+   {
+    "id": "text-wrap: balance",
+    "group": "text",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "balance"
+   },
+   {
+    "id": "font-variation-settings",
+    "group": "text",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "\"wght\" 650"
+   },
+   {
+    "id": "-webkit-line-clamp",
+    "group": "text",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "2"
+   },
+   {
+    "id": "scrollbar-color",
+    "group": "scrolling",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "rgb(255, 0, 0) rgb(0, 0, 255)"
+   },
+   {
+    "id": "scrollbar-gutter",
+    "group": "scrolling",
+    "status": "supported",
+    "supports": true,
+    "applied": null,
+    "value": null
+   },
+   {
+    "id": "scroll-driven animations",
+    "group": "animation",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "scroll()"
+   },
+   {
+    "id": "Web Animations API",
+    "group": "animation",
+    "status": "supported",
+    "supports": null,
+    "applied": true,
+    "value": "function"
+   },
+   {
+    "id": "View Transitions API",
+    "group": "animation",
+    "status": "supported",
+    "supports": null,
+    "applied": true,
+    "value": "true"
+   },
+   {
+    "id": "-webkit-app-region",
+    "group": "host",
+    "status": "supported",
+    "supports": true,
+    "applied": true,
+    "value": "drag",
+    "note": "Chromium-only drag regions; never a portable theme feature"
+   },
+   {
+    "id": "accent-color",
+    "group": "host",
+    "status": "supported",
+    "supports": true,
+    "applied": null,
+    "value": null
+   },
+   {
+    "id": "color-scheme",
+    "group": "host",
+    "status": "supported",
+    "supports": true,
+    "applied": null,
+    "value": null
+   }
+  ],
+  "images": {
+   "results": [
+    {
+     "format": "png",
+     "src": "img/probe.png",
+     "decoded": true,
+     "naturalSize": "16x16",
+     "decodeMs": 4.6,
+     "pixelsMatch": true,
+     "samples": [
+      [
+       255,
+       0,
+       0,
+       255
+      ],
+      [
+       0,
+       255,
+       0,
+       255
+      ],
+      [
+       255,
+       255,
+       255,
+       255
+      ],
+      [
+       0,
+       0,
+       255,
+       128
+      ]
+     ]
+    },
+    {
+     "format": "svg",
+     "src": "img/probe.svg",
+     "decoded": true,
+     "naturalSize": "16x16",
+     "decodeMs": 0.1,
+     "pixelsMatch": true,
+     "samples": [
+      [
+       255,
+       0,
+       0,
+       255
+      ],
+      [
+       0,
+       255,
+       0,
+       255
+      ],
+      [
+       255,
+       255,
+       255,
+       255
+      ],
+      [
+       0,
+       0,
+       255,
+       128
+      ]
+     ]
+    },
+    {
+     "format": "webp (lossless)",
+     "src": "img/probe.webp",
+     "decoded": true,
+     "naturalSize": "16x16",
+     "decodeMs": 1.3,
+     "pixelsMatch": true,
+     "samples": [
+      [
+       255,
+       0,
+       0,
+       255
+      ],
+      [
+       0,
+       255,
+       0,
+       255
+      ],
+      [
+       255,
+       255,
+       255,
+       255
+      ],
+      [
+       0,
+       0,
+       255,
+       128
+      ]
+     ]
+    },
+    {
+     "format": "avif",
+     "src": "img/probe.avif",
+     "decoded": true,
+     "naturalSize": "16x16",
+     "decodeMs": 0.3,
+     "pixelsMatch": true,
+     "samples": [
+      [
+       255,
+       0,
+       0,
+       255
+      ],
+      [
+       0,
+       255,
+       2,
+       255
+      ],
+      [
+       255,
+       255,
+       255,
+       255
+      ],
+      [
+       0,
+       0,
+       253,
+       128
+      ]
+     ]
+    }
+   ],
+   "pictureAvifSelected": "probe.avif",
+   "createImageBitmap": true,
+   "canvasEncode": {
+    "image/png": true,
+    "image/webp": true,
+    "image/avif": false,
+    "image/jpeg": true
+   }
+  },
+  "a11y": {
+   "authored": [
+    {
+     "name": "Start",
+     "role": "button",
+     "found": true,
+     "computedRole": null,
+     "computedName": null
+    },
+    {
+     "name": "Workspace 1",
+     "role": "button",
+     "found": true,
+     "computedRole": null,
+     "computedName": null
+    },
+    {
+     "name": "Wi-Fi",
+     "role": "switch",
+     "found": true,
+     "computedRole": null,
+     "computedName": null
+    },
+    {
+     "name": "Volume",
+     "role": "slider",
+     "found": true,
+     "computedRole": null,
+     "computedName": null
+    },
+    {
+     "name": "Battery",
+     "role": "progressbar",
+     "found": true,
+     "computedRole": null,
+     "computedName": null
+    },
+    {
+     "name": "Open control center",
+     "role": "button",
+     "found": true,
+     "computedRole": null,
+     "computedName": null
+    },
+    {
+     "name": "Glint probe panel",
+     "role": "toolbar",
+     "found": true,
+     "computedRole": null,
+     "computedName": null
+    },
+    {
+     "name": "Quick settings",
+     "role": "region",
+     "found": true,
+     "computedRole": null,
+     "computedName": null
+    }
+   ],
+   "computedAccessorsAvailable": false,
+   "ariaReflection": true,
+   "elementInternalsRole": true,
+   "inert": true,
+   "popover": true,
+   "dialog": true,
+   "tabbableCount": 8,
+   "media": {
+    "prefers-color-scheme: dark": "true",
+    "prefers-reduced-motion: reduce": "false",
+    "prefers-contrast: more": "false",
+    "forced-colors: active": "false",
+    "prefers-reduced-transparency: reduce": "false",
+    "dynamic-range: high": "false",
+    "color-gamut: p3": "false"
+   }
+  },
+  "frames": [
+   {
+    "phase": "idle",
+    "frames": 120,
+    "meanMs": 6.95,
+    "p50Ms": 7,
+    "p95Ms": 7.1,
+    "p99Ms": 7.3,
+    "maxMs": 7.5,
+    "dropped": 0,
+    "estimatedHz": 142.9,
+    "longTasks": 0,
+    "visibility": "visible"
+   },
+   {
+    "phase": "transform",
+    "frames": 240,
+    "meanMs": 6.95,
+    "p50Ms": 7,
+    "p95Ms": 7.1,
+    "p99Ms": 7.2,
+    "maxMs": 7.7,
+    "dropped": 0,
+    "estimatedHz": 142.9,
+    "longTasks": 0,
+    "visibility": "visible"
+   },
+   {
+    "phase": "effects",
+    "frames": 240,
+    "meanMs": 6.95,
+    "p50Ms": 6.9,
+    "p95Ms": 7.2,
+    "p99Ms": 7.5,
+    "maxMs": 8,
+    "dropped": 0,
+    "estimatedHz": 144.9,
+    "longTasks": 0,
+    "visibility": "visible"
+   }
+  ],
+  "react": {
+   "version": "19.3.1",
+   "firstCommitMs": 53.1,
+   "rerender200ItemsX50Ms": 8.9
+  },
+  "paint": [
+   {
+    "name": "first-paint",
+    "startMs": 352
+   },
+   {
+    "name": "first-contentful-paint",
+    "startMs": 352
+   }
+  ],
+  "errors": [],
+  "totalMs": 4571
+ }
+}

@@ -25,7 +25,7 @@ Columns: **fmt / clippy / test** is `cargo fmt --check`, `cargo clippy -D warnin
 
 | Platform | Environment | fmt / clippy / test | Hands-on | Visual | Pinned details still to record |
 |---|---|---|---|---|---|
-| Windows | Windows 11 10.0.26300, one display at 125% | real (local) and ci (`windows-latest`) | real for the SPK-001 code spike; product hosts not-run | not-run (pending SPK-002) | Second display/DPI combination not-run |
+| Windows | Windows 11 10.0.26300, one display at 125% | real (local) and ci (`windows-latest`) | real for the SPK-001 and SPK-008 code spikes; product hosts not-run | not-run (pending SPK-002) | Second display/DPI combination not-run |
 | Linux | Arch, Hyprland (Wayland) | ci (`ubuntu-latest`, compile only) | not-run (no hardware) | not-run | Compositor build, GPU, scale |
 | Linux | KDE Plasma (Wayland) | ci (`ubuntu-latest`) | not-run (no hardware) | not-run | Plasma version, session type |
 | Linux | GNOME (Wayland) | ci (`ubuntu-latest`) | not-run (no hardware) | not-run | GNOME Shell version, extension state |
