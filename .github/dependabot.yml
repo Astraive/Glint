@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # Maintainers add a real stable ticket ID to each PR title before merge.
+    # Dependabot cannot generate the repository's required ticket suffix.
+  - package-ecosystem: pip
+    directory: /.github
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  # The cargo (Cargo.toml / Cargo.lock) and npm (package.json) ecosystems are
+  # added here only once those manifests exist in the repository. Do not add
+  # entries for manifests that are not present; Dependabot would report errors.
