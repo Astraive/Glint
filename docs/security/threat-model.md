@@ -24,7 +24,8 @@ document is planned, not built.** What exists today:
   workflow tokens, pinned actions) from PRJ-001.
 
 A library-level installer exists (`glint-installer`: content-addressed
-store, journal and crash recovery, INS-003) but nothing calls it yet. There
+store, journal and crash recovery, INS-003; apply journal and rollback,
+INS-005) but nothing calls it yet. There
 is no daemon, shell, renderer bridge, source fetcher, registry client,
 permission engine or IPC server. Where this document says
 "Glint does X", read it as "Glint must do X before the owning ticket closes".
@@ -362,7 +363,7 @@ artifacts (REL-007) are the only planned binary distribution path.
 |---|---|---|---|---|---|
 | B8.1 | E | Silent remote code replacement | Manual or opt-in updates by default (`auto_update = false`); metadata refresh is not upgrade | INS-008, CLI-005 | Planned |
 | B8.2 | E | Update adds permissions or capabilities | Permission diff shown; explicit approval before activation | INS-008, MGR-006, CAP-004 | Planned |
-| B8.3 | T | Update mutates the known-good package in place or breaks rollback | Stage a new version beside the old one; never overwrite the only known-good package; journal and crash rollback | INS-008, INS-005, INS-009 | Planned |
+| B8.3 | T | Update mutates the known-good package in place or breaks rollback | Stage a new version beside the old one; never overwrite the only known-good package; journal and crash rollback | INS-008, INS-005, INS-009 | Partly **Implemented** (INS-003, INS-005): releases are stored side by side by digest and never overwritten; an apply journals the prior active profile and every planned native change with its snapshot, and an interruption at any step leaves the previous theme active and is rolled back at the next start (`an_interruption_at_every_step_leaves_the_previous_theme_active` in [`rollback.rs`](../../crates/glint-installer/tests/rollback.rs)); settings that cannot be restored are reported as `GLINT_APPLY_ROLLBACK_INCOMPLETE` (`a_partial_restore_is_reported_as_rollback_incomplete`). Update staging (INS-008) and real native adapters are Planned |
 | B8.4 | S | Git branch head moves and is treated as the installed version | Pin commit; checking the head never changes the installed version | SRC-003, PRF-002 | Planned |
 | B8.5 | S | Same `id`, new origin: an update arrives from a different source | Updates only from the recorded origin; a different origin is a new package that needs explicit disambiguation | INS-004, SCH-004 | Planned |
 | B8.6 | T | Downgrade to an older, vulnerable version | Refuse lower versions per lineage without an explicit user action; signing and revocation policy | SEC-005, INS-008 | Planned |
