@@ -37,7 +37,7 @@ Report vulnerabilities privately through:
 
 ## Planned Security Boundaries
 
-Future Glint releases are designed around these invariants (see [docs/plan/README.md](docs/plan/README.md) and its security-related architecture documents):
+Future Glint releases are designed around these invariants (see [docs/plan/README.md](docs/plan/README.md) and its security-related architecture documents). The [threat model](docs/security/threat-model.md) maps each hazard to its owner ticket and records which controls are implemented, prototyped or still planned:
 
 - **Data-only packages by default:** `.glint` packages never execute arbitrary shell scripts, native binaries, or privileged system hooks.
 - **Restricted renderers:** programmable theme UI runs in isolated, precompiled bundles with no broad native APIs; every bridge call is authorized against package grants and OS capabilities.
