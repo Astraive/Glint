@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:glint:schema:glint-theme:v1",
+  "$comment": "PROPOSED format (SCH-001): not a frozen standard. It may change until stabilized by tests and an ADR. The Rust parser in crates/glint-schema is authoritative where this schema and the parser disagree; tests keep their field sets aligned. Unknown fields are rejected; forward compatibility is handled by bumping schemaVersion.",
+  "x-glint-status": "proposed",
+  "title": "Glint theme manifest (glint.json) v1",
+  "description": "Root manifest of a Glint theme package. All paths are relative to the package root and must stay inside it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "id",
+    "name",
+    "version",
+    "author",
+    "license",
+    "compatibility"
+  ],
+  "properties": {
+    "$schema": {
+      "description": "Editor hint only; Glint never dereferences it.",
+      "type": "string",
+      "maxLength": 2048
+    },
+    "schemaVersion": {
+      "description": "Package format version, independent of the SDK and renderer entrypoint versions.",
+      "const": 1
+    },
+    "kind": {
+      "description": "Package kind. Only \"theme\" exists in v1.",
+      "const": "theme"
+    },
+    "id": {
+      "description": "Package identifier: two or more dot-separated lowercase segments, e.g. dev.example.midnight.",
+      "$ref": "#/$defs/packageId"
+    },
+    "version": {
+      "description": "Semantic version (SemVer 2.0) of this package release.",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "name": {
+      "description": "Display name.",
+      "$ref": "#/$defs/text",
+      "maxLength": 128
+    },
+    "description": {
+      "description": "Optional short description.",
+      "$ref": "#/$defs/text",
+      "maxLength": 2048
+    },
+    "author": {
+      "description": "Package author. Metadata only; never contacted by Glint.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "$ref": "#/$defs/text", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256, "pattern": "^[^\\s@]*@[^\\s]*$" },
+        "url": { "type": "string", "maxLength": 2048, "pattern": "^https://\\S+$" }
+      }
+    },
+    "license": {
+      "description": "License expression; an SPDX identifier such as MIT is expected.",
+      "$ref": "#/$defs/text",
+      "maxLength": 256
+    },
+    "compatibility": {
+      "description": "Supported Glint and SDK version ranges and operating systems.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["glint", "platforms"],
+      "properties": {
+        "glint": { "$ref": "#/$defs/versionRequirement" },
+        "sdk": { "$ref": "#/$defs/versionRequirement" },
+        "platforms": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["windows", "linux", "macos"] }
+        }
+      }
+    },
+    "renderer": {
+      "description": "Renderer contract for programmable surfaces. Required when any surface is declared.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "entrypointVersion"],
+      "properties": {
+        "kind": { "const": "glint-web" },
+        "entrypointVersion": { "const": 1 }
+      }
+    },
+    "requiredCapabilities": {
+      "description": "Capabilities the theme cannot run without.",
+      "$ref": "#/$defs/capabilityList"
+    },
+    "optionalCapabilities": {
+      "description": "Capabilities used when available. Must not repeat a required capability (enforced by the parser).",
+      "$ref": "#/$defs/capabilityList"
+    },
+    "tokens": {
+      "description": "Path to the design-token file.",
+      "$ref": "#/$defs/packagePath"
+    },
+    "assets": {
+      "description": "Named static assets, e.g. wallpaper and preview.",
+      "$ref": "#/$defs/namedPaths"
+    },
+    "layouts": {
+      "description": "Named layout files.",
+      "$ref": "#/$defs/namedPaths"
+    },
+    "surfaces": {
+      "description": "Surfaces the theme provides, keyed by surface ID (e.g. panel, launcher, control-center or custom:<package-id>).",
+      "type": "object",
+      "propertyNames": {
+        "maxLength": 136,
+        "pattern": "^(?:[a-z][a-z0-9]*(?:-[a-z0-9]+)*|custom:[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+)$"
+      },
+      "additionalProperties": { "$ref": "#/$defs/surface" }
+    }
+  },
+  "if": {
+    "required": ["surfaces"],
+    "properties": { "surfaces": { "minProperties": 1 } }
+  },
+  "then": { "required": ["renderer"] },
+  "$defs": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "packageId": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)+$"
+    },
+    "versionRequirement": {
+      "description": "Cargo-style semver requirement, e.g. >=0.1.0 or ^0.1.0.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "capabilityList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "^(?:surface|system|desktop|native|host)(?:\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*)+$"
+      }
+    },
+    "packagePath": {
+      "description": "Relative, /-separated path inside the package: no leading /, no empty, . or .. segments, no backslash or colon, no Windows-reserved characters or device names, no segment ending in . or space.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!/)(?!.*//)(?!.*/$)(?!(?:.*/)?\\.{1,2}(?:/|$))[^\\\\:*?\"<>|\\u0000-\\u001F\\u007F]+$",
+      "not": {
+        "anyOf": [
+          { "pattern": "[. ](?:/|$)" },
+          { "pattern": "(?:^|/)(?:[cC][oO][nN]|[pP][rR][nN]|[aA][uU][xX]|[nN][uU][lL]|[cC][oO][mM][1-9]|[lL][pP][tT][1-9])(?:\\.|/|$)" }
+        ]
+      }
+    },
+    "namedPaths": {
+      "type": "object",
+      "propertyNames": {
+        "maxLength": 64,
+        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+      },
+      "additionalProperties": { "$ref": "#/$defs/packagePath" }
+    },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry"],
+      "properties": {
+        "entry": {
+          "description": "Package-relative .html entry document.",
+          "allOf": [
+            { "$ref": "#/$defs/packagePath" },
+            { "pattern": "\\.[hH][tT][mM][lL]?$" }
+          ]
+        },
+        "placement": {
+          "description": "Placement hints; shape owned by the surface/layout engine (SRF).",
+          "type": "object"
+        }
+      }
+    }
+  }
+}

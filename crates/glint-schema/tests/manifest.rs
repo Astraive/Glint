@@ -3,6 +3,7 @@
 //! Run with `cargo test -p glint-schema --test manifest`.
 
 use std::collections::BTreeSet;
+use std::path::PathBuf;
 
 use glint_schema::{
     ErrorCode, FORMAT_STATUS, ManifestError, PackageKind, Platform, SUPPORTED_SCHEMA_VERSION,
@@ -81,6 +82,16 @@ fn with(mut value: Value, pointer: &str, replacement: Value) -> Value {
 fn without(mut value: Value, key: &str) -> Value {
     value.as_object_mut().expect("object").remove(key);
     value
+}
+
+fn repo_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+
+fn read_json(path: PathBuf) -> Value {
+    let text = std::fs::read_to_string(&path)
+        .unwrap_or_else(|e| panic!("cannot read {}: {e}", path.display()));
+    serde_json::from_str(&text).unwrap_or_else(|e| panic!("{} is not JSON: {e}", path.display()))
 }
 
 // ---------------------------------------------------------------- valid input
@@ -557,4 +568,105 @@ fn error_display_includes_code_and_pointer() {
         root.starts_with("GLINT_MANIFEST_NOT_AN_OBJECT at (root): "),
         "{root}"
     );
+}
+
+// --------------------------------------------- repository fixture and schema
+
+#[test]
+fn valid_minimal_fixture_parses() {
+    let path = repo_root().join("tests/package-fixtures/valid-minimal/glint.json");
+    let text = std::fs::read_to_string(&path).expect("fixture readable");
+    let manifest = parse_theme_manifest(&text).expect("fixture is valid");
+    assert_eq!(manifest.kind, PackageKind::Theme);
+}
+
+#[test]
+fn json_schema_is_valid_json_and_marked_proposed() {
+    let schema = read_json(repo_root().join("schemas/glint-theme-v1.schema.json"));
+    assert_eq!(
+        schema["$schema"],
+        json!("https://json-schema.org/draft/2020-12/schema")
+    );
+    assert_eq!(schema["x-glint-status"], json!(FORMAT_STATUS));
+    let comment = schema["$comment"].as_str().expect("$comment");
+    assert!(comment.to_lowercase().contains("proposed"), "{comment}");
+    assert_eq!(schema["type"], json!("object"));
+    assert_eq!(schema["additionalProperties"], json!(false));
+    assert_eq!(schema["properties"]["schemaVersion"]["const"], json!(1));
+    assert_eq!(schema["properties"]["kind"]["const"], json!("theme"));
+}
+
+#[test]
+fn json_schema_covers_ticket_fields() {
+    let schema = read_json(repo_root().join("schemas/glint-theme-v1.schema.json"));
+    let props = schema["properties"].as_object().expect("properties");
+    for field in [
+        "schemaVersion",
+        "kind",
+        "id",
+        "version",
+        "name",
+        "author",
+        "license",
+        "compatibility",
+        "renderer",
+        "requiredCapabilities",
+        "optionalCapabilities",
+        "tokens",
+        "assets",
+        "layouts",
+        "surfaces",
+    ] {
+        assert!(props.contains_key(field), "schema lacks {field}");
+    }
+}
+
+#[test]
+fn json_schema_and_parser_agree_on_fields() {
+    let schema = read_json(repo_root().join("schemas/glint-theme-v1.schema.json"));
+    let props: BTreeSet<String> = schema["properties"]
+        .as_object()
+        .expect("properties")
+        .keys()
+        .cloned()
+        .collect();
+    let required: BTreeSet<String> = schema["required"]
+        .as_array()
+        .expect("required")
+        .iter()
+        .map(|v| v.as_str().expect("string").to_owned())
+        .collect();
+
+    // The fixture carries exactly the schema's required fields, and every key
+    // in the fixture and in the plan example is a declared schema property.
+    let fixture = read_json(repo_root().join("tests/package-fixtures/valid-minimal/glint.json"));
+    let fixture_keys: BTreeSet<String> = fixture
+        .as_object()
+        .expect("object")
+        .keys()
+        .filter(|k| *k != "$schema")
+        .cloned()
+        .collect();
+    assert_eq!(fixture_keys, required);
+    let example: Value = serde_json::from_str(PLAN_EXAMPLE).expect("json");
+    for key in example.as_object().expect("object").keys() {
+        assert!(props.contains(key), "plan example key {key} not in schema");
+    }
+
+    // Removing any schema-required field makes the parser fail; every
+    // schema property is accepted by the parser (no UnknownField).
+    for field in &required {
+        assert!(
+            parse(&without(fixture.clone(), field)).is_err(),
+            "parser accepts manifest without schema-required {field}"
+        );
+    }
+    let accepted = parse_theme_manifest(PLAN_EXAMPLE).map(|_| ());
+    assert!(accepted.is_ok());
+    for prop in &props {
+        if example.get(prop).is_none() && prop != "$schema" && prop != "description" {
+            panic!("schema property {prop} not exercised by the plan example");
+        }
+    }
+    assert!(parse(&with(minimal(), "/$schema", json!("../../schemas/x.json"))).is_ok());
 }
