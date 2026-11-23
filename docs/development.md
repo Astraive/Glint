@@ -23,6 +23,7 @@ These scripts inspect repository files (excluding Git metadata and build/cache d
 | Commit / PR title conventions | `python scripts/check-conventions.py --message-file <path>` | Validates the Conventional Commit subject format `type(scope): subject [TICKET-ID]` |
 | PR title check | `python scripts/check-conventions.py --title "type(scope): subject [TICKET-ID]"` | Mutually exclusive alternative to `--message-file` for checking a proposed pull-request title |
 | PowerShell validation | `pwsh -NoProfile -File scripts/check-powershell.ps1` | Parses repository `.ps1` files with PowerShell's AST parser without executing them |
+| Crate dependency boundaries | `python scripts/check-crate-boundaries.py` (`--self-test` for the fixture tests) | Needs `cargo`; reads `cargo metadata --locked --no-deps` and fails on spike imports, core-to-adapter edges and OS-binding dependencies in core crates and apps ([module boundaries](architecture/module-boundaries.md#dependency-direction)). CI runs it in the Rust workspace job on Ubuntu |
 
 `Co-authored-by:` trailers are allowed; the convention checker validates only the subject line.
 

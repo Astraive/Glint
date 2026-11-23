@@ -20,6 +20,43 @@ The responsibility map comes from
 | `schemas/` | Published JSON Schemas | Labelled *proposed* until stabilized by tests and an ADR |
 | `config/` | Bundled read-only application defaults (`default.toml`) | Embedded in the binary; user overrides live in the user-level `config.toml`, never here |
 
+## Dependency direction
+
+Allowed edges, enforced in CI by
+[`scripts/check-crate-boundaries.py`](../../scripts/check-crate-boundaries.py)
+(PRJ-004):
+
+```text
+apps/*  ->  crates/* (core and adapters)
+glint-windows | glint-linux | glint-macos  ->  core crates, OS-binding crates
+core crates (every other crates/*)  ->  core crates only
+spikes/*  ->  anything;  nothing outside spikes/ -> spikes/*
+```
+
+| Rule | Fails when |
+|---|---|
+| R1 spike-never-imported | a `crates/*` or `apps/*` member depends on a `spikes/*` crate, directly or through other workspace crates |
+| R2 core-no-adapter | a core crate reaches `glint-windows`, `glint-linux` or `glint-macos`, directly or transitively |
+| R3 core-no-os-binding | a core crate depends directly on an OS-binding crate (`windows*`, `winapi*`, `webview2-com*`, `objc2*`, `cocoa*`, `gtk*`, `webkit2gtk*`, `wayland-*`, `x11*`, `zbus`, ...) |
+| R4 app-no-os-binding | an `apps/*` member depends directly on an OS-binding crate; apps use adapters |
+
+Rules are matched on workspace paths, so a new `crates/*` member is a core crate
+by default. Only the three adapter names are exempt. Each failure names the
+offending edge, for example `R3 core-no-os-binding: glint-core -> windows-sys`.
+
+- **Direct only for OS-binding crates.** A portable dependency such as `dirs`
+  or `rusqlite` pulls `windows-sys` under `cfg(windows)`; that is its business
+  and is not flagged. Workspace edges are followed transitively.
+- **All dependency kinds count**, including dev, build and target-gated ones.
+- **Allow-list.** `ALLOW` in the script maps `(crate, dependency)` to a reason
+  and is empty. An entry needs a ticket named in its reason.
+- **`cfg` in source is not scanned.** Small `cfg(unix)`/`cfg(windows)` blocks
+  exist in core crates today (file permissions, path semantics). New
+  OS-specific API surface belongs in an adapter crate and is a review matter.
+- Run it locally with `python scripts/check-crate-boundaries.py` (needs
+  `cargo`); `--self-test` runs synthetic metadata fixtures in
+  `scripts/tests/test_crate_boundaries.py` without cargo.
+
 ## Current members
 
 | Member | Ticket | State |
