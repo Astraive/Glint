@@ -248,10 +248,17 @@ fn surface_behavior_is_kept_as_raw_json_for_the_surface_engine() {
     // validated by glint-surfaces, so this parser keeps it raw.
     let base: Value = serde_json::from_str(PLAN_EXAMPLE).expect("json");
     let behavior = json!({ "focus": "non-activating", "reserveWorkArea": true });
-    let manifest = parse(&with(base.clone(), "/surfaces/panel/behavior", behavior.clone()))
-        .expect("accepted");
+    let manifest = parse(&with(
+        base.clone(),
+        "/surfaces/panel/behavior",
+        behavior.clone(),
+    ))
+    .expect("accepted");
     assert_eq!(
-        manifest.surfaces["panel"].behavior.clone().map(Value::Object),
+        manifest.surfaces["panel"]
+            .behavior
+            .clone()
+            .map(Value::Object),
         Some(behavior)
     );
     assert_eq!(manifest.surfaces["launcher"].behavior, None);
