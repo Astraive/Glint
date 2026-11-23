@@ -193,6 +193,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "glint-installer"
+version = "0.0.0"
+dependencies = [
+ "glint-package",
+ "glint-sources",
+ "glint-storage",
+ "sha2",
+ "tempfile",
+]
+
+[[package]]
 name = "glint-package"
 version = "0.0.0"
 dependencies = [

@@ -1,0 +1,23 @@
+[package]
+name = "glint-installer"
+description = "Transactional, content-addressed package store, install journal and crash recovery for Glint."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+glint-package = { path = "../glint-package" }
+glint-sources = { path = "../glint-sources" }
+glint-storage = { path = "../glint-storage" }
+# Re-verifies store entries against their content address when the package
+# index is rebuilt; the same version glint-package uses.
+sha2 = "0.11.1"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[lints]
+workspace = true
