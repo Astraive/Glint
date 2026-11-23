@@ -160,5 +160,8 @@ drift; regenerate with
 - The plan's capability list names `surface.notification-overlay` and
   `surface.desktop-widget`; the catalog uses `surface.<id>` for every kind
   (`surface.notification`, `surface.desktop`). Widgets are not surfaces.
+  The frozen v1 capability registry keeps the catalog names
+  ([ADR 0009](../adr/0009-frozen-v1-capability-registry.md)).
 - Optional provider capabilities follow each kind's role in the plan's
-  surface table; the frozen capability registry (CAP-005) may revise them.
+  surface table. Every catalog capability is in the frozen v1
+  [capability registry](../spec/capabilities-v1.md) (`tests/registry.rs`).

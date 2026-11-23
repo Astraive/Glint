@@ -285,16 +285,18 @@ bottom-edge panel reserving the work area plus a floating
 
 ### Capability IDs and the surface catalog (`references.rs`, PKG-004)
 
-The accepted set is `known_capabilities()`: the provisional
-`PROVIDER_CAPABILITIES` plus every required (`surface.*`) and optional
-capability in the `glint-surfaces` catalog, and `surface.custom`. Anything
-else is refused (fail closed). The frozen v1 registry remains CAP-005's.
+The accepted set is `known_capabilities()`: the frozen v1
+[capability registry](../spec/capabilities-v1.md) owned by `glint-platform`
+(CAP-005), which contains every surface catalog capability and
+`surface.custom`. Anything else is refused (fail closed).
 
 | Fixture | Change | Expected |
 |---|---|---|
 | `every_known_capability_is_accepted_by_schema_and_reader` | every known ID as required, then as optional | accepted |
 | `surface_catalog_capabilities_are_accepted` | each catalog row's capabilities, and `surface.custom` | accepted |
 | `unknown_surface_capability` | `surface.taskbar` | `GLINT_PACKAGE_UNKNOWN_CAPABILITY` |
+| `unregistered_plan_alias_capability` | optional `surface.notification-overlay` (plan spelling, not registered) | `GLINT_PACKAGE_UNKNOWN_CAPABILITY` |
+| `every_registered_capability_is_known` | `known_capabilities()` against the registry | equal |
 | `unknown_provider_capability_next_to_catalog_ones` | `desktop.windows.close` next to `surface.dock` | `GLINT_PACKAGE_UNKNOWN_CAPABILITY` |
 
 ### Remote references in UI files
@@ -370,9 +372,6 @@ additionally checks that packed output always passes these rules.
 - **Handle-relative staging.** Staging creates files component by component
   with `create_new` and re-checks every directory for links, but does not use
   handle-relative opens (`openat`, `cap-std`); see the `staging` module docs.
-- **Capability registry.** `known_capabilities()` (the provisional
-  `PROVIDER_CAPABILITIES` plus the surface catalog's IDs) stands in until the
-  CAP epic freezes the v1 registry (CAP-005).
 - **Remote-reference and active-content scans** are heuristics (no `eval`,
   string-built URLs, `fetch(variable)`, HTML character references or CSS
   escapes); the renderer CSP is the control. Gzipped `.svgz` files are not
