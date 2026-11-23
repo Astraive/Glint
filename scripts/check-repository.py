@@ -17,6 +17,8 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 EXCLUDED_DIRS = {".git", ".issues", "__pycache__", "target", "node_modules"}
+# Local-only nested checkouts (git-ignored agent worktrees) are separate trees.
+EXCLUDED_RELATIVE_DIRS = {".claude/worktrees"}
 FORBIDDEN_FILES = {"publication-ledger.json", "publication-ledger.lock", "backlog-audit.json",
                    "backlog-creation-ledger.json", "backlog-dependency-graph.md",
                    "backlog-inventory.md", "backlog-requirement-traceability.md", "issue.json"}
@@ -109,7 +111,13 @@ def repository_files() -> tuple[list[Path], list[str]]:
                 errors.append(f"{path.relative_to(ROOT).as_posix()}: external backlog directory must stay outside the repository")
             elif path.is_symlink() and name not in EXCLUDED_DIRS:
                 errors.append(f"{path.relative_to(ROOT).as_posix()}: symlinked repository directories are not allowed")
-        dirs[:] = sorted(name for name in dirs if name not in EXCLUDED_DIRS and not (current / name).is_symlink())
+        dirs[:] = sorted(
+            name
+            for name in dirs
+            if name not in EXCLUDED_DIRS
+            and not (current / name).is_symlink()
+            and (current / name).relative_to(ROOT).as_posix() not in EXCLUDED_RELATIVE_DIRS
+        )
         for name in sorted(names):
             path = current / name
             relative = path.relative_to(ROOT).as_posix()
