@@ -54,6 +54,35 @@ impl Home {
         archive
     }
 
+    /// Like [`Home::archive`] but with different token content, so the same
+    /// ID and version produce a different digest.
+    pub fn archive_variant(&self, id: &str, version: &str, variant: &str) -> PathBuf {
+        let dir = self.sources.join(format!("{id}-{version}-{variant}"));
+        if !dir.exists() {
+            write_theme(&dir, id, version);
+            fs::write(
+                dir.join("theme/tokens.json"),
+                format!(r##"{{"color":"#000000","variant":"{variant}"}}"##),
+            )
+            .unwrap();
+        }
+        let archive = self.sources.join(format!("{id}-{version}-{variant}.glint"));
+        if !archive.exists() {
+            pack_directory(&dir, &archive).unwrap();
+        }
+        archive
+    }
+
+    /// Stage any archive path for `installer`.
+    pub fn stage_path(&self, installer: &Installer, path: PathBuf) -> StagedPackage {
+        LocalSource::new()
+            .stage(
+                &ThemeSource::LocalArchive { path },
+                &installer.staging_root(),
+            )
+            .unwrap()
+    }
+
     /// Stage an archive for `installer`.
     pub fn stage(&self, installer: &Installer, id: &str, version: &str) -> StagedPackage {
         let source = ThemeSource::LocalArchive {
