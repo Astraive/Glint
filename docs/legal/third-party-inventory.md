@@ -6,7 +6,7 @@ This file lists every third-party dependency recorded in `Cargo.lock` and the in
 
 It is an inventory of declared package metadata, not legal advice and not a release notice bundle. Where a package declares an `OR` expression, the license column shows the whole expression; the policy accepts a package when at least one alternative is on the allow-list. No Glint release exists yet, so no release-time NOTICE file has been produced (planned under REL-009).
 
-## Rust crates (69)
+## Rust crates (75)
 
 Source: `cargo metadata --locked`, which covers every target platform in `Cargo.lock`, excluding Glint's own workspace crates. Enforced by `deny.toml`.
 
@@ -48,12 +48,17 @@ Source: `cargo metadata --locked`, which covers every target platform in `Cargo.
 | serde_core | 1.0.229 | MIT OR Apache-2.0 |
 | serde_derive | 1.0.229 | MIT OR Apache-2.0 |
 | serde_json | 1.0.154 | MIT OR Apache-2.0 |
+| serde_spanned | 1.1.3 | MIT OR Apache-2.0 |
 | sha2 | 0.11.1 | MIT OR Apache-2.0 |
 | syn | 2.0.119 | MIT OR Apache-2.0 |
 | syn | 3.0.10 | MIT OR Apache-2.0 |
 | tempfile | 3.27.0 | MIT OR Apache-2.0 |
 | thiserror | 2.0.21 | MIT OR Apache-2.0 |
 | thiserror-impl | 2.0.21 | MIT OR Apache-2.0 |
+| toml | 1.2.2+spec-1.1.0 | MIT OR Apache-2.0 |
+| toml_datetime | 1.1.3+spec-1.1.0 | MIT OR Apache-2.0 |
+| toml_parser | 1.1.6+spec-1.1.0 | MIT OR Apache-2.0 |
+| toml_writer | 1.2.0+spec-1.1.0 | MIT OR Apache-2.0 |
 | typed-path | 0.13.0 | MIT OR Apache-2.0 |
 | typenum | 1.20.1 | MIT OR Apache-2.0 |
 | unicode-ident | 1.0.27 | (MIT OR Apache-2.0) AND Unicode-3.0 |
@@ -76,6 +81,7 @@ Source: `cargo metadata --locked`, which covers every target platform in `Cargo.
 | windows-strings | 0.5.1 | MIT OR Apache-2.0 |
 | windows-sys | 0.61.2 | MIT OR Apache-2.0 |
 | windows-threading | 0.2.1 | MIT OR Apache-2.0 |
+| winnow | 1.0.5 | MIT |
 | zeroize | 1.9.2 | Apache-2.0 OR MIT |
 | zeroize_derive | 1.5.0 | Apache-2.0 OR MIT |
 | zip | 9.8.1 | MIT |
