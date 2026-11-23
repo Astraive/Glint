@@ -27,6 +27,13 @@
 //!   closed: undiscovered, unadvertised and stale capabilities are never
 //!   reported usable. [`mock::MockAdapter`] reaches every state.
 //!
+//! - The activation gate (CAP-003, [`evaluate_manifest`],
+//!   [`gate_activation`]): a theme's `requiredCapabilities` block
+//!   activation unless usable (or covered by a declared fallback), and the
+//!   [`ActivationRefusal`] lists every blocker with its typed error;
+//!   `optionalCapabilities` that are unusable only disable controls
+//!   ([`ActivationReport::disabled`]). The gate changes no state.
+//!
 //! Every type round-trips through JSON (serde); the shapes are documented on
 //! each type and are *proposed* until stabilized by an ADR.
 
@@ -34,6 +41,7 @@
 #![warn(missing_docs)]
 
 mod capabilities;
+mod capability_gate;
 mod error;
 pub mod mock;
 mod service;
@@ -41,6 +49,10 @@ mod service;
 pub use capabilities::{
     Availability, Capability, CapabilityId, CapabilityIdError, EmptyReason, IntegrationEffect,
     Namespace, UnavailableKind, UnavailableReason,
+};
+pub use capability_gate::{
+    ActivationRefusal, ActivationReport, Blocker, CapabilityCheck, CapabilityRequirements,
+    CapabilityRole, CheckOutcome, RequiredCapability, evaluate, evaluate_manifest, gate_activation,
 };
 pub use error::{CapabilityError, CapabilityErrorCode, ErrorCategory, UnknownErrorCode};
 pub use service::{

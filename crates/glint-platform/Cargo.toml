@@ -12,6 +12,8 @@ publish.workspace = true
 # glint-windows, glint-linux and glint-macos and implement the traits this
 # crate defines.
 [dependencies]
+# The activation gate (CAP-003) reads a validated ThemeManifest.
+glint-schema = { path = "../glint-schema" }
 serde = { version = "1", features = ["derive"] }
 
 [dev-dependencies]
