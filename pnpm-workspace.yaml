@@ -1,0 +1,5 @@
+# JS/TS workspaces are added only when a ticket exercises them (PRJ-002).
+packages:
+  - "packages/*"
+  - "apps/*"
+  - "themes/*"

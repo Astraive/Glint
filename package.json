@@ -1,0 +1,10 @@
+{
+  "name": "glint-workspace",
+  "private": true,
+  "description": "Glint JS/TS workspace root (SDK, theme runtime, manager UI, themes).",
+  "license": "MIT",
+  "packageManager": "pnpm@10.18.0",
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
