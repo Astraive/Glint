@@ -1,0 +1,364 @@
+[
+  {
+    "repository": "Glint",
+    "id": "M0",
+    "title": "M0 \u2014 Foundation & Feasibility",
+    "goal": "Establish repository infrastructure and Rust workspace, and resolve renderer and host feasibility risks before any support claim.",
+    "entry_conditions": [
+      "Product plan under docs/plan accepted as the planning baseline; repository governance files present."
+    ],
+    "exit_conditions": [
+      "Repository governance, CI and GitHub infrastructure established and verified.",
+      "Windows appbar + WebView2 spike verified on real hardware; Linux and macOS spikes recorded as pending until real hardware exists.",
+      "Package-security spike with malicious-fixture suite reports pass/fail and fallback; written renderer and host feasibility decision."
+    ],
+    "gate": "QA-M0",
+    "quality_gate": "QA-M0: each in-scope criterion and scenario has Pass or explicitly approved non-security waiver with linked follow-up; zero unresolved P0, destructive-data or security failures; evidence reviewed before closure, never issue-count-only completion.",
+    "effort_days": 51,
+    "platforms": [
+      "all",
+      "windows",
+      "linux",
+      "macos"
+    ],
+    "risks": [
+      "Native WebView differences across hosts",
+      "Hyprland layer-shell plus WebKitGTK input handling",
+      "Linux and macOS verification limited to CI compile until hardware exists"
+    ],
+    "signoff": [
+      "Responsible implementation maintainer",
+      "Independent QA/evidence reviewer",
+      "Project owner release or milestone approval"
+    ],
+    "unlocks": [
+      "M1 work may advance after its own entry conditions are met"
+    ],
+    "target_release": "prototype"
+  },
+  {
+    "repository": "Glint",
+    "id": "M1",
+    "title": "M1 \u2014 Core Package & Safe Preview",
+    "goal": "Deliver the manifest schema, .glint reader/packer, sources, installer with provenance and rollback, single-process core, CLI and default-theme fallback.",
+    "entry_conditions": [
+      "QA-M0 accepted for feasibility decisions; manifest and package contracts reviewed."
+    ],
+    "exit_conditions": [
+      "Manifest schema and .glint reader/packer/validator reject malicious fixtures.",
+      "Installer records provenance and rolls back safely; core runs daemon and shell in one process as separate crates.",
+      "CLI import, list, export, use and safe-mode work offline; default theme fallback activates on failure."
+    ],
+    "gate": "QA-M1",
+    "quality_gate": "QA-M1: each in-scope criterion and scenario has Pass or explicitly approved non-security waiver with linked follow-up; zero unresolved P0, destructive-data or security failures; evidence reviewed before closure, never issue-count-only completion.",
+    "effort_days": 132,
+    "platforms": [
+      "all",
+      "cli",
+      "windows",
+      "linux",
+      "macos"
+    ],
+    "risks": [
+      "Archive-escape and unsafe-package inputs",
+      "Rollback and crash-recovery correctness"
+    ],
+    "signoff": [
+      "Responsible implementation maintainer",
+      "Independent QA/evidence reviewer",
+      "Project owner release or milestone approval",
+      "Security reviewer for changed trust boundaries"
+    ],
+    "unlocks": [
+      "M2 work may advance after its own entry conditions are met"
+    ],
+    "target_release": "prototype"
+  },
+  {
+    "repository": "Glint",
+    "id": "M2",
+    "title": "M2 \u2014 Programmable Surface Runtime",
+    "goal": "Deliver surface contracts, the restricted renderer with permission-scoped SDK bridge, SDK hooks, default theme surfaces, preview and creator toolchain.",
+    "entry_conditions": [
+      "QA-M1 accepted; surface and capability contracts stable."
+    ],
+    "exit_conditions": [
+      "Surface contracts enforced; renderer is sandboxed and bridge calls are permission-scoped and denied by default.",
+      "SDK hooks and default theme surfaces degrade gracefully when a capability is absent or denied.",
+      "Preview and creator toolchain (create, dev, build, validate, pack) produce a shareable .glint."
+    ],
+    "gate": "QA-M2",
+    "quality_gate": "QA-M2: each in-scope criterion and scenario has Pass or explicitly approved non-security waiver with linked follow-up; zero unresolved P0, destructive-data or security failures; evidence reviewed before closure, never issue-count-only completion.",
+    "effort_days": 145,
+    "platforms": [
+      "all",
+      "windows",
+      "linux",
+      "macos"
+    ],
+    "risks": [
+      "Renderer escape or bridge over-permission",
+      "SDK surface churn"
+    ],
+    "signoff": [
+      "Responsible implementation maintainer",
+      "Independent QA/evidence reviewer",
+      "Project owner release or milestone approval",
+      "Security reviewer for changed trust boundaries"
+    ],
+    "unlocks": [
+      "M3 work may advance after its own entry conditions are met"
+    ],
+    "target_release": "alpha"
+  },
+  {
+    "repository": "Glint",
+    "id": "M3",
+    "title": "M3 \u2014 Platform Shell Integration",
+    "goal": "Integrate Glint-managed shell surfaces on Windows, Linux and macOS with per-monitor layout and an honest capability matrix.",
+    "entry_conditions": [
+      "QA-M2 accepted; Phase 0 host spike results available per platform."
+    ],
+    "exit_conditions": [
+      "Windows appbar, wallpaper and providers verified on hardware.",
+      "Linux session, Hyprland and layer-shell adapters and macOS AppKit host implemented with verification status stated per tuple.",
+      "Per-monitor layout and a published capability matrix that lists only verified tuples."
+    ],
+    "gate": "QA-M3",
+    "quality_gate": "QA-M3: each in-scope criterion and scenario has Pass or explicitly approved non-security waiver with linked follow-up; zero unresolved P0, destructive-data or security failures; evidence reviewed before closure, never issue-count-only completion.",
+    "effort_days": 137,
+    "platforms": [
+      "windows",
+      "linux",
+      "macos",
+      "wayland",
+      "hyprland",
+      "x11"
+    ],
+    "risks": [
+      "Desktop lockout or Explorer/compositor conflicts",
+      "Unverifiable platforms without hardware"
+    ],
+    "signoff": [
+      "Responsible implementation maintainer",
+      "Independent QA/evidence reviewer",
+      "Project owner release or milestone approval",
+      "Security reviewer for changed trust boundaries"
+    ],
+    "unlocks": [
+      "M4 work may advance after its own entry conditions are met"
+    ],
+    "target_release": "alpha"
+  },
+  {
+    "repository": "Glint",
+    "id": "M4",
+    "title": "M4 \u2014 Official Library & Open Distribution",
+    "goal": "Deliver registry client and cache, Git sources, update flow with permission diffs, manager Discover/Installed UI and publishing documentation.",
+    "entry_conditions": [
+      "QA-M3 accepted; glint-library L1 registry schema available."
+    ],
+    "exit_conditions": [
+      "Registry client and cache work offline-first; Git and arbitrary-URL sources install without a Glint account.",
+      "Updates show permission diffs before applying and are rollback-safe.",
+      "Manager Discover and Installed UI and publishing docs let an author ship from their own Git repo or a .glint file."
+    ],
+    "gate": "QA-M4",
+    "quality_gate": "QA-M4: each in-scope criterion and scenario has Pass or explicitly approved non-security waiver with linked follow-up; zero unresolved P0, destructive-data or security failures; evidence reviewed before closure, never issue-count-only completion.",
+    "effort_days": 83,
+    "platforms": [
+      "all",
+      "windows",
+      "linux",
+      "macos",
+      "cli"
+    ],
+    "risks": [
+      "Supply-chain and provenance trust",
+      "Registry unavailability must not break core"
+    ],
+    "signoff": [
+      "Responsible implementation maintainer",
+      "Independent QA/evidence reviewer",
+      "Project owner release or milestone approval",
+      "Security reviewer for changed trust boundaries",
+      "Rights/provenance reviewer for distributed assets"
+    ],
+    "unlocks": [
+      "M5 work may advance after its own entry conditions are met"
+    ],
+    "target_release": "beta"
+  },
+  {
+    "repository": "Glint",
+    "id": "M5",
+    "title": "M5 \u2014 Power-User & Ecosystem",
+    "goal": "Deliver composition and per-surface/monitor profiles, KDE, GNOME and X11 adapters, performance and accessibility audits, and WASM extension research.",
+    "entry_conditions": [
+      "QA-M4 accepted; open distribution stable."
+    ],
+    "exit_conditions": [
+      "Composition and profiles per surface and monitor work with safe rollback.",
+      "KDE, GNOME and X11 adapters report verified status per tuple; performance and accessibility audits recorded.",
+      "WASM extension research ends in a go/no-go decision with evidence."
+    ],
+    "gate": "QA-M5",
+    "quality_gate": "QA-M5: each in-scope criterion and scenario has Pass or explicitly approved non-security waiver with linked follow-up; zero unresolved P0, destructive-data or security failures; evidence reviewed before closure, never issue-count-only completion.",
+    "effort_days": 89,
+    "platforms": [
+      "all",
+      "kde",
+      "gnome",
+      "x11",
+      "wayland",
+      "sway"
+    ],
+    "risks": [
+      "Compositor and desktop-environment variance",
+      "Scope growth before the package system stabilizes"
+    ],
+    "signoff": [
+      "Responsible implementation maintainer",
+      "Independent QA/evidence reviewer",
+      "Project owner release or milestone approval",
+      "Security reviewer for changed trust boundaries"
+    ],
+    "unlocks": [
+      "Release 1.0 planning may begin after its own entry conditions are met"
+    ],
+    "target_release": "1.0.0"
+  },
+  {
+    "repository": "glint-library",
+    "id": "L0",
+    "title": "L0 \u2014 Library Foundation",
+    "goal": "Establish the official public theme library repository governance, layout and license policy.",
+    "entry_conditions": [
+      "Library repository exists as a public MIT repository; maintainer roles agreed."
+    ],
+    "exit_conditions": [
+      "Repository governance, contribution and review rules documented.",
+      "Layout and license policy (original or compatibly licensed assets only) documented with named owners."
+    ],
+    "gate": "LQA-L0",
+    "quality_gate": "LQA-L0: each in-scope criterion and scenario has Pass or explicitly approved non-security waiver with linked follow-up; zero unresolved P0, destructive-data or security failures; evidence reviewed before closure, never issue-count-only completion.",
+    "effort_days": 9,
+    "platforms": [
+      "all"
+    ],
+    "risks": [
+      "Unclear asset rights",
+      "Coupling the library to the Glint app as a hard dependency"
+    ],
+    "signoff": [
+      "Responsible implementation maintainer",
+      "Independent QA/evidence reviewer",
+      "Project owner release or milestone approval"
+    ],
+    "unlocks": [
+      "L1 work may advance after its own entry conditions are met"
+    ],
+    "target_release": "library-foundation"
+  },
+  {
+    "repository": "glint-library",
+    "id": "L1",
+    "title": "L1 \u2014 Registry Schema & CI",
+    "goal": "Define the registry.json schema and the validate and build workflows.",
+    "entry_conditions": [
+      "LQA-L0 accepted."
+    ],
+    "exit_conditions": [
+      "registry.json schema published and versioned.",
+      "PR validate and build workflows run without production credentials."
+    ],
+    "gate": "LQA-L1",
+    "quality_gate": "LQA-L1: each in-scope criterion and scenario has Pass or explicitly approved non-security waiver with linked follow-up; zero unresolved P0, destructive-data or security failures; evidence reviewed before closure, never issue-count-only completion.",
+    "effort_days": 21,
+    "platforms": [
+      "all"
+    ],
+    "risks": [
+      "Schema churn against the Glint registry client"
+    ],
+    "signoff": [
+      "Responsible implementation maintainer",
+      "Independent QA/evidence reviewer",
+      "Project owner release or milestone approval",
+      "Security reviewer for changed trust boundaries"
+    ],
+    "unlocks": [
+      "L2 work may advance after its own entry conditions are met"
+    ],
+    "target_release": "library-alpha"
+  },
+  {
+    "repository": "glint-library",
+    "id": "L2",
+    "title": "L2 \u2014 Official Starter Themes",
+    "goal": "Publish two or more original, licensed starter themes with previews.",
+    "entry_conditions": [
+      "LQA-L1 accepted; Glint package format stable enough to build against."
+    ],
+    "exit_conditions": [
+      "At least two original, licensed themes with previews and provenance records.",
+      "No proprietary fonts, icons or trademarked assets are included."
+    ],
+    "gate": "LQA-L2",
+    "quality_gate": "LQA-L2: each in-scope criterion and scenario has Pass or explicitly approved non-security waiver with linked follow-up; zero unresolved P0, destructive-data or security failures; evidence reviewed before closure, never issue-count-only completion.",
+    "effort_days": 20,
+    "platforms": [
+      "all",
+      "windows",
+      "linux",
+      "macos"
+    ],
+    "risks": [
+      "Asset rights and attribution gaps"
+    ],
+    "signoff": [
+      "Responsible implementation maintainer",
+      "Independent QA/evidence reviewer",
+      "Project owner release or milestone approval",
+      "Rights/provenance reviewer for distributed assets"
+    ],
+    "unlocks": [
+      "L3 work may advance after its own entry conditions are met"
+    ],
+    "target_release": "library-alpha"
+  },
+  {
+    "repository": "glint-library",
+    "id": "L3",
+    "title": "L3 \u2014 Public Catalog Launch",
+    "goal": "Make the catalog discoverable from Glint by default and open the contribution process.",
+    "entry_conditions": [
+      "LQA-L2 accepted; Glint M4 registry client available."
+    ],
+    "exit_conditions": [
+      "Catalog is discoverable from Glint by default while remaining an optional source.",
+      "Contribution process and takedown path are live."
+    ],
+    "gate": "LQA-L3",
+    "quality_gate": "LQA-L3: each in-scope criterion and scenario has Pass or explicitly approved non-security waiver with linked follow-up; zero unresolved P0, destructive-data or security failures; evidence reviewed before closure, never issue-count-only completion.",
+    "effort_days": 18,
+    "platforms": [
+      "all"
+    ],
+    "risks": [
+      "Moderation load",
+      "Default-source trust expectations"
+    ],
+    "signoff": [
+      "Responsible implementation maintainer",
+      "Independent QA/evidence reviewer",
+      "Project owner release or milestone approval",
+      "Security reviewer for changed trust boundaries",
+      "Rights/provenance reviewer for distributed assets"
+    ],
+    "unlocks": [
+      "Post-launch maintenance planning"
+    ],
+    "target_release": "library-1.0.0"
+  }
+]

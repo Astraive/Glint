@@ -1,0 +1,372 @@
+[
+  {
+    "name": "priority:P0",
+    "color": "FF6476",
+    "description": "Critical or milestone-blocking; justified by product impact or a hard dependency"
+  },
+  {
+    "name": "priority:P1",
+    "color": "FFC65A",
+    "description": "High-priority required capability or risk reduction"
+  },
+  {
+    "name": "priority:P2",
+    "color": "B9C0CC",
+    "description": "Standard planned work; not automatically on the critical path"
+  },
+  {
+    "name": "priority:P3",
+    "color": "727A89",
+    "description": "Optional or deferred improvement"
+  },
+  {
+    "name": "size:S",
+    "color": "F5F6F8",
+    "description": "Up to 1 person-day"
+  },
+  {
+    "name": "size:M",
+    "color": "D7DBE3",
+    "description": "More than 1 and up to 3 person-days"
+  },
+  {
+    "name": "size:L",
+    "color": "9298A3",
+    "description": "More than 3 and up to 5 person-days"
+  },
+  {
+    "name": "size:XL",
+    "color": "2B2F38",
+    "description": "Up to 8 coordination person-days; containers only, decompose implementation"
+  },
+  {
+    "name": "type:epic",
+    "color": "181A20",
+    "description": "Workstream parent containing independently executable child tickets"
+  },
+  {
+    "name": "type:feature",
+    "color": "5A7BFF",
+    "description": "New user-facing or runtime capability"
+  },
+  {
+    "name": "type:task",
+    "color": "9298A3",
+    "description": "Concrete implementation or integration deliverable"
+  },
+  {
+    "name": "type:bug",
+    "color": "FF6476",
+    "description": "Observed deviation from specified behavior"
+  },
+  {
+    "name": "type:enhancement",
+    "color": "7C8CFF",
+    "description": "Improvement to an existing capability"
+  },
+  {
+    "name": "type:chore",
+    "color": "2B2F38",
+    "description": "Repository, tooling or engineering housekeeping"
+  },
+  {
+    "name": "type:documentation",
+    "color": "F5F6F8",
+    "description": "Authored documentation and traceability deliverable"
+  },
+  {
+    "name": "type:test",
+    "color": "B28CFF",
+    "description": "Automated suite, manual validation or acceptance gate"
+  },
+  {
+    "name": "type:research",
+    "color": "73CFFF",
+    "description": "Time-boxed investigation ending in evidence and a decision"
+  },
+  {
+    "name": "type:security",
+    "color": "FF6476",
+    "description": "Security control, threat review or vulnerability remediation"
+  },
+  {
+    "name": "type:refactor",
+    "color": "B9C0CC",
+    "description": "Internal restructuring without intended behavior change"
+  },
+  {
+    "name": "type:performance",
+    "color": "FFC65A",
+    "description": "Measured resource-use or responsiveness improvement"
+  },
+  {
+    "name": "type:maintenance",
+    "color": "727A89",
+    "description": "Post-release compatibility and operational upkeep"
+  },
+  {
+    "name": "type:duplicate",
+    "color": "727A89",
+    "description": "Duplicate of another ticket; excluded from release notes"
+  },
+  {
+    "name": "platform:all",
+    "color": "B9C0CC",
+    "description": "Portable shared behavior across supported platform tuples"
+  },
+  {
+    "name": "platform:windows",
+    "color": "73CFFF",
+    "description": "Windows native integration and packaging"
+  },
+  {
+    "name": "platform:macos",
+    "color": "73CFFF",
+    "description": "macOS native integration and packaging"
+  },
+  {
+    "name": "platform:linux",
+    "color": "73CFFF",
+    "description": "Linux shared integration and packaging"
+  },
+  {
+    "name": "platform:wayland",
+    "color": "73CFFF",
+    "description": "Wayland compositor protocols (layer-shell) and capability limits"
+  },
+  {
+    "name": "platform:x11",
+    "color": "73CFFF",
+    "description": "X11 session adapters and window-manager hints"
+  },
+  {
+    "name": "platform:hyprland",
+    "color": "73CFFF",
+    "description": "Hyprland compositor integration (first Linux spike target)"
+  },
+  {
+    "name": "platform:kde",
+    "color": "73CFFF",
+    "description": "KDE Plasma integration"
+  },
+  {
+    "name": "platform:gnome",
+    "color": "73CFFF",
+    "description": "GNOME Shell integration and version-specific behavior"
+  },
+  {
+    "name": "platform:sway",
+    "color": "73CFFF",
+    "description": "Sway / wlroots-family compositor integration"
+  },
+  {
+    "name": "platform:cli",
+    "color": "73CFFF",
+    "description": "Command-line import, list, export, use and safe-mode behavior"
+  },
+  {
+    "name": "kind:roadmap",
+    "color": "181A20",
+    "description": "Canonical issue kind: roadmap; distinct from the type taxonomy."
+  },
+  {
+    "name": "kind:epic",
+    "color": "2B2F38",
+    "description": "Canonical issue kind: epic; distinct from the type taxonomy."
+  },
+  {
+    "name": "kind:task",
+    "color": "5A7BFF",
+    "description": "Canonical issue kind: task; distinct from the type taxonomy."
+  },
+  {
+    "name": "kind:gate",
+    "color": "FF6476",
+    "description": "Canonical issue kind: gate; distinct from the type taxonomy."
+  },
+  {
+    "name": "path:critical",
+    "color": "B60205",
+    "description": "Effort-weighted longest blocker chain; estimated planning path, not a delivery date."
+  },
+  {
+    "name": "area:repository",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:feasibility",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:manifest-schema",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:package-format",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:sources",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:installer",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:core",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:capabilities",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:profiles",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:surfaces",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:renderer",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:sdk",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:default-theme",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:cli",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:creator-tooling",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:manager-ui",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:windows-host",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:linux-host",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:macos-host",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:registry",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:security",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:accessibility",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:performance",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:documentation",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:release-engineering",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:quality",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:library-foundation",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:catalog",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:official-themes",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:community",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:licensing",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:library-quality",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "area:library-release",
+    "color": "D7DBE3",
+    "description": "Canonical area owning this deliverable; one area label per ticket."
+  },
+  {
+    "name": "breaking",
+    "color": "FF6476",
+    "description": "Breaking change to a package, manifest, SDK or CLI contract; requires migration notes"
+  },
+  {
+    "name": "dependencies",
+    "color": "727A89",
+    "description": "Dependency update pull request"
+  },
+  {
+    "name": "github_actions",
+    "color": "727A89",
+    "description": "GitHub Actions workflow or action version update"
+  }
+]
