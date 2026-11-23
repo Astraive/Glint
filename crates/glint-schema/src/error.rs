@@ -159,3 +159,80 @@ impl fmt::Display for ManifestError {
 }
 
 impl std::error::Error for ManifestError {}
+
+/// Stable, machine-readable manifest warning codes.
+///
+/// A warning never changes whether a manifest is accepted; it reports
+/// something the parser ignored. Like [`ErrorCode`], the string form is the
+/// stable contract and codes are only ever added.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[non_exhaustive]
+pub enum WarningCode {
+    /// A field unknown to this format version was found in a section that is
+    /// not security-sensitive (see `docs/architecture/manifest-compatibility.md`)
+    /// and was ignored.
+    UnknownField,
+}
+
+impl WarningCode {
+    /// Every code, in declaration order.
+    pub const ALL: &'static [WarningCode] = &[WarningCode::UnknownField];
+
+    /// The stable string form, e.g. `GLINT_MANIFEST_WARN_UNKNOWN_FIELD`.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            WarningCode::UnknownField => "GLINT_MANIFEST_WARN_UNKNOWN_FIELD",
+        }
+    }
+}
+
+impl fmt::Display for WarningCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// A non-fatal manifest diagnostic: a stable [`WarningCode`], the RFC 6901
+/// JSON Pointer of the ignored value and a human-readable message. Only the
+/// code and pointer are stable.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ManifestWarning {
+    code: WarningCode,
+    pointer: String,
+    message: String,
+}
+
+impl ManifestWarning {
+    pub(crate) fn new(
+        code: WarningCode,
+        pointer: impl Into<String>,
+        message: impl Into<String>,
+    ) -> Self {
+        Self {
+            code,
+            pointer: pointer.into(),
+            message: message.into(),
+        }
+    }
+
+    /// The stable warning code.
+    pub fn code(&self) -> WarningCode {
+        self.code
+    }
+
+    /// JSON Pointer (RFC 6901) to the ignored value.
+    pub fn pointer(&self) -> &str {
+        &self.pointer
+    }
+
+    /// Human-readable detail (not stable).
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+}
+
+impl fmt::Display for ManifestWarning {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} at {}: {}", self.code, self.pointer, self.message)
+    }
+}

@@ -234,13 +234,21 @@ fn unknown_security_sensitive_nested_fields_are_rejected() {
         ("/renderer/nodeIntegration", json!(true)),
         ("/compatibility/minimumOs", json!("10")),
         ("/surfaces/panel/preload", json!("evil.js")),
-        ("/author/token", json!("secret")),
     ];
     for (pointer, value) in cases {
         let err = expect_err(&with(base.clone(), pointer, value));
         assert_eq!(err.code(), ErrorCode::UnknownField, "{pointer}");
         assert_eq!(err.pointer(), pointer);
     }
+}
+
+#[test]
+fn unknown_author_fields_are_ignored_not_rejected() {
+    // SCH-003: `author` is non-sensitive display metadata; unknown keys are
+    // reported as warnings by parse_theme_manifest_with_diagnostics.
+    let base: Value = serde_json::from_str(PLAN_EXAMPLE).expect("json");
+    let manifest = parse(&with(base, "/author/token", json!("secret"))).expect("accepted");
+    assert_eq!(manifest.author.name, "Example Developer");
 }
 
 #[test]

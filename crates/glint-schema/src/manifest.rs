@@ -5,6 +5,36 @@ use std::collections::BTreeMap;
 use semver::{Version, VersionReq};
 use serde_json::{Map, Value};
 
+use crate::compat::ManifestVersions;
+use crate::error::ManifestWarning;
+
+/// An accepted manifest together with the non-fatal diagnostics found while
+/// parsing it, as returned by [`crate::parse_theme_manifest_with_diagnostics`].
+#[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
+pub struct ParsedManifest {
+    /// The validated manifest.
+    pub manifest: ThemeManifest,
+    /// Ignored, non-security-sensitive content, in document key order.
+    pub warnings: Vec<ManifestWarning>,
+}
+
+impl ThemeManifest {
+    /// The version-negotiation envelope of this manifest, for
+    /// [`crate::check_versions`].
+    pub fn versions(&self) -> ManifestVersions {
+        ManifestVersions {
+            schema_version: u64::from(self.schema_version),
+            glint: self.compatibility.glint.clone(),
+            sdk: self.compatibility.sdk.clone(),
+            entrypoint_version: self
+                .renderer
+                .as_ref()
+                .map(|r| u64::from(r.entrypoint_version)),
+        }
+    }
+}
+
 /// A `glint.json` theme manifest that passed [`crate::parse_theme_manifest`].
 ///
 /// Every path field is a validated package-relative path (see the crate docs);

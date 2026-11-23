@@ -5,11 +5,14 @@ use std::collections::{BTreeMap, BTreeSet};
 use semver::{Version, VersionReq};
 use serde_json::{Map, Value};
 
-use crate::error::{ErrorCode, ManifestError};
+use crate::error::{ErrorCode, ManifestError, ManifestWarning, WarningCode};
 use crate::manifest::{
-    Author, Compatibility, PackageKind, Platform, Renderer, RendererKind, Surface, ThemeManifest,
+    Author, Compatibility, PackageKind, ParsedManifest, Platform, Renderer, RendererKind, Surface,
+    ThemeManifest,
 };
-use crate::{MAX_MANIFEST_BYTES, SUPPORTED_SCHEMA_VERSION, strict_json};
+use crate::{
+    MAX_MANIFEST_BYTES, SUPPORTED_ENTRYPOINT_VERSION, SUPPORTED_SCHEMA_VERSION, strict_json,
+};
 
 type Result<T> = std::result::Result<T, ManifestError>;
 
@@ -46,7 +49,9 @@ const MAX_PATH_LEN: usize = 512;
 const MAX_KEY_LEN: usize = 64;
 const MAX_CAPABILITY_LEN: usize = 128;
 
-pub(crate) fn parse_theme_manifest(text: &str) -> Result<ThemeManifest> {
+/// Size limit, byte-order mark, strict JSON and root type: the document-level
+/// rules shared by the full parser and the version-envelope probe.
+pub(crate) fn load_document(text: &str) -> Result<Map<String, Value>> {
     if text.len() > MAX_MANIFEST_BYTES {
         return Err(ManifestError::new(
             ErrorCode::TooLarge,
@@ -58,18 +63,20 @@ pub(crate) fn parse_theme_manifest(text: &str) -> Result<ThemeManifest> {
         ));
     }
     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
-    let document = strict_json::parse(text)?;
-    let Value::Object(root) = &document else {
-        return Err(ManifestError::new(
+    match strict_json::parse(text)? {
+        Value::Object(root) => Ok(root),
+        _ => Err(ManifestError::new(
             ErrorCode::NotAnObject,
             "",
             "manifest root must be a JSON object",
-        ));
-    };
-    let root = Obj {
-        map: root,
-        ptr: String::new(),
-    };
+        )),
+    }
+}
+
+pub(crate) fn parse_theme_manifest(text: &str) -> Result<ParsedManifest> {
+    let document = load_document(text)?;
+    let root = Obj::root(&document);
+    let mut warnings = Vec::new();
 
     // Version and kind first: without them no other field can be interpreted.
     let schema_version = schema_version(&root)?;
@@ -97,7 +104,7 @@ pub(crate) fn parse_theme_manifest(text: &str) -> Result<ThemeManifest> {
         .get("description")
         .map(|v| text_value(v, "/description", MAX_DESCRIPTION_LEN))
         .transpose()?;
-    let author = author(&root.required_object("author")?)?;
+    let author = author(&root.required_object("author")?, &mut warnings)?;
     let license = text_value(root.required("license")?, "/license", MAX_SHORT_TEXT_LEN)?;
     let compatibility = compatibility(&root.required_object("compatibility")?)?;
     let renderer = root
@@ -125,7 +132,7 @@ pub(crate) fn parse_theme_manifest(text: &str) -> Result<ThemeManifest> {
         ));
     }
 
-    Ok(ThemeManifest {
+    let manifest = ThemeManifest {
         schema_version,
         kind,
         id,
@@ -142,27 +149,35 @@ pub(crate) fn parse_theme_manifest(text: &str) -> Result<ThemeManifest> {
         assets,
         layouts,
         surfaces,
-    })
+    };
+    Ok(ParsedManifest { manifest, warnings })
 }
 
 // ------------------------------------------------------------------- helpers
 
 /// A JSON object together with its JSON Pointer.
-struct Obj<'a> {
-    map: &'a Map<String, Value>,
+pub(crate) struct Obj<'a> {
+    pub(crate) map: &'a Map<String, Value>,
     ptr: String,
 }
 
 impl<'a> Obj<'a> {
-    fn child(&self, key: &str) -> String {
+    pub(crate) fn root(map: &'a Map<String, Value>) -> Self {
+        Obj {
+            map,
+            ptr: String::new(),
+        }
+    }
+
+    pub(crate) fn child(&self, key: &str) -> String {
         child_pointer(&self.ptr, key)
     }
 
-    fn get(&self, key: &str) -> Option<&'a Value> {
+    pub(crate) fn get(&self, key: &str) -> Option<&'a Value> {
         self.map.get(key)
     }
 
-    fn required(&self, key: &str) -> Result<&'a Value> {
+    pub(crate) fn required(&self, key: &str) -> Result<&'a Value> {
         self.map.get(key).ok_or_else(|| {
             ManifestError::new(
                 ErrorCode::MissingField,
@@ -172,12 +187,12 @@ impl<'a> Obj<'a> {
         })
     }
 
-    fn required_object(&self, key: &str) -> Result<Obj<'a>> {
+    pub(crate) fn required_object(&self, key: &str) -> Result<Obj<'a>> {
         let value = self.required(key)?;
         as_object(value, self.child(key))
     }
 
-    fn optional_object(&self, key: &str) -> Result<Option<Obj<'a>>> {
+    pub(crate) fn optional_object(&self, key: &str) -> Result<Option<Obj<'a>>> {
         self.map
             .get(key)
             .map(|value| as_object(value, self.child(key)))
@@ -195,6 +210,21 @@ impl<'a> Obj<'a> {
                 ),
             )),
             None => Ok(()),
+        }
+    }
+
+    /// Forward compatibility for a non-security-sensitive object: unknown
+    /// keys are ignored and reported as warnings, never interpreted.
+    fn warn_unknown(&self, allowed: &[&str], warnings: &mut Vec<ManifestWarning>) {
+        for key in self.map.keys().filter(|k| !allowed.contains(&k.as_str())) {
+            warnings.push(ManifestWarning::new(
+                WarningCode::UnknownField,
+                self.child(key),
+                format!(
+                    "unknown field `{key}` was ignored; known fields here are: {}",
+                    allowed.join(", ")
+                ),
+            ));
         }
     }
 }
@@ -215,7 +245,11 @@ fn type_name(value: &Value) -> &'static str {
     }
 }
 
-fn wrong_type(value: &Value, pointer: impl Into<String>, expected: &str) -> ManifestError {
+pub(crate) fn wrong_type(
+    value: &Value,
+    pointer: impl Into<String>,
+    expected: &str,
+) -> ManifestError {
     ManifestError::new(
         ErrorCode::InvalidType,
         pointer,
@@ -223,7 +257,7 @@ fn wrong_type(value: &Value, pointer: impl Into<String>, expected: &str) -> Mani
     )
 }
 
-fn invalid(
+pub(crate) fn invalid(
     code: ErrorCode,
     pointer: impl Into<String>,
     message: impl Into<String>,
@@ -231,7 +265,7 @@ fn invalid(
     ManifestError::new(code, pointer, message)
 }
 
-fn as_object(value: &Value, pointer: String) -> Result<Obj<'_>> {
+pub(crate) fn as_object(value: &Value, pointer: String) -> Result<Obj<'_>> {
     match value {
         Value::Object(map) => Ok(Obj { map, ptr: pointer }),
         other => Err(wrong_type(other, pointer, "an object")),
@@ -370,7 +404,7 @@ fn version(value: &Value, pointer: &str) -> Result<Version> {
     })
 }
 
-fn version_req(value: &Value, pointer: &str) -> Result<VersionReq> {
+pub(crate) fn version_req(value: &Value, pointer: &str) -> Result<VersionReq> {
     let text = as_str(value, pointer)?;
     if text.trim().is_empty() || text.len() > MAX_VERSION_LEN {
         return Err(invalid(
@@ -388,8 +422,10 @@ fn version_req(value: &Value, pointer: &str) -> Result<VersionReq> {
     })
 }
 
-fn author(obj: &Obj<'_>) -> Result<Author> {
-    obj.deny_unknown(&["name", "email", "url"])?;
+fn author(obj: &Obj<'_>, warnings: &mut Vec<ManifestWarning>) -> Result<Author> {
+    // `author` is display metadata that Glint never acts on, so it is the one
+    // section where unknown keys are tolerated (see manifest-compatibility.md).
+    obj.warn_unknown(&["name", "email", "url"], warnings);
     let name = text_value(obj.required("name")?, &obj.child("name"), MAX_NAME_LEN)?;
     let email = match obj.get("email") {
         None => None,
@@ -485,16 +521,18 @@ fn renderer(obj: &Obj<'_>) -> Result<Renderer> {
     let Value::Number(number) = value else {
         return Err(wrong_type(value, version_ptr, "an integer"));
     };
-    if number.as_u64() != Some(1) {
+    if number.as_u64() != Some(u64::from(SUPPORTED_ENTRYPOINT_VERSION)) {
         return Err(invalid(
             ErrorCode::UnsupportedRenderer,
             version_ptr,
-            format!("entrypointVersion {number} is not supported; expected 1"),
+            format!(
+                "entrypointVersion {number} is not supported; expected {SUPPORTED_ENTRYPOINT_VERSION}"
+            ),
         ));
     }
     Ok(Renderer {
         kind,
-        entrypoint_version: 1,
+        entrypoint_version: SUPPORTED_ENTRYPOINT_VERSION,
     })
 }
 

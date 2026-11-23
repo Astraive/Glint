@@ -43,14 +43,24 @@
 //!   `capabilities` object). IDs must be `<namespace>.<name>[.<name>...]` with
 //!   namespace `surface`, `system`, `desktop`, `native` or `host`, lowercase
 //!   segments, no duplicates, and an ID may not be both required and optional.
-//! - **Unknown fields are rejected everywhere** the format defines an object
-//!   (root, `author`, `compatibility`, `renderer`, each surface). Forward
-//!   compatibility is handled by bumping `schemaVersion`, not by ignoring
-//!   fields. `integrations`, `variants` and `dependencies` from other plan
-//!   pages are therefore *not* accepted in v1. `$schema` is accepted as an
-//!   editor hint and is never dereferenced. Surface `placement` is the one
-//!   open object: its shape is owned by the surface/layout engine (SRF) and is
-//!   kept as raw JSON.
+//! - **Unknown fields are rejected in every security-sensitive section**
+//!   (root, `compatibility`, `renderer`, each surface): an older reader that
+//!   ignored them could silently drop something a newer reader enforces or
+//!   grants. `integrations`, `variants`, `dependencies`, `scripts` and
+//!   `migrations` are therefore *not* accepted in v1. Unknown keys inside
+//!   `author` (display metadata Glint never acts on) are ignored and reported
+//!   as [`WarningCode::UnknownField`] by
+//!   [`parse_theme_manifest_with_diagnostics`] (SCH-003). `$schema` is
+//!   accepted as an editor hint and is never dereferenced. Surface
+//!   `placement` is the one open object: its shape is owned by the
+//!   surface/layout engine (SRF) and is kept as raw JSON. The full table is
+//!   in `docs/architecture/manifest-compatibility.md`.
+//! - **Version negotiation** ([`negotiate_theme_manifest`],
+//!   [`check_compatibility`]) compares `schemaVersion`,
+//!   `compatibility.glint`, `compatibility.sdk` and
+//!   `renderer.entrypointVersion` independently and reports every failing
+//!   axis as `theme-incompatible` with a stable [`IncompatibilityCode`].
+//!   Packages are never migrated and package-supplied scripts never run.
 //! - **Required fields**: `schemaVersion`, `kind`, `id`, `name`, `version`,
 //!   `author` (object with `name`), `license` and `compatibility` (with
 //!   `glint` and a non-empty `platforms` list). Everything else is optional,
@@ -80,14 +90,21 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod compat;
 mod error;
 mod manifest;
 mod parse;
 mod strict_json;
 
-pub use error::{ErrorCode, ManifestError};
+pub use compat::{
+    HostVersions, Incompatibility, IncompatibilityCode, IncompatibilityReport, ManifestVersions,
+    NegotiationError, THEME_INCOMPATIBLE, check_compatibility, check_versions,
+    negotiate_theme_manifest, probe_manifest_versions,
+};
+pub use error::{ErrorCode, ManifestError, ManifestWarning, WarningCode};
 pub use manifest::{
-    Author, Compatibility, PackageKind, Platform, Renderer, RendererKind, Surface, ThemeManifest,
+    Author, Compatibility, PackageKind, ParsedManifest, Platform, Renderer, RendererKind, Surface,
+    ThemeManifest,
 };
 
 /// Stability label of the v1 manifest format. It stays `"proposed"` until the
@@ -96,6 +113,10 @@ pub const FORMAT_STATUS: &str = "proposed";
 
 /// The only `schemaVersion` this crate understands.
 pub const SUPPORTED_SCHEMA_VERSION: u32 = 1;
+
+/// The only `renderer.entrypointVersion` this crate understands. It is
+/// versioned independently of [`SUPPORTED_SCHEMA_VERSION`].
+pub const SUPPORTED_ENTRYPOINT_VERSION: u32 = 1;
 
 /// Largest accepted manifest, in bytes (1 MiB).
 pub const MAX_MANIFEST_BYTES: usize = 1024 * 1024;
@@ -109,6 +130,20 @@ pub const MAX_MANIFEST_BYTES: usize = 1024 * 1024;
 /// [`ErrorCode::MissingId`] (`GLINT_MANIFEST_MISSING_ID`),
 /// [`ErrorCode::UnsupportedSchemaVersion`], [`ErrorCode::WrongKind`] or
 /// [`ErrorCode::UnknownField`].
+///
+/// Warnings are discarded; use [`parse_theme_manifest_with_diagnostics`] to
+/// see them. Both functions accept and reject exactly the same documents.
 pub fn parse_theme_manifest(text: &str) -> Result<ThemeManifest, ManifestError> {
+    parse::parse_theme_manifest(text).map(|parsed| parsed.manifest)
+}
+
+/// Parse and validate a `glint.json` theme manifest, also returning
+/// non-fatal [`ManifestWarning`]s (stable [`WarningCode`]s) for content that
+/// was ignored, such as unknown keys inside `author`.
+///
+/// # Errors
+///
+/// Exactly as [`parse_theme_manifest`].
+pub fn parse_theme_manifest_with_diagnostics(text: &str) -> Result<ParsedManifest, ManifestError> {
     parse::parse_theme_manifest(text)
 }
