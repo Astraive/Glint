@@ -37,7 +37,6 @@ jobs:
         run: pip-audit
       - name: Report actual workflow Python dependency licenses
         run: pip-licenses --format=markdown --with-urls
-      # Rust and npm dependency and license auditing is pending: there is no Cargo.toml, Cargo.lock,
-      # or package.json yet and no reviewed crate/license policy. Add a pinned cargo-audit/cargo-deny
-      # gate (and an npm audit step) only after those prerequisites are established under SEC-EPIC,
-      # REL-002, and REL-009.
+      # Rust advisory, license and source auditing (cargo-deny) and npm license checks run in
+      # license-and-dependency-policy.yml (REL-002). An npm vulnerability audit is still pending
+      # under SEC-EPIC and REL-009.
