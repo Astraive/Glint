@@ -5,6 +5,7 @@ resolver = "3"
 # throwaway feasibility code that is never shipped.
 members = [
     "apps/cli",
+    "crates/glint-package",
     "crates/glint-schema",
     "spikes/windows-appbar",
     "spikes/package-security",

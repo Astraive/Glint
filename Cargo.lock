@@ -137,6 +137,18 @@ name = "glint-cli"
 version = "0.0.0"
 
 [[package]]
+name = "glint-package"
+version = "0.0.0"
+dependencies = [
+ "crc32fast",
+ "flate2",
+ "glint-schema",
+ "sha2",
+ "tempfile",
+ "zip",
+]
+
+[[package]]
 name = "glint-schema"
 version = "0.0.0"
 dependencies = [
