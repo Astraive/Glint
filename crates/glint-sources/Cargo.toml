@@ -1,0 +1,18 @@
+[package]
+name = "glint-sources"
+description = "Source-agnostic theme source model and local source staging for Glint."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+glint-package = { path = "../glint-package" }
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[lints]
+workspace = true

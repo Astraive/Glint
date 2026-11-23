@@ -158,6 +158,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "glint-sources"
+version = "0.0.0"
+dependencies = [
+ "glint-package",
+ "tempfile",
+]
+
+[[package]]
 name = "glint-spike-package-security"
 version = "0.0.0"
 dependencies = [

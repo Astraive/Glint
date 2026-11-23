@@ -7,6 +7,7 @@ members = [
     "apps/cli",
     "crates/glint-package",
     "crates/glint-schema",
+    "crates/glint-sources",
     "spikes/windows-appbar",
     "spikes/package-security",
     "spikes/windows-system-providers",
