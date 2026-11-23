@@ -27,6 +27,18 @@ The responsibility map comes from
 | `crates/glint-schema` (`glint-schema`) | SCH-001, SCH-003 | Parses and validates the *proposed* `glint.json` v1 theme manifest with stable `GLINT_MANIFEST_*` error codes and `GLINT_MANIFEST_WARN_*` warnings; negotiates `schemaVersion`, Glint, SDK and entrypoint versions with stable `GLINT_COMPAT_*` reasons ([manifest compatibility](manifest-compatibility.md)); [`schemas/glint-theme-v1.schema.json`](../../schemas/glint-theme-v1.schema.json) is the matching proposed JSON Schema |
 | `spikes/windows-appbar` (`spike-windows-appbar`) | SPK-001 | Throwaway Win32 appbar + WebView2 host; Windows only (stub that reports "unsupported" elsewhere); findings in [the spike report](../research/spikes/windows-appbar.md) |
 | `spikes/package-security` (`glint-spike-package-security`) | SPK-007 | Throwaway bounded `.glint` validator and hostile ZIP fixture sweep; findings in [package security spike](../research/spikes/package-security.md); never imported by product code |
+| `packages/theme-schema` (`@glint/theme-schema`) | SCH-002 | TypeScript types generated from `schemas/glint-theme-v1.schema.json` (CI fails on drift) and a validator that mirrors the Rust parser; both run the shared corpus in [`tests/package-fixtures/manifests/`](../../tests/package-fixtures/README.md) and must agree on every verdict, code and pointer |
+
+## Manifest source of truth
+
+The Rust parser in `crates/glint-schema` is the authority for manifest rules.
+`schemas/glint-theme-v1.schema.json` is the single source for TypeScript
+types: `packages/theme-schema/scripts/generate-types.mjs` (pinned
+`json-schema-to-typescript`) writes `src/generated/manifest.ts`, and its
+`--check` mode (`corepack pnpm@10.18.0 --filter @glint/theme-schema check`)
+fails when the committed file differs. Rust tests keep the schema's field set
+aligned with the parser, and the shared fixture corpus keeps the two
+validators' behaviour identical.
 
 ## Toolchain pins
 
