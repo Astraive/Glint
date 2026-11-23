@@ -1,0 +1,244 @@
+{
+  "project": "Glint",
+  "archive": "glint-project-master-plan",
+  "snapshot": "2026-11-23",
+  "purpose": "Cross-platform Glint architecture, theme ecosystem, complete discussion reconstruction, and proposed Superpowers implementation plans",
+  "status": "planning documentation only",
+  "files": [
+    {
+      "path": "README.md",
+      "words": 560,
+      "bytes_utf8": 4743
+    },
+    {
+      "path": "00-history/discussion-timeline.md",
+      "words": 697,
+      "bytes_utf8": 5122
+    },
+    {
+      "path": "00-history/decisions-and-open-questions.md",
+      "words": 865,
+      "bytes_utf8": 5834
+    },
+    {
+      "path": "00-history/glossary-and-concepts.md",
+      "words": 489,
+      "bytes_utf8": 3809
+    },
+    {
+      "path": "00-history/conversation-knowledge-dump.md",
+      "words": 892,
+      "bytes_utf8": 6923
+    },
+    {
+      "path": "01-product/vision-and-positioning.md",
+      "words": 675,
+      "bytes_utf8": 5128
+    },
+    {
+      "path": "01-product/feature-inventory.md",
+      "words": 854,
+      "bytes_utf8": 5136
+    },
+    {
+      "path": "01-product/brand-and-design-language.md",
+      "words": 480,
+      "bytes_utf8": 3401
+    },
+    {
+      "path": "01-product/user-journeys-and-screen-map.md",
+      "words": 598,
+      "bytes_utf8": 4388
+    },
+    {
+      "path": "02-architecture/system-architecture.md",
+      "words": 741,
+      "bytes_utf8": 5732
+    },
+    {
+      "path": "02-architecture/process-model-and-ipc.md",
+      "words": 635,
+      "bytes_utf8": 4582
+    },
+    {
+      "path": "02-architecture/capabilities-permissions-and-errors.md",
+      "words": 475,
+      "bytes_utf8": 4032
+    },
+    {
+      "path": "02-architecture/surfaces-and-layout-engine.md",
+      "words": 642,
+      "bytes_utf8": 4688
+    },
+    {
+      "path": "02-architecture/renderer-and-state.md",
+      "words": 645,
+      "bytes_utf8": 4772
+    },
+    {
+      "path": "03-platforms/compatibility-matrix.md",
+      "words": 619,
+      "bytes_utf8": 3834
+    },
+    {
+      "path": "03-platforms/windows-architecture.md",
+      "words": 551,
+      "bytes_utf8": 4202
+    },
+    {
+      "path": "03-platforms/linux-architecture.md",
+      "words": 585,
+      "bytes_utf8": 4584
+    },
+    {
+      "path": "03-platforms/macos-architecture.md",
+      "words": 396,
+      "bytes_utf8": 3178
+    },
+    {
+      "path": "04-themes/theme-system-end-to-end.md",
+      "words": 687,
+      "bytes_utf8": 5070
+    },
+    {
+      "path": "04-themes/manifest-and-glint-package-spec.md",
+      "words": 646,
+      "bytes_utf8": 5203
+    },
+    {
+      "path": "04-themes/sdk-and-react-authoring.md",
+      "words": 601,
+      "bytes_utf8": 4958
+    },
+    {
+      "path": "04-themes/theme-composition-layout-and-variants.md",
+      "words": 462,
+      "bytes_utf8": 3734
+    },
+    {
+      "path": "04-themes/widgets-extensions-and-safe-execution.md",
+      "words": 460,
+      "bytes_utf8": 3539
+    },
+    {
+      "path": "05-distribution/registry-and-glint-library.md",
+      "words": 539,
+      "bytes_utf8": 4013
+    },
+    {
+      "path": "05-distribution/sources-and-download-strategies.md",
+      "words": 496,
+      "bytes_utf8": 3768
+    },
+    {
+      "path": "05-distribution/installer-lifecycle-and-updates.md",
+      "words": 499,
+      "bytes_utf8": 3701
+    },
+    {
+      "path": "05-distribution/community-theme-publishing.md",
+      "words": 347,
+      "bytes_utf8": 2592
+    },
+    {
+      "path": "06-engineering/monorepo-and-module-boundaries.md",
+      "words": 506,
+      "bytes_utf8": 4144
+    },
+    {
+      "path": "06-engineering/cli-and-developer-experience.md",
+      "words": 423,
+      "bytes_utf8": 3279
+    },
+    {
+      "path": "06-engineering/testing-and-quality-gates.md",
+      "words": 530,
+      "bytes_utf8": 3925
+    },
+    {
+      "path": "06-engineering/roadmap-milestones-and-success.md",
+      "words": 611,
+      "bytes_utf8": 4369
+    },
+    {
+      "path": "06-engineering/work-breakdown-and-issue-backlog.md",
+      "words": 765,
+      "bytes_utf8": 5880
+    },
+    {
+      "path": "06-engineering/risks-feasibility-and-tradeoffs.md",
+      "words": 668,
+      "bytes_utf8": 4644
+    },
+    {
+      "path": "08-research/official-references.md",
+      "words": 396,
+      "bytes_utf8": 3800
+    },
+    {
+      "path": "08-research/prior-art-and-differentiation.md",
+      "words": 424,
+      "bytes_utf8": 3216
+    },
+    {
+      "path": "08-research/feasibility-spikes.md",
+      "words": 417,
+      "bytes_utf8": 3167
+    },
+    {
+      "path": "07-examples/default-config-and-registry.md",
+      "words": 265,
+      "bytes_utf8": 2182
+    },
+    {
+      "path": "07-examples/full-programmable-theme-walkthrough.md",
+      "words": 492,
+      "bytes_utf8": 4050
+    },
+    {
+      "path": "07-examples/end-to-end-command-workflows.md",
+      "words": 370,
+      "bytes_utf8": 2891
+    },
+    {
+      "path": "docs/superpowers/specs/2026-11-23-glint-platform-design.md",
+      "words": 1127,
+      "bytes_utf8": 8750
+    },
+    {
+      "path": "docs/superpowers/plans/2026-11-23-glint-foundation-plan.md",
+      "words": 972,
+      "bytes_utf8": 7980
+    },
+    {
+      "path": "docs/superpowers/plans/2026-11-23-glint-theme-runtime-plan.md",
+      "words": 835,
+      "bytes_utf8": 7061
+    },
+    {
+      "path": "docs/superpowers/plans/2026-11-23-glint-platform-adapters-plan.md",
+      "words": 727,
+      "bytes_utf8": 6257
+    },
+    {
+      "path": "docs/superpowers/plans/2026-11-23-glint-library-distribution-plan.md",
+      "words": 869,
+      "bytes_utf8": 7030
+    },
+    {
+      "path": "INDEX.md",
+      "words": 454,
+      "bytes_utf8": 5091
+    },
+    {
+      "path": "ALL-IN-ONE-GLINT-DUMP.md",
+      "words": 26798,
+      "bytes_utf8": 206689
+    }
+  ],
+  "notes": [
+    "User decisions distinguished from recommendations and research needs",
+    "URLs and technical references verified during planning",
+    "Contains markdown design docs and code examples but no implemented Glint app"
+  ]
+}
