@@ -49,18 +49,26 @@ pub struct Migration {
 }
 
 /// Every migration this build knows, in order.
-pub const MIGRATIONS: &[Migration] = &[Migration {
-    version: 1,
-    name: "init",
-    sql: include_str!("migrations/001_init.sql"),
-    tables: &[
-        "packages",
-        "grants",
-        "profiles",
-        "install_locks",
-        "active_profile",
-    ],
-}];
+pub const MIGRATIONS: &[Migration] = &[
+    Migration {
+        version: 1,
+        name: "init",
+        sql: include_str!("migrations/001_init.sql"),
+        tables: &[
+            "packages",
+            "grants",
+            "profiles",
+            "install_locks",
+            "active_profile",
+        ],
+    },
+    Migration {
+        version: 2,
+        name: "install-journal",
+        sql: include_str!("migrations/002_install_journal.sql"),
+        tables: &["install_journal"],
+    },
+];
 
 /// The schema version this build migrates to.
 pub fn latest_schema_version() -> u32 {
