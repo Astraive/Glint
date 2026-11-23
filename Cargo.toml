@@ -1,0 +1,26 @@
+[workspace]
+resolver = "3"
+# Members are added only when a ticket exercises them (PRJ-002): no empty
+# placeholder crates. apps/ stays thin, crates/ holds Rust logic, spikes/ holds
+# throwaway feasibility code that is never shipped.
+members = [
+    "apps/cli",
+]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.95"
+license = "MIT"
+repository = "https://github.com/Astraive/Glint"
+publish = false
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+dbg_macro = "deny"
+todo = "deny"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

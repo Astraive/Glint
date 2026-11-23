@@ -1,0 +1,16 @@
+[package]
+name = "glint-cli"
+description = "Glint command-line interface (thin; logic lives in crates/)."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "glint"
+path = "src/main.rs"
+
+[lints]
+workspace = true

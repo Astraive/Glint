@@ -1,0 +1,5 @@
+[toolchain]
+# Pinned after compiling on the Windows 11 hands-on host (PRJ-002).
+channel = "1.95.0"
+components = ["rustfmt", "clippy"]
+profile = "minimal"
