@@ -12,6 +12,7 @@ members = [
     "spikes/windows-appbar",
     "spikes/package-security",
     "spikes/windows-system-providers",
+    "spikes/webview2-baseline",
 ]
 
 [workspace.package]

@@ -368,6 +368,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "spike-webview2-baseline"
+version = "0.0.0"
+dependencies = [
+ "webview2-com",
+ "windows",
+]
+
+[[package]]
 name = "spike-windows-appbar"
 version = "0.0.0"
 dependencies = [

@@ -1,0 +1,20 @@
+[package]
+name = "spike-webview2-baseline"
+description = "SPK-008 throwaway spike: hosts one React probe panel in WebView2 and records rendering, frame timing, accessibility and memory evidence. Never shipped."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "spike-webview2-baseline"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[target."cfg(windows)".dependencies]
+webview2-com = "0.39.1"
+windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_System_Com", "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_UI_Accessibility", "Win32_UI_Controls", "Win32_UI_HiDpi", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
