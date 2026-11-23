@@ -23,8 +23,10 @@ document is planned, not built.** What exists today:
 - repository and CI hygiene (private vulnerability reporting, read-only
   workflow tokens, pinned actions) from PRJ-001.
 
-There is no daemon, shell, renderer bridge, installer, source fetcher,
-registry client, permission engine or IPC server. Where this document says
+A library-level installer exists (`glint-installer`: content-addressed
+store, journal and crash recovery, INS-003) but nothing calls it yet. There
+is no daemon, shell, renderer bridge, source fetcher, registry client,
+permission engine or IPC server. Where this document says
 "Glint does X", read it as "Glint must do X before the owning ticket closes".
 
 Ticket IDs (for example `PKG-001`) refer to the local project backlog. That
@@ -75,7 +77,7 @@ behaviour in this document is design intent and has not been run.
 | Manifest parser | Parses `glint.json` | Parses untrusted input | **Yes** (SCH-001) |
 | Source resolvers | Local file/directory, Git, artifact URL and registry sources | Fetch untrusted input | No |
 | Registry client | Fetches and caches `registry.json` indexes | Fetches untrusted metadata | No |
-| Installer and store | Staging, content-addressed immutable store, SQLite state, journal, rollback | Trusted | No |
+| Installer and store | Staging, content-addressed immutable store, SQLite state, journal, rollback | Trusted | Partly (`glint-storage`, `glint-installer`; INS-001 to INS-003) |
 | Permission engine | Per-package grants and authorization checks | Trusted | No |
 | Local IPC server | Typed, versioned requests from the manager and CLI | Boundary | No |
 | Manager app (Tauri + UI SDK) | Gallery, install and permission dialogs, profile editor | Trusted UI that displays untrusted metadata | No |
@@ -264,7 +266,7 @@ CLI, local theme directories, and bytes handed over by a source resolver.
 |---|---|---|---|---|---|
 | B1.1 | S | A non-ZIP file (executable, polyglot with a prepended EXE stub) named `.glint` | Identify by magic bytes `PK\x03\x04` at offset 0; open with a fixed archive offset so a shifted archive is refused | PKG-001 | Prototyped: SPK-007 fixtures `not_a_zip_text`, `polyglot_prepended_executable` in [`hostile_fixtures.rs`](../../spikes/package-security/tests/hostile_fixtures.rs) |
 | B1.2 | T | The file changes between validation and staging (TOCTOU) | Copy into a Glint-owned staging file while hashing, then validate that copy; the spike's `FILE_SHARE_READ` lock is Windows-only | PKG-001, INS-003 | Prototyped on Windows only; the copy-first design is Planned ([spike gap 2](../research/spikes/package-security.md#gaps-and-recommendations-for-pkg-001)) |
-| B1.3 | T | Another local process swaps a junction or symlink into the staging parent | Staging under a Glint-owned directory with a restrictive ACL or mode; handle-relative creation (`openat`, `NtCreateFile` with a root handle, or `cap-std`) | INS-003, PKG-001 | Planned ([spike gap 3](../research/spikes/package-security.md#gaps-and-recommendations-for-pkg-001)) |
+| B1.3 | T | Another local process swaps a junction or symlink into the staging parent | Staging under a Glint-owned directory with a restrictive ACL or mode; handle-relative creation (`openat`, `NtCreateFile` with a root handle, or `cap-std`) | INS-003, PKG-001 | Partly **Implemented**: the installer stages only under `<data>/staging` resolved by `glint-storage` (`0700` on Unix; per-user `%LOCALAPPDATA%` ACL on Windows), refuses candidates staged anywhere else (`candidates_staged_elsewhere_are_refused` in [`transaction.rs`](../../crates/glint-installer/tests/transaction.rs)) and refuses a file, symlink or junction where a Glint-owned directory belongs (`ensure_dirs_refuses_*` in [`paths.rs`](../../crates/glint-storage/tests/paths.rs)). Handle-relative creation is still Planned ([spike gap 3](../research/spikes/package-security.md#gaps-and-recommendations-for-pkg-001)) |
 | B1.4 | E | Import activates a theme, or grants permissions, without the user seeing it | Import only installs; activation and grants need an explicit step showing author, origin, permissions and signing status | CLI-002, MGR-002, MGR-004 | Planned |
 | B1.5 | T | Same `id` imported from a different origin silently replaces an installed package | Provenance per install; refuse silent same-ID overwrite; ask for explicit disambiguation | INS-004, SCH-004 | Planned |
 | B1.6 | E | A local theme directory triggers a build or runs `npm` scripts | Consumer import never builds; directories go through the same validation as archives. `glint theme dev` is a creator tool that runs the author's own toolchain and is documented as such | SRC-001, CRT-005 | Planned |
@@ -279,9 +281,9 @@ CLI, local theme directories, and bytes handed over by a source resolver.
 | B2.3 | T | Duplicate names, case-fold collisions, file-versus-directory clashes and local/central header disagreement make different tools see different files | Reject exact and case-folded duplicates; ASCII-only names by default; check header consistency and overlapping entries | PKG-001 | Prototyped: `case_fold_manifest_shadow`, `local_and_central_names_differ`, `overlapping_entries_share_data` |
 | B2.4 | D | Compression bombs, understated sizes, too many entries, deep trees | Limits on archive size, entry count (checked on the EOCD before the crate parses), per-file and total size, ratio, depth and path length; bounded inflate that compares actual and declared size | PKG-001 | Prototyped: [recommended `PackageLimits`](../research/spikes/package-security.md#recommended-packagelimits-defaults) and 10 bomb fixtures |
 | B2.5 | E | Executables or scripts in the package are run later by something | Reject executable extensions and magic (`MZ`, ELF, Mach-O, `#!`); nothing in Glint ever executes package files; SVG images must be inert (no script, `foreignObject`, event handlers, `javascript:` or entity declarations) | PKG-001, PKG-004 | **Implemented**: `pe_magic_disguised_as_png`, `script_extension`, `shell_script_extension` in [`security.rs`](../../crates/glint-package/tests/security.rs); `missing_entrypoint_remote_script_and_executables_have_distinct_codes`, `svg_script`, `install_script_field` in [`references.rs`](../../crates/glint-package/tests/references.rs). `.wasm` is refused; font hinting programs remain open (spike gap 9) |
-| B2.6 | T | Paths valid in the archive exceed Windows `MAX_PATH` once joined to the staging root | Long-path-aware APIs or a combined length cap with a typed error | PKG-001 | Planned (spike gap 4) |
+| B2.6 | T | Paths valid in the archive exceed Windows `MAX_PATH` once joined to the staging root | Long-path-aware APIs or a combined length cap with a typed error | PKG-001, INS-003 | Partly **Implemented**: store entries longer than 260 characters install and remove through the Rust standard library's long-path handling (`installs_store_entries_longer_than_max_path` in [`transaction.rs`](../../crates/glint-installer/tests/transaction.rs)). Gap: bundled SQLite cannot open a database path over 260 characters on Windows (`SQLITE_CANTOPEN`), so a very long `GLINT_HOME` fails at open with `GLINT_STORAGE_DATABASE`; the reader's combined length cap is Planned (spike gap 4) |
 | B2.7 | T | Unexercised ZIP features: data descriptors, ZIP64, comments, trailing data, multiple EOCDs | Add fixtures or refuse explicitly | PKG-001, PKG-002 | Planned (spike gap 7; ZIP64 is refused in the spike) |
-| B2.8 | T | Installed files modified after install | Content-addressed immutable store; assets served from the store by digest; hash check at boot | INS-003, COR-005, RND-001 | Planned. A same-user process can still edit the store; see non-goals |
+| B2.8 | T | Installed files modified after install | Content-addressed immutable store; assets served from the store by digest; hash check at boot | INS-003, COR-005, RND-001 | Partly **Implemented**: entries live at `store/<sha256>` with read-only files, appear by one rename from staging and are never written again; re-indexing after database loss re-hashes each archive and discards entries that do not match their address (`a_tampered_store_entry_is_not_reindexed` in [`transaction.rs`](../../crates/glint-installer/tests/transaction.rs)). Serving by digest (RND-001) and a hash check at boot (COR-005) are Planned. A same-user process can still edit the store; see non-goals |
 
 ### B3 Manifest
 
