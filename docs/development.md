@@ -11,7 +11,7 @@ To inspect, validate, and work on the current repository and the local external 
 - **Git** (configured for LF normalization via [`.gitattributes`](../.gitattributes) and [`.editorconfig`](../.editorconfig)).
 - **GitHub CLI (`gh`)**: optional for local development; required only for read-only API inspection or explicitly authorized remote configuration and publication runs.
 
-Windows 11 is the only current verification host. Linux and macOS work is compile-only in CI until real hardware exists.
+Windows 11 is the only current verification host. Linux and macOS work is compile-only in CI until real hardware exists. See the [OS test matrix and environment pinning](quality/test-matrix.md).
 
 ## Local repository and convention checks
 

@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- OS test matrix and environment pinning: [docs/quality/test-matrix.md](docs/quality/test-matrix.md), with honest `not-run` rows for Linux and macOS hardware (`[QA-007]`).
 - Architecture decision records: [docs/adr/](docs/adr/README.md) with the process, a template and ADRs 0001 to 0005 recording decisions already made (`[DOC-001]`).
 - Initial repository MIT license ([LICENSE](LICENSE), `Copyright (c) 2026 Astraive`).
 - Glint planning and project knowledge archive under [docs/plan/](docs/plan/README.md): history and decision register, product vision, architecture, platform notes, theme/package specifications, distribution design, engineering roadmap and work breakdown, examples, research, and Superpowers design spec and implementation plans (snapshot 2026-11-23). This is design material, not implemented or tested software.
