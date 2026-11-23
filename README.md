@@ -22,6 +22,7 @@ The product source of truth is the planning archive in [docs/plan/](docs/plan/RE
 
 Repository operations guides:
 
+- [docs/adr/README.md](docs/adr/README.md) — architecture decision records: decision register and ADR process
 - [docs/development.md](docs/development.md) — current local verification tooling, opt-in hooks, and future workspace workflow
 - [docs/issue-conventions.md](docs/issue-conventions.md) — stable ticket IDs, label taxonomy, PR/commit rules, and external backlog separation
 - [docs/release-process.md](docs/release-process.md) — release independence, versioning and gates (nothing has been released)

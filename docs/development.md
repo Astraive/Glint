@@ -67,5 +67,6 @@ The plan proposes a Rust workspace with separate crates for core, daemon, shell,
 
 - Never place `../.issues/` files, `issue.json` records, `publication-ledger.json`, `publication-ledger.lock`, derived backlog reports, personal media, proprietary fonts, or unredacted host paths inside either repository.
 - Never commit unverified placeholder manifests, mock packages, or fake CI passes for unimplemented components.
+- Record decisions as ADRs under [`docs/adr/`](adr/README.md) (register and process live there); `docs/plan/` is a frozen baseline.
 - Do not edit `docs/plan/` to hide inconsistencies; fix them deliberately and keep accuracy labels (`CONFIRMED`, `RECOMMENDED`, `RESEARCH REQUIRED`, `NOT GUARANTEED`) honest.
 - Verify internal relative links with `python scripts/check-repository.py` before opening a pull request.
