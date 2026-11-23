@@ -1,0 +1,291 @@
+/* SPK-008 throwaway probe panel. Two halves:
+ *  1. The panel itself, written the way the proposed baseline asks theme
+ *     authors to write CSS: a plain declaration first, the enhancement after
+ *     it or inside @supports, so an engine that drops the enhancement still
+ *     renders a usable panel.
+ *  2. Probe rules (.pr-*) that the page reads back with getComputedStyle to
+ *     prove a feature was applied, not only parsed by CSS.supports().
+ * System fonts only; no third-party fonts or remote assets. */
+
+/* ------------------------------------------------------------ tokens --- */
+:root {
+  color-scheme: light dark;
+  --font-ui: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Cantarell", "Adwaita Sans", sans-serif;
+  --font-display: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --radius: 10px;
+  --panel-h: 40px;
+  /* Fallback first: plain sRGB values every engine understands. */
+  --surface: rgba(32, 32, 36, 0.72);
+  --surface-solid: rgb(32, 32, 36);
+  --text: rgb(240, 240, 245);
+  --accent: rgb(76, 140, 255);
+  --accent-soft: rgba(76, 140, 255, 0.25);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  :root {
+    --accent-soft: color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --surface: rgba(248, 248, 252, 0.74);
+    --surface-solid: rgb(248, 248, 252);
+    --text: rgb(20, 20, 24);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  /* Transparent so the host's DefaultBackgroundColor (alpha 0) shows through. */
+  background: transparent;
+  color: var(--text);
+  font: 13px/1.4 var(--font-ui);
+}
+
+/* ------------------------------------------------------- wallpaper ----- */
+.wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: rgb(40, 60, 120);
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 120, 80, 0.9), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(60, 200, 160, 0.9), transparent 45%),
+    linear-gradient(135deg, rgb(30, 40, 90), rgb(90, 30, 110));
+}
+
+/* The right third stays fully transparent: translucency evidence area. */
+.wallpaper.with-hole {
+  right: 33%;
+}
+
+/* ----------------------------------------------------------- panel ----- */
+.panel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--panel-h);
+  padding: 0 8px;
+  background: var(--surface-solid);
+  box-shadow: var(--shadow);
+}
+
+/* Enhancement: frosted glass where backdrop-filter exists, otherwise the
+ * solid surface above stays (readable, just not translucent). */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .panel, .card {
+    background: var(--surface);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    backdrop-filter: blur(20px) saturate(1.4);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .panel, .card {
+    background: var(--surface-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+.panel button, .tile button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  border-radius: 6px;
+  padding: 4px 10px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.panel button:hover { background: var(--accent-soft); }
+.panel button[aria-pressed="true"] { background: var(--accent); color: white; }
+.panel button:focus-visible, .tile button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.brand { font: 600 14px/1 var(--font-display); }
+.spacer { flex: 1 1 auto; }
+.clock { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.switch[aria-checked="true"] { background: var(--accent-soft); }
+
+/* ------------------------------------------------- control center ----- */
+.center {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  /* Container queries: the card grid adapts to its own width. */
+  container-type: inline-size;
+  container-name: center;
+}
+
+.cards {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+}
+
+@container center (min-width: 420px) {
+  .cards { grid-template-columns: 1fr 1fr; }
+}
+
+.card {
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  background: var(--surface-solid);
+  box-shadow: var(--shadow);
+}
+
+.card h2 {
+  margin: 0 0 6px;
+  font: 600 12px/1.2 var(--font-display);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 6px;
+}
+
+.tile {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), rgb(160, 90, 255));
+}
+
+.phase-transform .tile { animation: wobble 900ms ease-in-out infinite alternate; }
+
+@keyframes wobble {
+  from { transform: translateY(0) rotate(0deg); opacity: 1; }
+  to { transform: translateY(-4px) rotate(8deg); opacity: 0.6; }
+}
+
+.glass-mover {
+  height: 56px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
+
+.phase-effects .glass-mover { animation: slide 1200ms ease-in-out infinite alternate; }
+.phase-effects .card { animation: glow 800ms ease-in-out infinite alternate; }
+
+@keyframes slide {
+  from { transform: translateX(0); }
+  to { transform: translateX(40%); }
+}
+
+@keyframes glow {
+  from { box-shadow: var(--shadow); filter: blur(0); }
+  to { box-shadow: 0 12px 40px rgba(76, 140, 255, 0.6); filter: blur(0.6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile, .glass-mover, .card { animation-duration: 1ms !important; animation-iteration-count: 1 !important; }
+}
+
+.meter { width: 100%; height: 6px; accent-color: var(--accent); }
+
+.images { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.images img { width: 32px; height: 32px; image-rendering: pixelated; border-radius: 4px; }
+
+.results {
+  font: 11px/1.35 var(--font-mono);
+  max-height: 260px;
+  overflow: auto;
+  white-space: pre-wrap;
+  scrollbar-gutter: stable;
+}
+
+.masked {
+  height: 24px;
+  background: linear-gradient(90deg, var(--accent), rgb(255, 120, 80));
+  -webkit-mask-image: linear-gradient(90deg, black 60%, transparent);
+  mask-image: linear-gradient(90deg, black 60%, transparent);
+}
+
+/* ---------------------------------------------------- probe rules ----- */
+#probes {
+  position: absolute;
+  left: -10000px;
+  top: 0;
+  width: 400px;
+}
+
+#probes div { position: relative; }
+
+.pr-backdrop { backdrop-filter: blur(8px); }
+.pr-backdrop-webkit { -webkit-backdrop-filter: blur(8px); }
+.pr-filter { filter: blur(4px); }
+.pr-linear { background-image: linear-gradient(90deg, red, blue); }
+.pr-radial { background-image: radial-gradient(circle, red, blue); }
+.pr-conic { background-image: conic-gradient(from 90deg, red, blue); }
+.pr-grad-oklch { background-image: linear-gradient(in oklch, red, blue); }
+.pr-box-shadow { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), inset 0 0 0 1px red; }
+.pr-text-shadow { text-shadow: 0 1px 2px black; }
+.pr-mask { mask-image: linear-gradient(black, transparent); }
+.pr-mask-webkit { -webkit-mask-image: linear-gradient(black, transparent); }
+.pr-clip-path { clip-path: path("M0 0 L10 0 L10 10 Z"); }
+.pr-blend { mix-blend-mode: multiply; }
+
+.pr-cq { container-type: inline-size; width: 300px; }
+@container (min-width: 200px) { .pr-cq-kid { order: 7; } }
+.pr-cq-unit { width: 50cqi; }
+.pr-csq { --pr-theme: dark; }
+@container style(--pr-theme: dark) { .pr-csq-kid { order: 7; } }
+
+.pr-has:has(> .pr-has-kid) { order: 7; }
+.pr-nest {
+  & > .pr-nest-kid { order: 7; }
+}
+.pr-is :is(.pr-is-kid) { order: 7; }
+
+.pr-color-mix { color: rgb(0, 0, 0); color: color-mix(in srgb, rgb(255, 0, 0) 50%, rgb(0, 0, 255)); }
+.pr-light-dark { color-scheme: light; color: rgb(0, 0, 0); color: light-dark(rgb(1, 2, 3), rgb(4, 5, 6)); }
+.pr-oklch { color: rgb(0, 0, 0); color: oklch(0.7 0.15 250); }
+.pr-relative { color: rgb(0, 0, 0); color: rgb(from rgb(10, 20, 30) r g calc(b + 10)); }
+.pr-p3 { color: rgb(0, 0, 0); color: color(display-p3 1 0 0); }
+
+@layer probe {
+  .pr-layer { order: 7; }
+}
+@property --pr-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 42deg;
+}
+@scope (.pr-scope) {
+  .pr-scope-kid { order: 7; }
+}
+
+.pr-subgrid { display: grid; grid-template-columns: 10px 20px; }
+.pr-subgrid > div { display: grid; grid-column: 1 / 3; grid-template-columns: subgrid; }
+/* overflow: hidden drops the content-based min-height so text cannot
+ * stretch the box past its ratio. */
+.pr-aspect { width: 40px; aspect-ratio: 2 / 1; overflow: hidden; }
+.pr-dvh { height: 10dvh; }
+.pr-text-wrap { text-wrap: balance; }
+.pr-app-region { -webkit-app-region: drag; }
+.pr-scroll-timeline { animation-timeline: scroll(); }
+.pr-anchor { anchor-name: --pr-anchor; }
+.pr-font-var { font-variation-settings: "wght" 650; }
+.pr-content-vis { content-visibility: auto; }
+.pr-translate { translate: 3px 4px; }
+.pr-inset { position: absolute; inset: 1px 2px 3px 4px; }
+.pr-scrollbar-color { scrollbar-color: red blue; }
+.pr-field-sizing { field-sizing: content; }
+.pr-interpolate-size { interpolate-size: allow-keywords; }
+.pr-line-clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }

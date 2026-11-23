@@ -34,3 +34,6 @@
 *.woff2 binary
 *.zip binary
 *.glint binary
+*.avif binary
+# Generated bundle (rebuilt from spikes/webview2-baseline/web); not hand-edited.
+spikes/webview2-baseline/assets/app.js linguist-generated=true
