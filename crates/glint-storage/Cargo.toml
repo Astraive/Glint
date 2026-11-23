@@ -1,0 +1,21 @@
+[package]
+name = "glint-storage"
+description = "Glint's local state: OS-resolved config/data/cache paths and the SQLite state database."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+# Platform base directories (INS-001): XDG base directory spec on Linux,
+# SHGetKnownFolderPath on Windows, Standard Directories on macOS. Glint adds
+# its own application sub-paths on top; see src/paths.rs.
+dirs = "7.0.0"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[lints]
+workspace = true

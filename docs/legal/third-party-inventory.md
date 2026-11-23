@@ -6,7 +6,7 @@ This file lists every third-party dependency recorded in `Cargo.lock` and the in
 
 It is an inventory of declared package metadata, not legal advice and not a release notice bundle. Where a package declares an `OR` expression, the license column shows the whole expression; the policy accepts a package when at least one alternative is on the allow-list. No Glint release exists yet, so no release-time NOTICE file has been produced (planned under REL-009).
 
-## Rust crates (75)
+## Rust crates (80)
 
 Source: `cargo metadata --locked`, which covers every target platform in `Cargo.lock`, excluding Glint's own workspace crates. Enforced by `deny.toml`.
 
@@ -23,6 +23,8 @@ Source: `cargo metadata --locked`, which covers every target platform in `Cargo.
 | crc32fast | 1.5.5 | MIT OR Apache-2.0 |
 | crypto-common | 0.2.2 | MIT OR Apache-2.0 |
 | digest | 0.11.3 | MIT OR Apache-2.0 |
+| dirs | 7.0.0 | MIT OR Apache-2.0 |
+| dirs-sys | 0.5.0 | MIT OR Apache-2.0 |
 | equivalent | 1.0.3 | Apache-2.0 OR MIT |
 | errno | 0.3.15 | MIT OR Apache-2.0 |
 | fastrand | 2.5.0 | Apache-2.0 OR MIT |
@@ -34,13 +36,16 @@ Source: `cargo metadata --locked`, which covers every target platform in `Cargo.
 | itoa | 1.0.19 | MIT OR Apache-2.0 |
 | js-sys | 0.3.107 | MIT OR Apache-2.0 |
 | libc | 0.2.191 | MIT OR Apache-2.0 |
+| libredox | 0.1.25 | MIT |
 | linux-raw-sys | 0.12.1 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT |
 | memchr | 2.8.3 | Unlicense OR MIT |
 | nix | 0.32.0 | MIT |
 | once_cell | 1.21.4 | MIT OR Apache-2.0 |
+| option-ext | 0.2.0 | MPL-2.0 |
 | proc-macro2 | 1.0.107 | MIT OR Apache-2.0 |
 | quote | 1.0.47 | MIT OR Apache-2.0 |
 | r-efi | 6.0.0 | MIT OR Apache-2.0 OR LGPL-2.1-or-later |
+| redox_users | 0.5.3 | MIT |
 | rustix | 1.1.6 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT |
 | rustversion | 1.0.23 | MIT OR Apache-2.0 |
 | semver | 1.0.28 | MIT OR Apache-2.0 |

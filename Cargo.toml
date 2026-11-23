@@ -9,6 +9,7 @@ members = [
     "crates/glint-platform",
     "crates/glint-schema",
     "crates/glint-sources",
+    "crates/glint-storage",
     "crates/glint-surfaces",
     "spikes/windows-appbar",
     "spikes/package-security",
