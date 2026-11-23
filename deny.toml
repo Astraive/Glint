@@ -1,0 +1,49 @@
+# cargo-deny policy (REL-002). Human-readable rationale: docs/legal/license-policy.md.
+# Run locally: cargo deny --locked check   (CI: the "Dependency policy" job).
+
+[graph]
+# Evaluate every target Glint plans to build, not only the host.
+targets = [
+    "x86_64-pc-windows-msvc",
+    "x86_64-unknown-linux-gnu",
+    "aarch64-apple-darwin",
+]
+
+[advisories]
+# RustSec advisory database. Fetched by cargo-deny at run time.
+unmaintained = "workspace"
+yanked = "deny"
+ignore = []
+
+[licenses]
+confidence-threshold = 0.9
+# The allow-list is policy, not a record of what is used today; the inventory
+# (docs/legal/third-party-inventory.md) records what is used.
+unused-allowed-license = "allow"
+# Permissive licenses plus MPL-2.0 (file-level copyleft; allowed for unmodified
+# use as a dependency, modifications to MPL files must be published).
+# GPL, AGPL and LGPL are deliberately absent, so they are denied.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "MPL-2.0",
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+# Path dependencies between workspace crates carry no version requirement.
+allow-wildcard-paths = true
+highlight = "all"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

@@ -10,7 +10,10 @@
   "scripts": {
     "lint": "biome lint .",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test"
+    "test": "pnpm -r --if-present test",
+    "licenses:check": "node scripts/check-npm-licenses.mjs",
+    "licenses:inventory": "node scripts/generate-third-party-inventory.mjs",
+    "licenses:inventory:check": "node scripts/generate-third-party-inventory.mjs --check"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8"
