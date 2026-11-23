@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "kind": "theme",
+  "id": "dev.example.minimal",
+  "name": "Minimal",
+  "version": "1.2.3-beta.1+build.007",
+  "author": {
+    "name": "Glint Test Fixtures"
+  },
+  "license": "MIT",
+  "compatibility": {
+    "glint": ">=0.1.0, <0.3.0",
+    "platforms": [
+      "windows"
+    ],
+    "sdk": "~0.1"
+  }
+}

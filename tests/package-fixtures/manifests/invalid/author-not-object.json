@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "kind": "theme",
+  "id": "dev.example.minimal",
+  "name": "Minimal",
+  "version": "0.1.0",
+  "author": "someone",
+  "license": "MIT",
+  "compatibility": {
+    "glint": ">=0.1.0",
+    "platforms": [
+      "windows"
+    ]
+  }
+}

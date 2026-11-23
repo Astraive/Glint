@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "kind": "theme",
+  "id": "dev.example.midnight",
+  "name": "Midnight",
+  "version": "1.0.0",
+  "author": {
+    "name": "Glint Test Fixtures",
+    "email": "fixtures@example.com",
+    "url": "https://example.com/glint"
+  },
+  "description": "Monochrome Glint desktop theme",
+  "license": "MIT",
+  "compatibility": {
+    "glint": ">=0.1.0",
+    "sdk": "^0.1.0",
+    "platforms": [
+      "windows",
+      "linux",
+      "macos"
+    ]
+  },
+  "renderer": {
+    "kind": "glint-web",
+    "entrypointVersion": 1
+  },
+  "requiredCapabilities": [
+    "surface.launcher"
+  ],
+  "optionalCapabilities": [
+    "desktop.workspaces.read",
+    "system.audio.write"
+  ],
+  "tokens": "theme/tokens.json",
+  "assets": {
+    "wallpaper": "assets\\wallpaper.png",
+    "preview": "preview.png"
+  },
+  "layouts": {
+    "default": "layouts/default.json"
+  },
+  "surfaces": {
+    "panel": {
+      "entry": "dist/panel/index.html",
+      "placement": {
+        "anchor": "top",
+        "height": 48
+      }
+    },
+    "launcher": {
+      "entry": "dist/launcher/index.html",
+      "placement": {
+        "kind": "floating",
+        "position": "center"
+      }
+    },
+    "control-center": {
+      "entry": "dist/control-center/index.html"
+    }
+  }
+}

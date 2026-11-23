@@ -1,0 +1,387 @@
+{
+  "$comment": "Golden expectations for the shared manifest corpus (SCH-002). Every file under valid/ and invalid/ has exactly one entry. Codes and pointers are the stable contract; both the Rust parser (crates/glint-schema) and the TypeScript validator (packages/theme-schema) must produce exactly these results.",
+  "errorCodes": [
+    "GLINT_MANIFEST_INVALID_JSON",
+    "GLINT_MANIFEST_TOO_LARGE",
+    "GLINT_MANIFEST_DUPLICATE_KEY",
+    "GLINT_MANIFEST_NOT_AN_OBJECT",
+    "GLINT_MANIFEST_MISSING_SCHEMA_VERSION",
+    "GLINT_MANIFEST_UNSUPPORTED_SCHEMA_VERSION",
+    "GLINT_MANIFEST_MISSING_KIND",
+    "GLINT_MANIFEST_WRONG_KIND",
+    "GLINT_MANIFEST_MISSING_ID",
+    "GLINT_MANIFEST_INVALID_ID",
+    "GLINT_MANIFEST_MISSING_FIELD",
+    "GLINT_MANIFEST_UNKNOWN_FIELD",
+    "GLINT_MANIFEST_INVALID_TYPE",
+    "GLINT_MANIFEST_INVALID_VALUE",
+    "GLINT_MANIFEST_INVALID_VERSION",
+    "GLINT_MANIFEST_INVALID_VERSION_REQUIREMENT",
+    "GLINT_MANIFEST_INVALID_PATH",
+    "GLINT_MANIFEST_INVALID_CAPABILITY",
+    "GLINT_MANIFEST_UNSUPPORTED_RENDERER"
+  ],
+  "warningCodes": [
+    "GLINT_MANIFEST_WARN_UNKNOWN_FIELD"
+  ],
+  "notCoveredByFixtures": {
+    "GLINT_MANIFEST_TOO_LARGE": "A fixture over 1 MiB is not committed; both validators unit-test the limit with a generated document."
+  },
+  "valid": {
+    "author-unknown-keys.json": {
+      "description": "Unknown author keys are non-sensitive: ignored with warnings sorted by key",
+      "warnings": [
+        {
+          "code": "GLINT_MANIFEST_WARN_UNKNOWN_FIELD",
+          "pointer": "/author/avatar"
+        },
+        {
+          "code": "GLINT_MANIFEST_WARN_UNKNOWN_FIELD",
+          "pointer": "/author/pronouns"
+        }
+      ]
+    },
+    "byte-order-mark.json": {
+      "description": "One leading UTF-8 byte-order mark is tolerated",
+      "warnings": []
+    },
+    "custom-surface.json": {
+      "description": "custom:<package-id> surface key and an upper-case .HTM entry",
+      "warnings": []
+    },
+    "empty-maps-and-lists.json": {
+      "description": "Empty optional collections; empty surfaces need no renderer",
+      "warnings": []
+    },
+    "full-programmable.json": {
+      "description": "Every v1 field, modelled on the plan's example root manifest",
+      "warnings": []
+    },
+    "minimal.json": {
+      "description": "Only the required fields",
+      "warnings": []
+    },
+    "prerelease-and-ranges.json": {
+      "description": "SemVer pre-release and build metadata; multi-comparator and tilde requirements",
+      "warnings": []
+    },
+    "schema-hint.json": {
+      "description": "$schema is an editor hint and is never dereferenced",
+      "warnings": []
+    },
+    "unicode-text-at-limits.json": {
+      "description": "Length limits count Unicode scalar values (128 astral characters is allowed)",
+      "warnings": []
+    },
+    "wildcard-requirements.json": {
+      "description": "Wildcard requirements",
+      "warnings": []
+    },
+    "zero-width-no-break-name.json": {
+      "description": "U+FEFF is not White_Space, so a name made of it is not blank",
+      "warnings": []
+    }
+  },
+  "invalid": {
+    "asset-backslash.json": {
+      "description": "Backslash separators",
+      "code": "GLINT_MANIFEST_INVALID_PATH",
+      "pointer": "/assets/wallpaper"
+    },
+    "asset-drive-letter.json": {
+      "description": "Drive letters",
+      "code": "GLINT_MANIFEST_INVALID_PATH",
+      "pointer": "/assets/wallpaper"
+    },
+    "asset-key-pointer-escaping.json": {
+      "description": "RFC 6901 escaping of ~ and /",
+      "code": "GLINT_MANIFEST_INVALID_VALUE",
+      "pointer": "/assets/a~0b~1c"
+    },
+    "asset-key-uppercase.json": {
+      "description": "Map keys are lowercase names",
+      "code": "GLINT_MANIFEST_INVALID_VALUE",
+      "pointer": "/assets/Wallpaper"
+    },
+    "asset-sorted-first.json": {
+      "description": "Map entries are checked in sorted key order",
+      "code": "GLINT_MANIFEST_INVALID_PATH",
+      "pointer": "/assets/aa"
+    },
+    "author-email-invalid.json": {
+      "description": "No @",
+      "code": "GLINT_MANIFEST_INVALID_VALUE",
+      "pointer": "/author/email"
+    },
+    "author-not-object.json": {
+      "description": "author must be an object",
+      "code": "GLINT_MANIFEST_INVALID_TYPE",
+      "pointer": "/author"
+    },
+    "author-url-http.json": {
+      "description": "Only https:// URLs",
+      "code": "GLINT_MANIFEST_INVALID_VALUE",
+      "pointer": "/author/url"
+    },
+    "capability-duplicate.json": {
+      "description": "Repeated capability",
+      "code": "GLINT_MANIFEST_INVALID_CAPABILITY",
+      "pointer": "/optionalCapabilities/1"
+    },
+    "capability-required-and-optional.json": {
+      "description": "Required and optional at once",
+      "code": "GLINT_MANIFEST_INVALID_CAPABILITY",
+      "pointer": "/optionalCapabilities/0"
+    },
+    "capability-unknown-namespace.json": {
+      "description": "Unknown namespace",
+      "code": "GLINT_MANIFEST_INVALID_CAPABILITY",
+      "pointer": "/requiredCapabilities/0"
+    },
+    "duplicate-before-syntax-error.txt": {
+      "description": "The first problem in document order wins",
+      "code": "GLINT_MANIFEST_DUPLICATE_KEY",
+      "pointer": ""
+    },
+    "duplicate-key-in-ignored-section.json": {
+      "description": "Duplicate keys are refused even where unknown keys are ignored",
+      "code": "GLINT_MANIFEST_DUPLICATE_KEY",
+      "pointer": ""
+    },
+    "duplicate-key.json": {
+      "description": "Repeated top-level key",
+      "code": "GLINT_MANIFEST_DUPLICATE_KEY",
+      "pointer": ""
+    },
+    "glint-requirement-word.json": {
+      "description": "Not a requirement",
+      "code": "GLINT_MANIFEST_INVALID_VERSION_REQUIREMENT",
+      "pointer": "/compatibility/glint"
+    },
+    "id-single-segment.json": {
+      "description": "id needs two segments",
+      "code": "GLINT_MANIFEST_INVALID_ID",
+      "pointer": "/id"
+    },
+    "id-uppercase.json": {
+      "description": "id must be lowercase",
+      "code": "GLINT_MANIFEST_INVALID_ID",
+      "pointer": "/id"
+    },
+    "kind-widget.json": {
+      "description": "Only theme packages",
+      "code": "GLINT_MANIFEST_WRONG_KIND",
+      "pointer": "/kind"
+    },
+    "layout-device-name.json": {
+      "description": "Windows device names",
+      "code": "GLINT_MANIFEST_INVALID_PATH",
+      "pointer": "/layouts/default"
+    },
+    "missing-compatibility-glint.json": {
+      "description": "compatibility.glint absent",
+      "code": "GLINT_MANIFEST_MISSING_FIELD",
+      "pointer": "/compatibility/glint"
+    },
+    "missing-id-before-bad-name.json": {
+      "description": "Checks run in a fixed order: id before name",
+      "code": "GLINT_MANIFEST_MISSING_ID",
+      "pointer": "/id"
+    },
+    "missing-id.json": {
+      "description": "id absent",
+      "code": "GLINT_MANIFEST_MISSING_ID",
+      "pointer": "/id"
+    },
+    "missing-kind.json": {
+      "description": "kind absent",
+      "code": "GLINT_MANIFEST_MISSING_KIND",
+      "pointer": "/kind"
+    },
+    "missing-name.json": {
+      "description": "name absent",
+      "code": "GLINT_MANIFEST_MISSING_FIELD",
+      "pointer": "/name"
+    },
+    "missing-schema-version.json": {
+      "description": "schemaVersion absent",
+      "code": "GLINT_MANIFEST_MISSING_SCHEMA_VERSION",
+      "pointer": "/schemaVersion"
+    },
+    "name-blank.json": {
+      "description": "Unicode White_Space only",
+      "code": "GLINT_MANIFEST_INVALID_VALUE",
+      "pointer": "/name"
+    },
+    "name-control-character.json": {
+      "description": "Control characters are refused",
+      "code": "GLINT_MANIFEST_INVALID_VALUE",
+      "pointer": "/name"
+    },
+    "name-not-string.json": {
+      "description": "Wrong JSON type",
+      "code": "GLINT_MANIFEST_INVALID_TYPE",
+      "pointer": "/name"
+    },
+    "name-too-long.json": {
+      "description": "129 Unicode scalar values",
+      "code": "GLINT_MANIFEST_INVALID_VALUE",
+      "pointer": "/name"
+    },
+    "not-json-bom-twice.txt": {
+      "description": "Only one byte-order mark is stripped",
+      "code": "GLINT_MANIFEST_INVALID_JSON",
+      "pointer": ""
+    },
+    "not-json-empty.txt": {
+      "description": "Empty document",
+      "code": "GLINT_MANIFEST_INVALID_JSON",
+      "pointer": ""
+    },
+    "not-json-lone-surrogate.txt": {
+      "description": "Unpaired UTF-16 surrogate escape",
+      "code": "GLINT_MANIFEST_INVALID_JSON",
+      "pointer": ""
+    },
+    "not-json-nesting-too-deep.txt": {
+      "description": "128 nested containers exceed the 127 limit",
+      "code": "GLINT_MANIFEST_INVALID_JSON",
+      "pointer": ""
+    },
+    "not-json-number-overflow.txt": {
+      "description": "Number outside the f64 range",
+      "code": "GLINT_MANIFEST_INVALID_JSON",
+      "pointer": ""
+    },
+    "not-json-trailing-comma.txt": {
+      "description": "Trailing comma",
+      "code": "GLINT_MANIFEST_INVALID_JSON",
+      "pointer": ""
+    },
+    "not-json-truncated.txt": {
+      "description": "Truncated document",
+      "code": "GLINT_MANIFEST_INVALID_JSON",
+      "pointer": ""
+    },
+    "platform-duplicate.json": {
+      "description": "Repeated platform",
+      "code": "GLINT_MANIFEST_INVALID_VALUE",
+      "pointer": "/compatibility/platforms/1"
+    },
+    "platform-unknown.json": {
+      "description": "Unknown platform",
+      "code": "GLINT_MANIFEST_INVALID_VALUE",
+      "pointer": "/compatibility/platforms/1"
+    },
+    "platforms-empty.json": {
+      "description": "At least one platform",
+      "code": "GLINT_MANIFEST_INVALID_VALUE",
+      "pointer": "/compatibility/platforms"
+    },
+    "renderer-entrypoint-2.json": {
+      "description": "Only entrypoint contract 1",
+      "code": "GLINT_MANIFEST_UNSUPPORTED_RENDERER",
+      "pointer": "/renderer/entrypointVersion"
+    },
+    "renderer-kind-native.json": {
+      "description": "Only glint-web",
+      "code": "GLINT_MANIFEST_UNSUPPORTED_RENDERER",
+      "pointer": "/renderer/kind"
+    },
+    "root-array.json": {
+      "description": "Root must be an object",
+      "code": "GLINT_MANIFEST_NOT_AN_OBJECT",
+      "pointer": ""
+    },
+    "schema-version-2.json": {
+      "description": "Future format version",
+      "code": "GLINT_MANIFEST_UNSUPPORTED_SCHEMA_VERSION",
+      "pointer": "/schemaVersion"
+    },
+    "schema-version-float.json": {
+      "description": "1.0 is a float, not the integer 1",
+      "code": "GLINT_MANIFEST_UNSUPPORTED_SCHEMA_VERSION",
+      "pointer": "/schemaVersion"
+    },
+    "schema-version-negative-zero.json": {
+      "description": "-0 is not a non-negative integer literal",
+      "code": "GLINT_MANIFEST_UNSUPPORTED_SCHEMA_VERSION",
+      "pointer": "/schemaVersion"
+    },
+    "schema-version-string.json": {
+      "description": "schemaVersion must be a number",
+      "code": "GLINT_MANIFEST_INVALID_TYPE",
+      "pointer": "/schemaVersion"
+    },
+    "sdk-requirement-wildcard-combined.json": {
+      "description": "A wildcard must be the only comparator",
+      "code": "GLINT_MANIFEST_INVALID_VERSION_REQUIREMENT",
+      "pointer": "/compatibility/sdk"
+    },
+    "surface-entry-not-html.json": {
+      "description": "Entries are .html documents",
+      "code": "GLINT_MANIFEST_INVALID_PATH",
+      "pointer": "/surfaces/panel/entry"
+    },
+    "surface-entry-url.json": {
+      "description": "Remote entries",
+      "code": "GLINT_MANIFEST_INVALID_PATH",
+      "pointer": "/surfaces/panel/entry"
+    },
+    "surfaces-without-renderer.json": {
+      "description": "Surfaces require a renderer",
+      "code": "GLINT_MANIFEST_MISSING_FIELD",
+      "pointer": "/renderer"
+    },
+    "tokens-parent-escape.json": {
+      "description": "Paths stay inside the package",
+      "code": "GLINT_MANIFEST_INVALID_PATH",
+      "pointer": "/tokens"
+    },
+    "unknown-compatibility-field.json": {
+      "description": "compatibility is sensitive",
+      "code": "GLINT_MANIFEST_UNKNOWN_FIELD",
+      "pointer": "/compatibility/minimumOs"
+    },
+    "unknown-renderer-field.json": {
+      "description": "renderer is sensitive",
+      "code": "GLINT_MANIFEST_UNKNOWN_FIELD",
+      "pointer": "/renderer/nodeIntegration"
+    },
+    "unknown-root-migrations.json": {
+      "description": "Package migrations are never run",
+      "code": "GLINT_MANIFEST_UNKNOWN_FIELD",
+      "pointer": "/migrations"
+    },
+    "unknown-root-scripts.json": {
+      "description": "Package scripts are never run",
+      "code": "GLINT_MANIFEST_UNKNOWN_FIELD",
+      "pointer": "/scripts"
+    },
+    "unknown-root-sorted-first.json": {
+      "description": "The first unknown key in sorted order is reported",
+      "code": "GLINT_MANIFEST_UNKNOWN_FIELD",
+      "pointer": "/alpha"
+    },
+    "unknown-surface-field.json": {
+      "description": "Surfaces are sensitive",
+      "code": "GLINT_MANIFEST_UNKNOWN_FIELD",
+      "pointer": "/surfaces/panel/preload"
+    },
+    "version-prerelease-leading-zero.json": {
+      "description": "Numeric pre-release identifiers have no leading zero",
+      "code": "GLINT_MANIFEST_INVALID_VERSION",
+      "pointer": "/version"
+    },
+    "version-two-parts.json": {
+      "description": "Strict SemVer",
+      "code": "GLINT_MANIFEST_INVALID_VERSION",
+      "pointer": "/version"
+    },
+    "version-v-prefix.json": {
+      "description": "Strict SemVer",
+      "code": "GLINT_MANIFEST_INVALID_VERSION",
+      "pointer": "/version"
+    }
+  }
+}
