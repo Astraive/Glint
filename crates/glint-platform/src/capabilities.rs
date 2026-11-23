@@ -108,9 +108,11 @@ impl std::error::Error for CapabilityIdError {}
 /// The rules match the `glint-schema` manifest parser: one of the five
 /// [`Namespace`]s, then at least one name segment of lowercase `a-z0-9` with
 /// inner single hyphens, starting with a letter; at most
-/// [`CapabilityId::MAX_LEN`] bytes. Whether an ID is in the frozen registry of
-/// known capabilities is a separate question (CAP-005); an ID the host adapter
-/// does not advertise is reported as unavailable, never assumed.
+/// [`CapabilityId::MAX_LEN`] bytes. This is a syntax check only: whether an ID
+/// exists is answered by the frozen v1 registry
+/// ([`crate::registry::require_registered`], CAP-005), which every consumer
+/// applies. An ID the host adapter does not advertise is reported as
+/// unavailable, never assumed.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct CapabilityId(String);
