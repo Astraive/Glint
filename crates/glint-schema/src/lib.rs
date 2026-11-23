@@ -1,6 +1,7 @@
 //! Types and strict parsers for the **proposed** `glint.json` v1 theme
 //! manifest (SCH-001), package identity (SCH-004), profiles (SCH-006) and
-//! the application config (SCH-007).
+//! the application config (SCH-007), plus the semantic design token contract
+//! and its `tokens.json` parser (THM-004, [`parse_tokens`]).
 //!
 //! The format is labelled [`FORMAT_STATUS`] = `"proposed"`: it follows the
 //! example root manifest in `docs/plan/04-themes/manifest-and-glint-package-spec.md`
@@ -116,6 +117,7 @@ mod manifest;
 mod parse;
 mod profile;
 mod strict_json;
+mod tokens;
 
 pub use compat::{
     HostVersions, Incompatibility, IncompatibilityCode, IncompatibilityReport, ManifestVersions,
@@ -143,6 +145,13 @@ pub use profile::{
     PORTABLE_MONITOR_KEYS, Profile, ProfileError, ProfileErrorCode, ProfileLock,
     SUPPORTED_PROFILE_SCHEMA_VERSION, ThemeRef, TokenValue, Wallpaper, parse_profile,
     parse_profile_lock, verify_profile_lock,
+};
+
+pub use tokens::{
+    BRAND_NAMES, CONTRAST_REQUIREMENTS, CSS_PREFIX, ColorScheme, ContrastRequirement,
+    MAX_TOKENS_BYTES, Rgba, SUPPORTED_TOKENS_SCHEMA_VERSION, TOKEN_REGISTRY, TokenError,
+    TokenErrorCode, TokenFile, TokenKind, TokenSpec, color_pointer, contrast_ratio,
+    css_variable_name, is_brand_name, is_token_name, parse_tokens, token_spec,
 };
 
 /// Stability label of the v1 manifest format. It stays `"proposed"` until the

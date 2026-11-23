@@ -1,0 +1,317 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:glint:schema:glint-tokens:v1",
+  "$comment": "PROPOSED format (THM-004): not a frozen standard. The Rust parser in crates/glint-schema (src/tokens.rs) is authoritative where this schema and the parser disagree; tests keep the token names aligned with its registry. Contrast requirements (WCAG AA pairs per colour scheme), the dedicated brand-name error code and fine value ranges are enforced by the parser only. The token lists are generated from TOKEN_REGISTRY.",
+  "x-glint-status": "proposed",
+  "title": "Glint design tokens (tokens.json) v1",
+  "description": "Values for the closed registry of semantic design tokens. Names describe roles (background.default, text.primary, focus.ring, panel.height), never brand colours. Colour tokens are per scheme (dark and/or light, each complete); all other tokens are scheme independent and required.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "colorSchemes",
+    "tokens"
+  ],
+  "properties": {
+    "$schema": {
+      "description": "Editor hint only; Glint never dereferences it.",
+      "type": "string",
+      "maxLength": 2048
+    },
+    "$comment": {
+      "description": "Free text for authors; ignored.",
+      "type": "string",
+      "maxLength": 2048
+    },
+    "schemaVersion": {
+      "description": "Tokens format version.",
+      "const": 1
+    },
+    "colorSchemes": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "dark": {
+          "$ref": "#/$defs/colorScheme"
+        },
+        "light": {
+          "$ref": "#/$defs/colorScheme"
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "font.family.base",
+        "font.family.mono",
+        "font.size.small",
+        "font.size.base",
+        "font.size.large",
+        "font.weight.regular",
+        "font.weight.strong",
+        "font.line-height.base",
+        "space.xs",
+        "space.sm",
+        "space.md",
+        "space.lg",
+        "space.xl",
+        "radius.sm",
+        "radius.md",
+        "radius.lg",
+        "border.width",
+        "focus.width",
+        "focus.offset",
+        "elevation.low",
+        "elevation.medium",
+        "elevation.high",
+        "motion.duration.fast",
+        "motion.duration.normal",
+        "motion.duration.slow",
+        "motion.easing.standard",
+        "motion.easing.emphasized",
+        "panel.height"
+      ],
+      "properties": {
+        "font.family.base": {
+          "description": "UI font stack (system fonts only).",
+          "$ref": "#/$defs/fontFamily"
+        },
+        "font.family.mono": {
+          "description": "Monospace font stack.",
+          "$ref": "#/$defs/fontFamily"
+        },
+        "font.size.small": {
+          "description": "Small text size.",
+          "$ref": "#/$defs/dimension"
+        },
+        "font.size.base": {
+          "description": "Body text size.",
+          "$ref": "#/$defs/dimension"
+        },
+        "font.size.large": {
+          "description": "Large text size.",
+          "$ref": "#/$defs/dimension"
+        },
+        "font.weight.regular": {
+          "description": "Regular text weight.",
+          "$ref": "#/$defs/fontWeight"
+        },
+        "font.weight.strong": {
+          "description": "Emphasised text weight.",
+          "$ref": "#/$defs/fontWeight"
+        },
+        "font.line-height.base": {
+          "description": "Unitless body line height.",
+          "$ref": "#/$defs/number"
+        },
+        "space.xs": {
+          "description": "Smallest gap.",
+          "$ref": "#/$defs/dimension"
+        },
+        "space.sm": {
+          "description": "Small gap.",
+          "$ref": "#/$defs/dimension"
+        },
+        "space.md": {
+          "description": "Medium gap.",
+          "$ref": "#/$defs/dimension"
+        },
+        "space.lg": {
+          "description": "Large gap.",
+          "$ref": "#/$defs/dimension"
+        },
+        "space.xl": {
+          "description": "Largest gap.",
+          "$ref": "#/$defs/dimension"
+        },
+        "radius.sm": {
+          "description": "Small corner radius.",
+          "$ref": "#/$defs/dimension"
+        },
+        "radius.md": {
+          "description": "Medium corner radius.",
+          "$ref": "#/$defs/dimension"
+        },
+        "radius.lg": {
+          "description": "Large corner radius.",
+          "$ref": "#/$defs/dimension"
+        },
+        "border.width": {
+          "description": "Width of default borders.",
+          "$ref": "#/$defs/dimension"
+        },
+        "focus.width": {
+          "description": "Width of the focus ring.",
+          "$ref": "#/$defs/dimension"
+        },
+        "focus.offset": {
+          "description": "Gap between a control and its focus ring.",
+          "$ref": "#/$defs/dimension"
+        },
+        "elevation.low": {
+          "description": "Shadow of raised surfaces.",
+          "$ref": "#/$defs/shadow"
+        },
+        "elevation.medium": {
+          "description": "Shadow of menus and popovers.",
+          "$ref": "#/$defs/shadow"
+        },
+        "elevation.high": {
+          "description": "Shadow of dialogs.",
+          "$ref": "#/$defs/shadow"
+        },
+        "motion.duration.fast": {
+          "description": "Micro-interactions. Zero under reduced motion.",
+          "$ref": "#/$defs/duration"
+        },
+        "motion.duration.normal": {
+          "description": "Standard transitions. Zero under reduced motion.",
+          "$ref": "#/$defs/duration"
+        },
+        "motion.duration.slow": {
+          "description": "Large transitions. Zero under reduced motion.",
+          "$ref": "#/$defs/duration"
+        },
+        "motion.easing.standard": {
+          "description": "Default easing.",
+          "$ref": "#/$defs/easing"
+        },
+        "motion.easing.emphasized": {
+          "description": "Easing for entrances and attention.",
+          "$ref": "#/$defs/easing"
+        },
+        "panel.height": {
+          "description": "Height of the top panel.",
+          "$ref": "#/$defs/dimension"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "colorScheme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "background.default",
+        "background.subtle",
+        "surface.default",
+        "surface.raised",
+        "surface.overlay",
+        "text.primary",
+        "text.secondary",
+        "text.muted",
+        "text.on-accent",
+        "border.subtle",
+        "border.default",
+        "accent.default",
+        "accent.subtle",
+        "focus.ring"
+      ],
+      "properties": {
+        "background.default": {
+          "description": "Window or desktop backdrop behind surfaces.",
+          "$ref": "#/$defs/color"
+        },
+        "background.subtle": {
+          "description": "Quiet variation of the backdrop (wells, zebra rows).",
+          "$ref": "#/$defs/color"
+        },
+        "surface.default": {
+          "description": "Base surface such as a panel or dock.",
+          "$ref": "#/$defs/color"
+        },
+        "surface.raised": {
+          "description": "Surface above the base: cards, menus, hovered controls.",
+          "$ref": "#/$defs/color"
+        },
+        "surface.overlay": {
+          "description": "Surface above everything else: dialogs, popovers.",
+          "$ref": "#/$defs/color"
+        },
+        "text.primary": {
+          "description": "Main text and icons.",
+          "$ref": "#/$defs/color"
+        },
+        "text.secondary": {
+          "description": "Supporting text.",
+          "$ref": "#/$defs/color"
+        },
+        "text.muted": {
+          "description": "De-emphasised metadata; still readable (4.5:1).",
+          "$ref": "#/$defs/color"
+        },
+        "text.on-accent": {
+          "description": "Text and icons drawn on accent.default.",
+          "$ref": "#/$defs/color"
+        },
+        "border.subtle": {
+          "description": "Hairline separators.",
+          "$ref": "#/$defs/color"
+        },
+        "border.default": {
+          "description": "Control and surface outlines.",
+          "$ref": "#/$defs/color"
+        },
+        "accent.default": {
+          "description": "Emphasis colour for selected or primary controls.",
+          "$ref": "#/$defs/color"
+        },
+        "accent.subtle": {
+          "description": "Low-emphasis accent fill (selection backgrounds).",
+          "$ref": "#/$defs/color"
+        },
+        "focus.ring": {
+          "description": "Keyboard focus indicator (3:1 against surfaces).",
+          "$ref": "#/$defs/color"
+        }
+      }
+    },
+    "color": {
+      "type": "string",
+      "pattern": "^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$",
+      "description": "Hex colour: #rgb, #rgba, #rrggbb or #rrggbbaa."
+    },
+    "dimension": {
+      "type": "string",
+      "pattern": "^(0|[0-9]{1,6}(\\.[0-9]{1,6})?(px|rem|em))$",
+      "maxLength": 256,
+      "description": "Non-negative length: 0 or a number with px, rem or em (at most 10000 in the parser)."
+    },
+    "fontFamily": {
+      "type": "string",
+      "maxLength": 256,
+      "pattern": "^((\"[A-Za-z0-9 _-]+\"|[A-Za-z][A-Za-z0-9-]*) *, *){0,7}(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-serif|ui-sans-serif|ui-monospace|ui-rounded)$",
+      "description": "Font stack ending in a CSS generic family; at most 8 entries. CSS-wide keywords are rejected by the parser."
+    },
+    "fontWeight": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "number": {
+      "type": "number",
+      "minimum": 0.5,
+      "maximum": 3
+    },
+    "duration": {
+      "type": "string",
+      "pattern": "^[0-9]{1,6}(\\.[0-9]{1,6})?(ms|s)$",
+      "maxLength": 256,
+      "description": "Duration of at most 5 seconds (enforced by the parser)."
+    },
+    "easing": {
+      "type": "string",
+      "maxLength": 256,
+      "pattern": "^(linear|ease|ease-in|ease-out|ease-in-out|cubic-bezier\\( *-?[0-9.]+ *, *-?[0-9.]+ *, *-?[0-9.]+ *, *-?[0-9.]+ *\\))$",
+      "description": "Keyword or cubic-bezier(x1, y1, x2, y2) with x1 and x2 in 0..1 (enforced by the parser)."
+    },
+    "shadow": {
+      "type": "string",
+      "maxLength": 256,
+      "pattern": "^(none|[^,]+(, *[^,]+){0,3})$",
+      "description": "none, or up to four layers of '<x> <y> <blur> [<spread>] <hex colour>'. Layer syntax is enforced by the parser."
+    }
+  }
+}
