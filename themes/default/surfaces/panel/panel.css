@@ -1,13 +1,20 @@
-/* Static fallback panel (THM-001). Values mirror theme/tokens.json; the
-   SDK-driven panel replaces this surface in THM-002. No script, no remote
-   content, system fonts only. */
+/* Static fallback panel (THM-001). Custom properties follow the THM-004
+   mapping (docs/architecture/design-tokens.md) and mirror theme/tokens.json;
+   a test keeps them equal. The SDK-driven panel replaces this surface in
+   THM-002. No script, no remote content, system fonts only. */
 
 :root {
-  --glint-surface: #1b1c20;
-  --glint-border: #3b3e45;
-  --glint-text: #f5f6f7;
+  --glint-surface-default: #1b1c20;
+  --glint-border-default: #3b3e45;
+  --glint-text-primary: #f5f6f7;
   --glint-text-muted: #a9adb5;
-  --glint-font-family: system-ui, "Segoe UI", Ubuntu, Cantarell, "Noto Sans", sans-serif;
+  --glint-font-family-base: system-ui, "Segoe UI", Ubuntu, Cantarell, "Noto Sans", sans-serif;
+  --glint-font-size-base: 13px;
+  --glint-font-weight-regular: 400;
+  --glint-font-weight-strong: 600;
+  --glint-space-md: 12px;
+  --glint-space-lg: 16px;
+  --glint-border-width: 1px;
   --glint-panel-height: 36px;
   color-scheme: dark;
 }
@@ -16,9 +23,9 @@ html,
 body {
   margin: 0;
   height: 100%;
-  background: var(--glint-surface);
-  color: var(--glint-text);
-  font: 400 13px/1 var(--glint-font-family);
+  background: var(--glint-surface-default);
+  color: var(--glint-text-primary);
+  font: var(--glint-font-weight-regular) var(--glint-font-size-base)/1 var(--glint-font-family-base);
 }
 
 .panel {
@@ -26,14 +33,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--glint-space-md);
   height: var(--glint-panel-height);
-  padding: 0 16px;
-  border-bottom: 1px solid var(--glint-border);
+  padding: 0 var(--glint-space-lg);
+  border-bottom: var(--glint-border-width) solid var(--glint-border-default);
 }
 
 .brand {
-  font-weight: 600;
+  font-weight: var(--glint-font-weight-strong);
   letter-spacing: 0.04em;
 }
 

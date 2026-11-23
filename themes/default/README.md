@@ -9,7 +9,7 @@ is unavailable, and in safe mode. It is a normal `.glint` package: the same
 | File | Purpose |
 |---|---|
 | `glint.json` | Manifest, *proposed* v1 format |
-| `theme/tokens.json` | Graphite and silver colour, type, spacing and radius tokens (provisional until the THM-004 token contract) |
+| `theme/tokens.json` | Semantic design tokens (dark and light colour schemes, type, spacing, radius, elevation, motion) following the THM-004 contract |
 | `surfaces/panel/index.html`, `panel.css` | Static top panel: no script, no data, no remote content, system fonts only |
 | `assets/preview.svg` | Preview image for theme lists |
 | `LICENSE` | MIT |
