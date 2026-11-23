@@ -95,6 +95,13 @@ jobs:
         if: steps.workspace.outputs.present == 'true'
         run: cargo test --workspace
 
+      # PKG-002: the non-negotiable package security fixture suite, run as its
+      # own named step on every OS because path semantics differ. Fixtures are
+      # generated at test time; see docs/security/package-fixtures.md.
+      - name: Run package security fixture suite
+        if: steps.workspace.outputs.present == 'true'
+        run: cargo test -p glint-package --test security --test roundtrip -- --nocapture
+
   theme-schema:
     name: TypeScript theme schema
     # Runs the @glint/theme-schema validator against the shared manifest
