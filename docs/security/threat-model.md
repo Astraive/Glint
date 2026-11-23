@@ -315,12 +315,12 @@ CLI, local theme directories, and bytes handed over by a source resolver.
 
 | ID | STRIDE | Threat | Mitigation | Owner | Status |
 |---|---|---|---|---|---|
-| B5.1 | E | Declaring a capability is treated as having it | Declarations never grant; runtime enforcement by the permission engine | CAP-003, CAP-004 | Planned |
+| B5.1 | E | Declaring a capability is treated as having it | Declarations never grant; runtime enforcement by the permission engine | CAP-003, CAP-004 | Partly **Implemented**: the CAP-003 activation gate checks every declared capability against host availability and never treats a declaration as available (`crates/glint-platform/tests/capability_gate.rs`, mock adapter only); grant enforcement (CAP-004) Planned |
 | B5.2 | S, E | A package inherits another package's grants by reusing its `id` | Grants bound to package identity **and** provenance (origin, digest) plus version and profile, not to `id` alone | CAP-004, SCH-004, INS-004 | Planned |
 | B5.3 | E | Privilege expansion through update, variant, profile override or widget bundling | Re-request on any expansion with a permission diff; variants cannot add permissions; overrides never import executable source | INS-008, MGR-006, SCH-005, PRF-008, PRF-001 | Planned |
 | B5.4 | I | Read grants expose more than needed (SSID, window titles, calendar, notification text) | Separate read data from actions; filter event payloads per grant; privacy controls | CAP-006 | Planned |
 | B5.5 | E | Confused deputy: OS permissions granted to Glint (macOS Accessibility and Automation, Linux portals) become available to every theme | Each OS-level permission is mapped to a Glint grant and checked per package; Glint's own OS permission is never a theme permission | CAP-004, MAC-005, CAP-007 | Planned |
-| B5.6 | E | Unknown capability or namespace silently allowed | Frozen v1 namespace registry; unknown IDs fail closed (warn or reject, never grant) | CAP-005, CAP-003 | Planned (syntax-level check Implemented in SCH-001) |
+| B5.6 | E | Unknown capability or namespace silently allowed | Frozen v1 namespace registry; unknown IDs fail closed (warn or reject, never grant) | CAP-005, CAP-003 | Partly **Implemented**: syntax-level check in SCH-001; at activation an ID the host adapter does not advertise is `unknown-capability`, blocking when required and disabled when optional (CAP-003). Frozen registry (CAP-005) Planned |
 | B5.7 | D, S | Prompt flooding or consent fatigue pushes the user to "allow all" | Grants asked at install or activation in trusted manager UI; rate-limit runtime requests; no "allow all" | MGR-004, SEC-004 | Planned |
 | B5.8 | E | Revocation does not take effect until restart | Revocation event tears down subscriptions and rotates bridge tokens immediately | CAP-004, RND-003 | Planned |
 
@@ -377,7 +377,7 @@ artifacts (REL-007) are the only planned binary distribution path.
 | B9.6 | E | Power or system actions (shutdown, network toggle) triggered by theme code without user intent | Separate action grants; confirmation for destructive actions in the power menu | CAP-004, SRF-001 | Planned |
 | B9.7 | E | Theme installs a GNOME extension, KDE global theme or other native component | Never installed implicitly by a `.glint`; separately versioned, opt-in, project-maintained | LNX-008, LNX-009 | Planned |
 | B9.8 | E | Autostart or adapters require elevation | Autostart at user login without elevation; no privileged service | COR-008 | Planned |
-| B9.9 | T | Adapter reports success for an action the OS refused | Typed results that distinguish unsupported, permission-denied, unavailable, timeout and failure; confirm the final OS state | CAP-001, SDK-004 | Planned |
+| B9.9 | T | Adapter reports success for an action the OS refused | Typed results that distinguish unsupported, permission-denied, unavailable, timeout and failure; confirm the final OS state | CAP-001, SDK-004 | Partly **Implemented**: typed `CapabilityError` codes and categories in `glint-platform` (CAP-001); no native adapter or final-state confirmation yet |
 
 ### B10 Build and release supply chain
 
@@ -402,6 +402,7 @@ Planned.
 | `zip` 9.8.1 unsafe helpers documented and pinned by tests | Prototyped | [`zip_crate_behaviour.rs`](../../spikes/package-security/tests/zip_crate_behaviour.rs) | same |
 | WebView2 lockdown: in-memory origin, CSP header, navigation cancel plus request refusal, new windows blocked, permissions denied, host objects off, origin-checked fixed messages | Prototyped | [Windows appbar spike](../research/spikes/windows-appbar.md) | `cargo run -p spike-windows-appbar --release -- --smoke 9` (10 of 10 checks on one machine; no visual check, SPK-002) |
 | Appbar unregister on every exit path | Prototyped | same | same; Explorer restart and fullscreen not exercised |
+| Capability contracts fail closed: typed availability and error codes, undiscovered/unadvertised/stale capabilities never usable, required capabilities block activation before any state change | Implemented (mock adapter only; no native adapter) | [`crates/glint-platform`](../../crates/glint-platform/src/lib.rs) | `cargo test -p glint-platform` |
 | CI least privilege and pinned actions | Implemented | [`security-analysis.yml`](../../.github/workflows/security-analysis.yml) | by inspection; no automated check enforces these settings |
 | Private vulnerability reporting | Implemented | [SECURITY.md](../../SECURITY.md) | inspection |
 
