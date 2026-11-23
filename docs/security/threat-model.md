@@ -385,7 +385,7 @@ artifacts (REL-007) are the only planned binary distribution path.
 |---|---|---|---|---|---|
 | B10.1 | E | Untrusted pull requests reach secrets or write tokens | Workflows use `permissions: contents: read`, `persist-credentials: false`, no `pull_request_target` | PRJ-001 | **Implemented**: [`security-analysis.yml`](../../.github/workflows/security-analysis.yml), [`repository-checks.yml`](../../.github/workflows/repository-checks.yml) |
 | B10.2 | T | A moved tag in a GitHub Action | Actions pinned to full commit SHAs; Dependabot for Actions | PRJ-001, REL-009 | **Implemented** (pins and [`dependabot.yml`](../../.github/dependabot.yml) for Actions and pip) |
-| B10.3 | T | Vulnerable or malicious Rust or npm dependency | Exact pins for security-critical crates (`zip = "=9.8.1"` with a reduced feature set, re-run the behaviour tests on upgrade); advisory and license gate | PKG-001, REL-002, REL-009 | Planned. `Cargo.lock` now exists but Dependabot has no `cargo` entry and no `cargo audit`/`cargo deny` advisory gate runs: **Gap** |
+| B10.3 | T | Vulnerable or malicious Rust or npm dependency | Exact pins for security-critical crates (`zip = "=9.8.1"` with a reduced feature set, re-run the behaviour tests on upgrade); advisory and license gate | PKG-001, REL-002, REL-009 | Partly mitigated (REL-002). Dependabot has `cargo` and `npm` entries, and the "Dependency policy" CI job runs `cargo deny` (RustSec advisories, licenses, bans, sources) on pull requests and weekly; there is no npm vulnerability audit yet: **Gap (npm advisories)** |
 | B10.4 | S | Users cannot tell a real Glint binary from a repackaged one | Signed artifacts and SBOMs; macOS notarization | REL-007, REL-005, MAC-007 | Planned |
 | B10.5 | R | Vulnerability reports go to public issues | Private reporting route | PRJ-001 | **Implemented**: [SECURITY.md](../../SECURITY.md) |
 | B10.6 | T | Parsers miss malformed input that unit fixtures do not cover | Fuzz the manifest parser and archive reader | none | **Gap**: SECURITY.md lists fuzzing as a planned release gate, but no ticket owns it |
@@ -490,7 +490,7 @@ proposals for the maintainer; no ticket has been created.
 | Proposed ticket | Covers | Suggested home |
 |---|---|---|
 | Fuzz the manifest parser and `.glint` reader in CI | B10.6; SECURITY.md already promises fuzzing | SEC epic, M1 (alongside PKG-002) |
-| Rust and npm advisory gate (`cargo deny advisories`, `cargo audit`, Dependabot `cargo` and `npm` entries) | B10.3; `Cargo.lock` exists today without one | REL-009 scope extension or a new SEC ticket, M0 |
+| npm advisory gate (the Rust side is the `cargo deny` "Dependency policy" job) | B10.3; no npm vulnerability audit runs yet | REL-009 scope extension or a new SEC ticket, M0 |
 | Name and test non-CSP exfiltration channels: external link hand-off, app launch arguments and URLs, WebRTC, DNS prefetch and preconnect | B4.5, R3 | Extend RND-002 and RND-006 acceptance criteria; WIN-011 for launch arguments |
 | Webview runtime version floor and update policy (Evergreen WebView2, minimum WebKitGTK and WKWebView) | B4.7, R1 | RND epic or REL-003, M2 |
 | Per-trust-group webview profile and storage partition | B4.6 | Extend RND-005 acceptance criteria |
