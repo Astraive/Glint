@@ -1,5 +1,6 @@
-//! Types and a strict parser for the **proposed** `glint.json` v1 theme
-//! manifest (SCH-001).
+//! Types and strict parsers for the **proposed** `glint.json` v1 theme
+//! manifest (SCH-001), package identity (SCH-004), profiles (SCH-006) and
+//! the application config (SCH-007).
 //!
 //! The format is labelled [`FORMAT_STATUS`] = `"proposed"`: it follows the
 //! example root manifest in `docs/plan/04-themes/manifest-and-glint-package-spec.md`
@@ -94,6 +95,11 @@
 //!   every lock entry pins an exact release including its digest, and private
 //!   user assets are reported by [`Profile::local_only_refs`] for stripping
 //!   on export.
+//! - **Application config** ([`parse_config_layer`], [`resolve_config`],
+//!   [`bundled_defaults`]) follows the *proposed* `config.toml` v1 format and
+//!   merge policy (SCH-007): bundled defaults < user config, registries
+//!   merged by name, package requests never applied (ignored with a
+//!   diagnostic), stable `GLINT_CONFIG_*` codes.
 //! - **Limits**: documents over [`MAX_MANIFEST_BYTES`] are refused; duplicate
 //!   object keys are refused; a single leading UTF-8 byte-order mark is
 //!   tolerated.
@@ -102,6 +108,7 @@
 #![warn(missing_docs)]
 
 mod compat;
+mod config;
 mod error;
 mod identity;
 mod manifest;
@@ -113,6 +120,13 @@ pub use compat::{
     HostVersions, Incompatibility, IncompatibilityCode, IncompatibilityReport, ManifestVersions,
     NegotiationError, THEME_INCOMPATIBLE, check_compatibility, check_versions,
     negotiate_theme_manifest, probe_manifest_versions,
+};
+pub use config::{
+    AppConfig, AppSettings, BUNDLED_DEFAULT_CONFIG, ConfigDiagnostic, ConfigError, ConfigErrorCode,
+    ConfigLayer, ConfigSource, ConfigWarningCode, MAX_CONFIG_BYTES, NetworkDefault, PackagePolicy,
+    Registry, RegistryKind, RegistrySettings, ResolvedConfig, SUPPORTED_CONFIG_SCHEMA_VERSION,
+    SecurityPolicy, ShellSettings, Startup, ThemeSettings, bundled_defaults, parse_config_layer,
+    resolve_config, security_setting_pointers, setting_pointers,
 };
 pub use error::{ErrorCode, ManifestError, ManifestWarning, WarningCode};
 pub use identity::{

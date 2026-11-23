@@ -1,0 +1,47 @@
+# Glint bundled default configuration (PROPOSED format, SCH-007).
+#
+# This file ships read-only inside the application. Never edit an installed
+# copy: put changes in the user-level config.toml, which overrides these keys
+# one by one and merges [registries.<name>] entries by name. A theme or other
+# package can never change any of these settings.
+#
+# Schema: schemas/glint-config-v1.schema.json. Rules and merge policy:
+# docs/architecture/application-config.md. Every key the format knows must be
+# set here; a test fails if one is missing.
+
+schema_version = 1
+
+[app]
+startup = "user-session"
+locale = "system"
+
+[registry]
+default = "official"
+auto_sync = true
+cache_ttl = "24h"
+
+# PLACEHOLDER: the official library location is not decided yet. The reserved
+# .invalid domain guarantees nothing is ever fetched from it.
+[registries.official]
+type = "git"
+url = "https://glint-library.invalid/glint-library.git"
+branch = "main"
+
+[theme]
+active_profile = "default"
+auto_update = false
+preview_before_apply = true
+
+[packages]
+allow_external_git = true
+allow_local_archives = true
+verify_integrity = true
+allow_native_scripts = false
+
+[security]
+confirm_new_permissions = true
+untrusted_network_default = "deny"
+
+[shell]
+use_default_fallback = true
+safe_mode_after_crashes = 3
