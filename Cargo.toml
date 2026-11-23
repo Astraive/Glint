@@ -6,6 +6,7 @@ resolver = "3"
 members = [
     "apps/cli",
     "crates/glint-package",
+    "crates/glint-platform",
     "crates/glint-schema",
     "crates/glint-sources",
     "spikes/windows-appbar",

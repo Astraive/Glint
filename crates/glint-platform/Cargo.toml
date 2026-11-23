@@ -1,0 +1,21 @@
+[package]
+name = "glint-platform"
+description = "OS-independent capability contracts: availability states, capability IDs and typed capability errors."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+# No OS-specific dependency may be added here: native adapters live in
+# glint-windows, glint-linux and glint-macos and implement the traits this
+# crate defines.
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1"
+
+[lints]
+workspace = true
