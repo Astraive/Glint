@@ -4,13 +4,15 @@ param()
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $excluded = @('.git', '.issues', '__pycache__', 'target', 'node_modules')
+# Git-ignored agent worktrees under .claude/worktrees are separate checkouts.
 $parseErrors = [System.Collections.Generic.List[string]]::new()
 
 Get-ChildItem -LiteralPath $root -Recurse -File -Filter '*.ps1' -ErrorAction Stop |
     Where-Object {
         $relative = [System.IO.Path]::GetRelativePath($root, $_.FullName)
         $parts = $relative -split '[\\/]'
-        -not ($parts | Where-Object { $_ -in $excluded })
+        -not ($parts | Where-Object { $_ -in $excluded }) -and
+            -not ($relative.Replace('\', '/').StartsWith('.claude/worktrees/'))
     } |
     Sort-Object FullName |
     ForEach-Object {
@@ -33,6 +35,7 @@ $count = @(Get-ChildItem -LiteralPath $root -Recurse -File -Filter '*.ps1' -Erro
     Where-Object {
         $relative = [System.IO.Path]::GetRelativePath($root, $_.FullName)
         $parts = $relative -split '[\\/]'
-        -not ($parts | Where-Object { $_ -in $excluded })
+        -not ($parts | Where-Object { $_ -in $excluded }) -and
+            -not ($relative.Replace('\', '/').StartsWith('.claude/worktrees/'))
     }).Count
 Write-Output "PASS: PowerShell parser accepted $count repository script file(s); no scripts were executed."
