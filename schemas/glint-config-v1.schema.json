@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:glint:schema:glint-config:v1",
+  "$comment": "PROPOSED format (SCH-007): not a frozen standard. It describes config.toml through the JSON data model of TOML (as used by TOML editors). The Rust parser in crates/glint-schema (src/config.rs) is authoritative where this schema and the parser disagree; tests keep the key sets aligned. Every key is optional in a user config.toml; the bundled config/default.toml must set all of them. Unknown keys are rejected in [packages], [security], [registries.<name>], at the top level and as unknown tables, and ignored with warning GLINT_CONFIG_WARN_UNKNOWN_FIELD in [app], [registry], [theme] and [shell]. Merge policy: bundled defaults < user config (keys override one by one, registries merge by name); settings requested by a package are never applied. See docs/architecture/application-config.md.",
+  "x-glint-status": "proposed",
+  "x-glint-security-settings": [
+    "/theme/auto_update",
+    "/theme/preview_before_apply",
+    "/packages/allow_external_git",
+    "/packages/allow_local_archives",
+    "/packages/verify_integrity",
+    "/packages/allow_native_scripts",
+    "/security/confirm_new_permissions",
+    "/security/untrusted_network_default",
+    "/shell/use_default_fallback",
+    "/shell/safe_mode_after_crashes"
+  ],
+  "title": "Glint application configuration (config.toml) v1",
+  "description": "Configures the Glint application. Distinct from the registry index, theme manifests (glint.json) and profiles (profile.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "description": "Config format version; absent means 1.",
+      "const": 1
+    },
+    "app": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "startup": {
+          "enum": [
+            "user-session",
+            "manual"
+          ]
+        },
+        "locale": {
+          "description": "\"system\" or a language tag such as en-GB.",
+          "type": "string",
+          "maxLength": 35,
+          "pattern": "^(?:system|[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*)$"
+        }
+      }
+    },
+    "registry": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "default": {
+          "description": "Name of a configured registry.",
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "auto_sync": {
+          "description": "Refresh registry indexes automatically.",
+          "type": "boolean"
+        },
+        "cache_ttl": {
+          "description": "Index cache lifetime: a whole number and s, m, h or d, at most 365d.",
+          "type": "string",
+          "pattern": "^[0-9]{1,10}[smhd]$"
+        }
+      }
+    },
+    "registries": {
+      "description": "Named registries. A user entry with an existing name changes only the fields it sets; a new name must set type and url.",
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "maxLength": 64,
+        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "git"
+          },
+          "url": {
+            "description": "https URL of the index, without credentials, query or fragment. It is the registry's package origin (ADR 0006).",
+            "type": "string",
+            "maxLength": 2048,
+            "pattern": "^[hH][tT][tT][pP][sS]://[^\\s@/?#]+(?:/[^\\s?#]*)?$"
+          },
+          "branch": {
+            "description": "Branch to read; absent means the repository's default branch.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "pattern": "^(?![-/.])(?!.*\\.\\.)(?!.*//)(?!.*\\.lock$)(?!.*[/.]$)[A-Za-z0-9._/-]+$"
+          }
+        }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "active_profile": {
+          "description": "Id of the active profile.",
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)*$"
+        },
+        "auto_update": {
+          "description": "Install updates without asking. Security: false is safe.",
+          "type": "boolean"
+        },
+        "preview_before_apply": {
+          "description": "Preview a theme before applying it. Security: true is safe.",
+          "type": "boolean"
+        }
+      }
+    },
+    "packages": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allow_external_git": {
+          "description": "Allow installs from arbitrary Git repositories. Security: false is safer.",
+          "type": "boolean"
+        },
+        "allow_local_archives": {
+          "description": "Allow importing local .glint files. Security: false is safer.",
+          "type": "boolean"
+        },
+        "verify_integrity": {
+          "description": "Verify package digests. Security: true is safe.",
+          "type": "boolean"
+        },
+        "allow_native_scripts": {
+          "description": "Allow package-supplied native scripts. Security: false is safe.",
+          "type": "boolean"
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "confirm_new_permissions": {
+          "description": "Ask before granting new permissions. Security: true is safe.",
+          "type": "boolean"
+        },
+        "untrusted_network_default": {
+          "description": "Default network decision for untrusted content, safest first.",
+          "enum": [
+            "deny",
+            "ask",
+            "allow"
+          ]
+        }
+      }
+    },
+    "shell": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "use_default_fallback": {
+          "description": "Fall back to the default theme when a surface fails. Security: true is safe.",
+          "type": "boolean"
+        },
+        "safe_mode_after_crashes": {
+          "description": "Crashes before safe mode starts. Security: lower is safer.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    }
+  }
+}
