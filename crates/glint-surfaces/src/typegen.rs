@@ -121,7 +121,8 @@ pub fn typescript_module() -> String {
         "// GENERATED FILE - DO NOT EDIT.\n\
          // Source: crates/glint-surfaces (catalog, placement, behavior, error codes). PROPOSED format.\n\
          // Regenerate: GLINT_UPDATE_TYPES=1 cargo test -p glint-surfaces --test typegen\n\
-         // `cargo test` fails when this file differs from the generator output.\n\n",
+         // `cargo test` fails when this file differs from the generator output.\n\n\
+         import type { CapabilityId } from \"./capabilities.ts\";\n\n",
     );
     writeln!(
         out,
@@ -251,8 +252,8 @@ pub fn typescript_module() -> String {
         "Capabilities a surface implies: `required` must all be usable to show it; `optional` only enable controls.",
         "SurfaceCapabilities",
         &[
-            ("required", "string[]", false),
-            ("optional", "string[]", false),
+            ("required", "CapabilityId[]", false),
+            ("optional", "CapabilityId[]", false),
         ],
     );
     interface(
@@ -267,8 +268,8 @@ pub fn typescript_module() -> String {
         "One row of the standard surface catalog. The first placement is the default.",
         "SurfaceCatalogEntry",
         &[
-            ("capability", "string", false),
-            ("optionalCapabilities", "readonly string[]", false),
+            ("capability", "CapabilityId", false),
+            ("optionalCapabilities", "readonly CapabilityId[]", false),
             ("placements", "readonly PlacementKind[]", false),
             ("defaultAnchor", "Anchor | null", false),
             ("defaultFocus", "FocusPolicy", false),

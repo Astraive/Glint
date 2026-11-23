@@ -1,6 +1,6 @@
 //! `SurfaceDefinition`: one validated surface of a theme.
 
-use glint_platform::CapabilityId;
+use glint_platform::{CapabilityId, registry};
 use glint_schema::{Surface, ThemeManifest};
 use serde::Serialize;
 use serde_json::{Map, Value};
@@ -60,7 +60,12 @@ pub struct SurfaceCapabilities {
 impl SurfaceCapabilities {
     /// The capabilities implied by `kind`.
     pub fn for_kind(kind: &SurfaceKind) -> Self {
-        let id = |raw: &str| CapabilityId::parse(raw).expect("catalog capability IDs are valid");
+        // Every catalog ID is in the frozen registry (tests/registry.rs).
+        let id = |raw: &str| {
+            registry::require_registered(raw)
+                .expect("catalog capability IDs are registered")
+                .capability_id()
+        };
         Self {
             required: vec![id(kind.capability())],
             optional: kind

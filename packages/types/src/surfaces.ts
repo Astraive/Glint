@@ -3,6 +3,8 @@
 // Regenerate: GLINT_UPDATE_TYPES=1 cargo test -p glint-surfaces --test typegen
 // `cargo test` fails when this file differs from the generator output.
 
+import type { CapabilityId } from "./capabilities.ts";
+
 /** Stability label of the surface definition format. */
 export const SURFACE_FORMAT_STATUS = "proposed";
 
@@ -153,8 +155,8 @@ export interface SurfaceBehavior {
 
 /** Capabilities a surface implies: `required` must all be usable to show it; `optional` only enable controls. */
 export interface SurfaceCapabilities {
-  required: string[];
-  optional: string[];
+  required: CapabilityId[];
+  optional: CapabilityId[];
 }
 
 /** A validated surface, as the host serializes it. */
@@ -169,8 +171,8 @@ export interface SurfaceDefinition {
 
 /** One row of the standard surface catalog. The first placement is the default. */
 export interface SurfaceCatalogEntry {
-  capability: string;
-  optionalCapabilities: readonly string[];
+  capability: CapabilityId;
+  optionalCapabilities: readonly CapabilityId[];
   placements: readonly PlacementKind[];
   defaultAnchor: Anchor | null;
   defaultFocus: FocusPolicy;
