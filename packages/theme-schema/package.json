@@ -1,0 +1,25 @@
+{
+  "name": "@glint/theme-schema",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TypeScript types and validator for the proposed glint.json v1 theme manifest, kept in parity with crates/glint-schema.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.ts\"",
+    "generate": "node scripts/generate-types.mjs",
+    "check": "node scripts/generate-types.mjs --check",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "json-schema-to-typescript": "15.0.4",
+    "typescript": "5.9.3"
+  }
+}
