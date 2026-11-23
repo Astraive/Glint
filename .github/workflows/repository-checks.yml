@@ -94,3 +94,34 @@ jobs:
       - name: Run workspace tests
         if: steps.workspace.outputs.present == 'true'
         run: cargo test --workspace
+
+  theme-schema:
+    name: TypeScript theme schema
+    # Runs the @glint/theme-schema validator against the shared manifest
+    # corpus (the Rust side runs in rust-workspace) and fails when the
+    # generated manifest types drift from schemas/glint-theme-v1.schema.json.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pnpm from packageManager
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - name: Record installed tool versions
+        run: |
+          node --version
+          pnpm --version
+      - name: Install dependencies from the lockfile
+        run: pnpm install --frozen-lockfile
+      - name: Check generated manifest types for drift
+        run: pnpm --filter @glint/theme-schema check
+      - name: Type-check the theme-schema package
+        run: pnpm --filter @glint/theme-schema typecheck
+      - name: Run manifest corpus parity and unit tests
+        run: pnpm --filter @glint/theme-schema test
