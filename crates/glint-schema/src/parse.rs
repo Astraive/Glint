@@ -709,7 +709,7 @@ fn surfaces(root: &Obj<'_>) -> Result<BTreeMap<String, Surface>> {
         let pointer = obj.child(id);
         check_key(id, &pointer, is_valid_surface_id(id))?;
         let surface = as_object(value, pointer)?;
-        surface.deny_unknown(&["entry", "placement"])?;
+        surface.deny_unknown(&["entry", "placement", "behavior"])?;
         let entry_ptr = surface.child("entry");
         let entry = package_path(surface.required("entry")?, &entry_ptr)?;
         let lower = entry.to_ascii_lowercase();
@@ -721,7 +721,15 @@ fn surfaces(root: &Obj<'_>) -> Result<BTreeMap<String, Surface>> {
             ));
         }
         let placement = surface.optional_object("placement")?.map(|p| p.map.clone());
-        out.insert(id.clone(), Surface { entry, placement });
+        let behavior = surface.optional_object("behavior")?.map(|b| b.map.clone());
+        out.insert(
+            id.clone(),
+            Surface {
+                entry,
+                placement,
+                behavior,
+            },
+        );
     }
     Ok(out)
 }

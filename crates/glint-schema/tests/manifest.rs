@@ -243,6 +243,25 @@ fn unknown_security_sensitive_nested_fields_are_rejected() {
 }
 
 #[test]
+fn surface_behavior_is_kept_as_raw_json_for_the_surface_engine() {
+    // SRF-001: `behavior` sits next to `placement`; its shape is owned and
+    // validated by glint-surfaces, so this parser keeps it raw.
+    let base: Value = serde_json::from_str(PLAN_EXAMPLE).expect("json");
+    let behavior = json!({ "focus": "non-activating", "reserveWorkArea": true });
+    let manifest = parse(&with(base.clone(), "/surfaces/panel/behavior", behavior.clone()))
+        .expect("accepted");
+    assert_eq!(
+        manifest.surfaces["panel"].behavior.clone().map(Value::Object),
+        Some(behavior)
+    );
+    assert_eq!(manifest.surfaces["launcher"].behavior, None);
+
+    let err = expect_err(&with(base, "/surfaces/panel/behavior", json!("exclusive")));
+    assert_eq!(err.code(), ErrorCode::InvalidType);
+    assert_eq!(err.pointer(), "/surfaces/panel/behavior");
+}
+
+#[test]
 fn unknown_author_fields_are_ignored_not_rejected() {
     // SCH-003: `author` is non-sensitive display metadata; unknown keys are
     // reported as warnings by parse_theme_manifest_with_diagnostics.

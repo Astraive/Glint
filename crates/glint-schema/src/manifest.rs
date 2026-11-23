@@ -181,6 +181,10 @@ pub struct Surface {
     /// Package-relative `.html` entry document.
     pub entry: String,
     /// Placement hints. The shape is owned by the surface/layout engine (SRF)
-    /// and is kept as raw JSON data here.
+    /// and is kept as raw JSON data here; `glint-surfaces` validates it.
     pub placement: Option<Map<String, Value>>,
+    /// Focus, dismissal and work-area behaviour. Like `placement`, the shape
+    /// is owned by the surface engine (SRF-001) and is kept as raw JSON data
+    /// here; `glint-surfaces` validates it.
+    pub behavior: Option<Map<String, Value>>,
 }

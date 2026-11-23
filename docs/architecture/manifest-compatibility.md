@@ -90,7 +90,7 @@ classified by **section**:
 | `requiredCapabilities`, `optionalCapabilities` | yes | n/a (string arrays; unknown namespaces are `GLINT_MANIFEST_INVALID_CAPABILITY`) | Permission requests |
 | `tokens`, `assets`, `layouts` | yes | n/a (paths; every value is a validated package path) | File access inside the package |
 | `author` | **no** | ignored, warning `GLINT_MANIFEST_WARN_UNKNOWN_FIELD` | Display metadata; Glint never contacts, loads or acts on it |
-| `surfaces.<id>.placement` | owned by SRF | kept as raw JSON, not interpreted here | The surface/layout engine validates its own shape |
+| `surfaces.<id>.placement`, `surfaces.<id>.behavior` | yes, owned by SRF | kept as raw JSON by `glint-schema`; unknown keys rejected by `glint-surfaces` (`GLINT_SURFACE_UNKNOWN_FIELD`) | The surface engine (`crates/glint-surfaces`) validates their shape |
 
 Rules that apply everywhere, including ignored sections: the document size
 limit, strict JSON and the duplicate-key refusal. An ignored value is never

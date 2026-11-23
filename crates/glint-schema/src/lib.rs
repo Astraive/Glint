@@ -53,9 +53,10 @@
 //!   as [`WarningCode::UnknownField`] by
 //!   [`parse_theme_manifest_with_diagnostics`] (SCH-003). `$schema` is
 //!   accepted as an editor hint and is never dereferenced. Surface
-//!   `placement` is the one open object: its shape is owned by the
-//!   surface/layout engine (SRF) and is kept as raw JSON. The full table is
-//!   in `docs/architecture/manifest-compatibility.md`.
+//!   `placement` and `behavior` are the open objects here: their shape is
+//!   owned by the surface engine (`crates/glint-surfaces`, SRF-001), which
+//!   rejects unknown keys in them; this crate keeps them as raw JSON. The
+//!   full table is in `docs/architecture/manifest-compatibility.md`.
 //! - **Version negotiation** ([`negotiate_theme_manifest`],
 //!   [`check_compatibility`]) compares `schemaVersion`,
 //!   `compatibility.glint`, `compatibility.sdk` and

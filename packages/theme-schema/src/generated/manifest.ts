@@ -118,9 +118,15 @@ export interface Surface {
    */
   entry: string;
   /**
-   * Placement hints; shape owned by the surface/layout engine (SRF).
+   * Placement (kind, anchor, size, monitor); shape owned and validated by the surface engine (crates/glint-surfaces, SRF-001). See docs/architecture/surfaces.md.
    */
   placement?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * Focus, dismissal, auto-hide and work-area behaviour; shape owned and validated by the surface engine (crates/glint-surfaces, SRF-001). See docs/architecture/surfaces.md.
+   */
+  behavior?: {
     [k: string]: unknown | undefined;
   };
 }

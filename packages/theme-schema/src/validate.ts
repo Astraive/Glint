@@ -436,7 +436,7 @@ function surfaces(root: Obj): number {
     const pointer = obj.child(id);
     checkKey(id, pointer, isValidSurfaceId(id));
     const surface = asObject(obj.required(id), pointer);
-    surface.denyUnknown(["entry", "placement"]);
+    surface.denyUnknown(["entry", "placement", "behavior"]);
     const entryPtr = surface.child("entry");
     const entry = packagePath(surface.required("entry"), entryPtr);
     const lower = asciiLower(entry);
@@ -444,6 +444,7 @@ function surfaces(root: Obj): number {
       reject("GLINT_MANIFEST_INVALID_PATH", entryPtr, "surface entry must be an .html document inside the package");
     }
     surface.optionalObject("placement");
+    surface.optionalObject("behavior");
   }
   return ids.length;
 }

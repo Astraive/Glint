@@ -69,6 +69,10 @@
       "description": "$schema is an editor hint and is never dereferenced",
       "warnings": []
     },
+    "surface-behavior.json": {
+      "description": "Surface placement and behavior objects are kept raw for the surface engine (SRF-001)",
+      "warnings": []
+    },
     "unicode-text-at-limits.json": {
       "description": "Length limits count Unicode scalar values (128 astral characters is allowed)",
       "warnings": []
@@ -317,6 +321,11 @@
       "description": "A wildcard must be the only comparator",
       "code": "GLINT_MANIFEST_INVALID_VERSION_REQUIREMENT",
       "pointer": "/compatibility/sdk"
+    },
+    "surface-behavior-not-object.json": {
+      "description": "Surface behavior must be an object",
+      "code": "GLINT_MANIFEST_INVALID_TYPE",
+      "pointer": "/surfaces/panel/behavior"
     },
     "surface-entry-not-html.json": {
       "description": "Entries are .html documents",

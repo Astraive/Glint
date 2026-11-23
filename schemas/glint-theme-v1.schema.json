@@ -188,7 +188,11 @@
           ]
         },
         "placement": {
-          "description": "Placement hints; shape owned by the surface/layout engine (SRF).",
+          "description": "Placement (kind, anchor, size, monitor); shape owned and validated by the surface engine (crates/glint-surfaces, SRF-001). See docs/architecture/surfaces.md.",
+          "type": "object"
+        },
+        "behavior": {
+          "description": "Focus, dismissal, auto-hide and work-area behaviour; shape owned and validated by the surface engine (crates/glint-surfaces, SRF-001). See docs/architecture/surfaces.md.",
           "type": "object"
         }
       }
