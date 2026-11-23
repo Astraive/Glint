@@ -16,3 +16,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Opt-in local Git hooks ([.githooks/README.md](.githooks/README.md)) and read-only repository checks (`scripts/check-repository.py`, `scripts/check-conventions.py`, `scripts/check-powershell.ps1`) (`[PRJ-001]`).
 - Repository operations guides ([docs/development.md](docs/development.md), [docs/issue-conventions.md](docs/issue-conventions.md), [docs/release-process.md](docs/release-process.md)) (`[PRJ-001]`).
 - GitHub configuration, backlog validation and publication tooling, and their guides ([docs/github-setup.md](docs/github-setup.md), [docs/backlog-validation.md](docs/backlog-validation.md), [docs/backlog-publication.md](docs/backlog-publication.md)) (`[PRJ-001]`).
+- `glint-schema` crate with a strict parser for the *proposed* `glint.json` v1 theme manifest, the proposed [JSON Schema](schemas/glint-theme-v1.schema.json) and a minimal valid fixture (`[SCH-001]`).

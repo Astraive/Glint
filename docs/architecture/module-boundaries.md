@@ -24,6 +24,7 @@ The responsibility map comes from
 | Member | Ticket | State |
 |---|---|---|
 | `apps/cli` (`glint-cli`, binary `glint`) | PRJ-002 | Reports its version; every other command returns an "unsupported" error |
+| `crates/glint-schema` (`glint-schema`) | SCH-001 | Parses and validates the *proposed* `glint.json` v1 theme manifest with stable `GLINT_MANIFEST_*` error codes; [`schemas/glint-theme-v1.schema.json`](../../schemas/glint-theme-v1.schema.json) is the matching proposed JSON Schema |
 
 ## Toolchain pins
 
