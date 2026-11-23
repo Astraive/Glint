@@ -367,7 +367,7 @@ fn is_id_segment(segment: &str) -> bool {
             .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
 }
 
-fn is_valid_id(id: &str) -> bool {
+pub(crate) fn is_valid_id(id: &str) -> bool {
     id.len() <= MAX_ID_LEN && id.split('.').count() >= 2 && id.split('.').all(is_id_segment)
 }
 
@@ -604,7 +604,7 @@ const RESERVED_DEVICE_NAMES: &[&str] = &[
     "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
 ];
 
-fn path_problem(path: &str) -> Option<&'static str> {
+pub(crate) fn path_problem(path: &str) -> Option<&'static str> {
     if path.is_empty() {
         return Some("path must not be empty");
     }

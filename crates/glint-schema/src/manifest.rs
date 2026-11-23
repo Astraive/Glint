@@ -79,11 +79,34 @@ pub struct ThemeManifest {
 
 /// Package kinds. Only `theme` exists in v1; `widget`, `icon-pack`,
 /// `wallpaper-pack` and `profile` are possible future kinds.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[non_exhaustive]
 pub enum PackageKind {
     /// A theme package (`"theme"`).
     Theme,
+}
+
+impl PackageKind {
+    /// Every kind, in declaration order.
+    pub const ALL: &'static [PackageKind] = &[PackageKind::Theme];
+
+    /// The JSON spelling, e.g. `"theme"`.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            PackageKind::Theme => "theme",
+        }
+    }
+
+    /// The kind spelled `name`, if this crate knows it.
+    pub fn from_name(name: &str) -> Option<Self> {
+        Self::ALL.iter().copied().find(|kind| kind.as_str() == name)
+    }
+}
+
+impl std::fmt::Display for PackageKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
 }
 
 /// Package author metadata. Never dereferenced or contacted by Glint.

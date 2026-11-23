@@ -83,6 +83,11 @@
 //!   referenced files is the package reader's job (PKG).
 //! - **Names** used as `assets`/`layouts`/`surfaces` keys are lowercase
 //!   `a-z0-9` with inner hyphens; custom surfaces use `custom:<package-id>`.
+//! - **Package identity** ([`PackageKey`], [`PackageOrigin`],
+//!   [`PackageRelease`], [`classify_install`]) follows the *proposed*
+//!   ADR 0006: one origin per (`kind`, `id`), immutable versions per origin,
+//!   and the same `id` from another origin is a collision, never a trusted
+//!   duplicate (SCH-004).
 //! - **Limits**: documents over [`MAX_MANIFEST_BYTES`] are refused; duplicate
 //!   object keys are refused; a single leading UTF-8 byte-order mark is
 //!   tolerated.
@@ -92,6 +97,7 @@
 
 mod compat;
 mod error;
+mod identity;
 mod manifest;
 mod parse;
 mod strict_json;
@@ -102,6 +108,10 @@ pub use compat::{
     negotiate_theme_manifest, probe_manifest_versions,
 };
 pub use error::{ErrorCode, ManifestError, ManifestWarning, WarningCode};
+pub use identity::{
+    IdentityError, IdentityErrorKind, InstallOutcome, OriginKind, PackageKey, PackageOrigin,
+    PackageRelease, Sha256Digest, classify_install,
+};
 pub use manifest::{
     Author, Compatibility, PackageKind, ParsedManifest, Platform, Renderer, RendererKind, Surface,
     ThemeManifest,
