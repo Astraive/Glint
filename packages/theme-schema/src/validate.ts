@@ -76,7 +76,7 @@ function compareUtf8(a: string, b: string): number {
   const x = [...a];
   const y = [...b];
   for (let i = 0; i < Math.min(x.length, y.length); i += 1) {
-    const d = (x[i]!.codePointAt(0) ?? 0) - (y[i]!.codePointAt(0) ?? 0);
+    const d = (x[i]?.codePointAt(0) ?? 0) - (y[i]?.codePointAt(0) ?? 0);
     if (d !== 0) return d;
   }
   return x.length - y.length;

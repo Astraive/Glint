@@ -186,9 +186,9 @@ class Reader {
         continue;
       }
       this.pos += 1; // backslash
-      const escape = this.text[this.pos];
+      const escapeChar = this.text[this.pos];
       this.pos += 1;
-      switch (escape) {
+      switch (escapeChar) {
         case '"':
           out += '"';
           break;
