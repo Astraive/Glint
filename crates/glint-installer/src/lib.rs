@@ -1,4 +1,5 @@
-//! Glint's transactional package installer (INS-003).
+//! Glint's transactional package installer (INS-003) and apply transaction
+//! with crash rollback (INS-005).
 //!
 //! [`Installer::install`] takes a validated `glint-package`
 //! [`PackageCandidate`](glint_package::PackageCandidate) and its
@@ -11,6 +12,12 @@
 //! the rest. Installing does not activate unless asked
 //! ([`InstallOptions::activate`]); [`Installer::remove`] refuses a release
 //! that the active profile or any profile still references.
+//!
+//! [`Installer::apply`] activates a profile together with native preference
+//! changes under an apply journal with per-adapter snapshots
+//! ([`RestoreSemantics`]); failures and crashes roll back to the previous
+//! theme and report exactly which settings could not be restored
+//! ([`RollbackReport`], `GLINT_APPLY_ROLLBACK_INCOMPLETE`).
 //!
 //! # Errors
 //!
@@ -41,8 +48,14 @@ mod fsutil;
 mod install;
 mod record;
 mod recover;
+mod rollback;
 
 pub use error::{ErrorCode, InstallError};
 pub use fault::{FaultInjector, FaultPoint};
 pub use install::{InstallOptions, InstalledPackage, Installer};
 pub use recover::RecoveryReport;
+pub use rollback::{
+    ApplyError, ApplyErrorCode, ApplyOutcome, ApplyPlan, NativeAdapter, NativeChange, NativeError,
+    NativeErrorKind, PendingApply, PendingNative, RestoreSemantics, RollbackReport, SettingRef,
+    SurfaceHost, Unrestored, UnrestoredReason,
+};

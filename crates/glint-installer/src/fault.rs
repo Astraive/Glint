@@ -33,6 +33,20 @@ pub enum FaultPoint {
     RemoveBeforeCommit,
     /// Remove: committed; the trash entry is not deleted yet.
     RemoveAfterCommit,
+    /// Apply: the journal (prior state and native snapshots) is committed.
+    ApplyAfterJournal,
+    /// Apply: new surfaces are staged beside the old ones.
+    ApplyAfterSurfaces,
+    /// Apply: native change `n` is marked `applying`; the adapter has not
+    /// been called.
+    ApplyBeforeNative(usize),
+    /// Apply: the adapter applied native change `n`; not yet marked
+    /// `applied`.
+    ApplyAfterNative(usize),
+    /// Apply: inside the commit transaction, before `COMMIT`.
+    ApplyBeforeCommit,
+    /// Apply: committed; old surfaces not yet torn down.
+    ApplyAfterCommit,
 }
 
 /// Decides whether to simulate a crash at a [`FaultPoint`].

@@ -312,7 +312,13 @@ impl Installer {
         if self.package(digest)?.is_none() {
             return Err(InstallError::NotInstalled(digest.to_owned()));
         }
-        let profiles = self.referencing_profiles(digest)?;
+        let mut profiles = self.referencing_profiles(digest)?;
+        if let Some(pending) = self.pending_apply()?
+            && pending.target_digest == digest
+            && !profiles.contains(&pending.target_profile_id)
+        {
+            profiles.push(pending.target_profile_id);
+        }
         if !profiles.is_empty() {
             return Err(InstallError::InUse {
                 digest: digest.to_owned(),

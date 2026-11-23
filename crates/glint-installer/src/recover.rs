@@ -12,6 +12,7 @@ use crate::error::InstallError;
 use crate::fsutil;
 use crate::install::{ARCHIVE_NAME, Installer, ROOT_DIR, insert_package};
 use crate::record::StoreRecord;
+use crate::rollback::PendingApply;
 
 /// What [`Installer::recover_pending`] did.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -40,6 +41,11 @@ pub struct RecoveryReport {
     pub cleaned_trash: usize,
     /// Whether the database itself was recovered from corruption on open.
     pub database_recovered: bool,
+    /// An interrupted apply found in the journal (INS-005). The previous
+    /// theme is still active; call
+    /// [`Installer::recover_apply`](crate::Installer::recover_apply) with the
+    /// native adapters to restore the settings it may have changed.
+    pub pending_apply: Option<PendingApply>,
 }
 
 impl RecoveryReport {
@@ -125,6 +131,7 @@ impl Installer {
         report.cleaned_staging = self.empty_dir(self.paths.staging_dir())?;
         report.cleaned_trash = self.empty_dir(self.paths.trash_dir())?;
         self.reconcile_store(&mut report)?;
+        report.pending_apply = self.pending_apply()?;
         Ok(report)
     }
 
