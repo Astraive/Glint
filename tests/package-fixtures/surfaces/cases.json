@@ -1,0 +1,191 @@
+{
+  "$comment": "Golden surface definition cases (SRF-001). Each case is one manifest `surfaces.<id>` entry. `valid` cases list a subset of the resolved definition (JSON form of glint_surfaces::SurfaceDefinition) that must match; `invalid` cases give the stable error code and JSON Pointer. Written by hand for this repository; MIT licensed; the format is PROPOSED.",
+  "valid": [
+    {
+      "name": "panel from the plan example, defaults applied",
+      "id": "panel",
+      "surface": { "entry": "dist/panel/index.html", "placement": { "anchor": "top", "height": 48 } },
+      "expect": {
+        "kind": "panel",
+        "entrypoint": "dist/panel/index.html",
+        "placement": { "kind": "edge", "anchor": "top", "monitor": "primary", "height": 48, "margin": 0 },
+        "behavior": { "focus": "non-activating", "reserveWorkArea": false, "dismissOn": [], "clickThrough": false },
+        "capabilities": { "required": ["surface.panel"], "optional": [] }
+      }
+    },
+    {
+      "name": "panel reserving work area on every monitor",
+      "id": "panel",
+      "surface": {
+        "entry": "dist/panel/index.html",
+        "placement": { "kind": "edge", "anchor": "left", "width": 56, "monitor": "all", "margin": 4 },
+        "behavior": { "focus": "non-activating", "reserveWorkArea": true }
+      },
+      "expect": {
+        "placement": { "kind": "edge", "anchor": "left", "monitor": "all", "width": 56, "margin": 4 },
+        "behavior": { "reserveWorkArea": true }
+      }
+    },
+    {
+      "name": "control-center with no placement uses the catalog default popup",
+      "id": "control-center",
+      "surface": { "entry": "dist/control-center/index.html" },
+      "expect": {
+        "placement": { "kind": "popup", "anchor": "top-right", "monitor": "primary", "margin": 0 },
+        "behavior": { "focus": "on-demand", "dismissOn": ["escape", "outside-click"] },
+        "capabilities": {
+          "required": ["surface.control-center"],
+          "optional": [
+            "system.audio.read",
+            "system.audio.write",
+            "system.brightness.read",
+            "system.brightness.write",
+            "system.network.read",
+            "system.network.toggle",
+            "system.bluetooth.read",
+            "system.bluetooth.toggle"
+          ]
+        }
+      }
+    },
+    {
+      "name": "launcher floating at the center with size constraints",
+      "id": "launcher",
+      "surface": {
+        "entry": "dist/launcher/index.html",
+        "placement": { "kind": "floating", "anchor": "center", "width": 640, "minHeight": 200, "maxHeight": 600 },
+        "behavior": { "focus": "exclusive", "dismissOn": ["escape"] }
+      },
+      "expect": {
+        "placement": { "kind": "floating", "anchor": "center", "width": 640, "minHeight": 200, "maxHeight": 600 },
+        "behavior": { "focus": "exclusive", "dismissOn": ["escape"] }
+      }
+    },
+    {
+      "name": "notification keeps its default auto-hide",
+      "id": "notification",
+      "surface": { "entry": "dist/notification/index.html", "placement": { "anchor": "bottom-right" } },
+      "expect": {
+        "placement": { "kind": "overlay", "anchor": "bottom-right" },
+        "behavior": { "focus": "none", "autoHideMs": 5000 }
+      }
+    },
+    {
+      "name": "volume OSD with a custom auto-hide",
+      "id": "volume-osd",
+      "surface": { "entry": "osd/volume.htm", "behavior": { "autoHideMs": 900, "clickThrough": true } },
+      "expect": {
+        "placement": { "kind": "overlay", "anchor": "bottom" },
+        "behavior": { "focus": "none", "autoHideMs": 900, "clickThrough": true },
+        "capabilities": { "required": ["surface.volume-osd"], "optional": ["system.audio.read"] }
+      }
+    },
+    {
+      "name": "desktop fills the monitor",
+      "id": "desktop",
+      "surface": { "entry": "dist/desktop/index.html", "placement": { "monitor": "all" }, "behavior": { "clickThrough": true } },
+      "expect": {
+        "placement": { "kind": "desktop", "monitor": "all", "margin": 0 },
+        "behavior": { "focus": "none", "dismissOn": [], "clickThrough": true }
+      }
+    },
+    {
+      "name": "dock placed on an edge uses a generic anchor rule",
+      "id": "dock",
+      "surface": { "entry": "dist/dock/index.html", "placement": { "kind": "edge", "anchor": "bottom", "height": 64 } },
+      "expect": {
+        "placement": { "kind": "edge", "anchor": "bottom", "height": 64 },
+        "behavior": { "dismissOn": [] },
+        "capabilities": { "required": ["surface.dock"], "optional": ["desktop.windows.list", "desktop.windows.focus"] }
+      }
+    },
+    {
+      "name": "custom surface with declared placement and focus",
+      "id": "custom:dev.example.clock",
+      "surface": {
+        "entry": "dist/clock/index.HTML",
+        "placement": { "kind": "floating", "anchor": "top-left", "width": 200, "height": 80 },
+        "behavior": { "focus": "none" }
+      },
+      "expect": {
+        "id": "custom:dev.example.clock",
+        "kind": "custom:dev.example.clock",
+        "placement": { "kind": "floating", "anchor": "top-left", "monitor": "primary", "width": 200, "height": 80 },
+        "behavior": { "focus": "none", "dismissOn": [] },
+        "capabilities": { "required": ["surface.custom"], "optional": [] }
+      }
+    },
+    {
+      "name": "custom popup defaults its anchor to center",
+      "id": "custom:dev.example.weather-popup",
+      "surface": { "entry": "w/index.html", "placement": { "kind": "popup" }, "behavior": { "focus": "on-demand" } },
+      "expect": { "placement": { "kind": "popup", "anchor": "center" } }
+    }
+  ],
+  "invalid": [
+    { "name": "unnamespaced custom id", "id": "custom:clock", "surface": { "entry": "a.html" }, "code": "GLINT_SURFACE_INVALID_CUSTOM_ID", "pointer": "/surfaces/custom:clock" },
+    { "name": "empty custom id", "id": "custom:", "surface": { "entry": "a.html" }, "code": "GLINT_SURFACE_INVALID_CUSTOM_ID", "pointer": "/surfaces/custom:" },
+    { "name": "custom id with an empty segment", "id": "custom:dev..clock", "surface": { "entry": "a.html" }, "code": "GLINT_SURFACE_INVALID_CUSTOM_ID", "pointer": "/surfaces/custom:dev..clock" },
+    { "name": "custom id with upper case", "id": "custom:Dev.example.clock", "surface": { "entry": "a.html" }, "code": "GLINT_SURFACE_INVALID_CUSTOM_ID", "pointer": "/surfaces/custom:Dev.example.clock" },
+    { "name": "unknown standard kind", "id": "taskbar", "surface": { "entry": "a.html" }, "code": "GLINT_SURFACE_UNKNOWN_KIND", "pointer": "/surfaces/taskbar" },
+    { "name": "plan capability spelling is not a surface kind", "id": "notification-overlay", "surface": { "entry": "a.html" }, "code": "GLINT_SURFACE_UNKNOWN_KIND", "pointer": "/surfaces/notification-overlay" },
+    { "name": "malformed id", "id": "Panel", "surface": { "entry": "a.html" }, "code": "GLINT_SURFACE_INVALID_ID", "pointer": "/surfaces/Panel" },
+    { "name": "id with a slash is pointer-escaped", "id": "a/b", "surface": { "entry": "a.html" }, "code": "GLINT_SURFACE_INVALID_ID", "pointer": "/surfaces/a~1b" },
+    { "name": "surface is not an object", "id": "panel", "surface": "dist/panel/index.html", "code": "GLINT_SURFACE_INVALID_TYPE", "pointer": "/surfaces/panel" },
+    { "name": "unknown surface field", "id": "launcher", "surface": { "entry": "a.html", "preload": "evil.js" }, "code": "GLINT_SURFACE_UNKNOWN_FIELD", "pointer": "/surfaces/launcher/preload" },
+    { "name": "missing entry", "id": "launcher", "surface": {}, "code": "GLINT_SURFACE_MISSING_FIELD", "pointer": "/surfaces/launcher/entry" },
+    { "name": "entry not a string", "id": "launcher", "surface": { "entry": 7 }, "code": "GLINT_SURFACE_INVALID_TYPE", "pointer": "/surfaces/launcher/entry" },
+    { "name": "remote https entrypoint", "id": "launcher", "surface": { "entry": "https://example.com/launcher.html" }, "code": "GLINT_SURFACE_INVALID_ENTRYPOINT", "pointer": "/surfaces/launcher/entry" },
+    { "name": "file url entrypoint", "id": "launcher", "surface": { "entry": "file:///C:/themes/launcher.html" }, "code": "GLINT_SURFACE_INVALID_ENTRYPOINT", "pointer": "/surfaces/launcher/entry" },
+    { "name": "file scheme without slashes", "id": "launcher", "surface": { "entry": "file:launcher.html" }, "code": "GLINT_SURFACE_INVALID_ENTRYPOINT", "pointer": "/surfaces/launcher/entry" },
+    { "name": "protocol-relative entrypoint", "id": "launcher", "surface": { "entry": "//cdn.example.com/launcher.html" }, "code": "GLINT_SURFACE_INVALID_ENTRYPOINT", "pointer": "/surfaces/launcher/entry" },
+    { "name": "absolute entrypoint", "id": "launcher", "surface": { "entry": "/dist/launcher.html" }, "code": "GLINT_SURFACE_INVALID_ENTRYPOINT", "pointer": "/surfaces/launcher/entry" },
+    { "name": "drive-letter entrypoint", "id": "launcher", "surface": { "entry": "C:/dist/launcher.html" }, "code": "GLINT_SURFACE_INVALID_ENTRYPOINT", "pointer": "/surfaces/launcher/entry" },
+    { "name": "escaping entrypoint", "id": "launcher", "surface": { "entry": "dist/../../launcher.html" }, "code": "GLINT_SURFACE_INVALID_ENTRYPOINT", "pointer": "/surfaces/launcher/entry" },
+    { "name": "backslash entrypoint", "id": "launcher", "surface": { "entry": "dist\\launcher.html" }, "code": "GLINT_SURFACE_INVALID_ENTRYPOINT", "pointer": "/surfaces/launcher/entry" },
+    { "name": "script entrypoint", "id": "launcher", "surface": { "entry": "dist/launcher.js" }, "code": "GLINT_SURFACE_INVALID_ENTRYPOINT", "pointer": "/surfaces/launcher/entry" },
+    { "name": "device-name entrypoint", "id": "launcher", "surface": { "entry": "con/index.html" }, "code": "GLINT_SURFACE_INVALID_ENTRYPOINT", "pointer": "/surfaces/launcher/entry" },
+    { "name": "placement not an object", "id": "panel", "surface": { "entry": "a.html", "placement": "top" }, "code": "GLINT_SURFACE_INVALID_TYPE", "pointer": "/surfaces/panel/placement" },
+    { "name": "unknown placement field from the plan spelling", "id": "launcher", "surface": { "entry": "a.html", "placement": { "kind": "floating", "position": "center" } }, "code": "GLINT_SURFACE_UNKNOWN_FIELD", "pointer": "/surfaces/launcher/placement/position" },
+    { "name": "unknown placement kind", "id": "launcher", "surface": { "entry": "a.html", "placement": { "kind": "fullscreen" } }, "code": "GLINT_SURFACE_INVALID_VALUE", "pointer": "/surfaces/launcher/placement/kind" },
+    { "name": "placement kind not allowed for the surface", "id": "notification", "surface": { "entry": "a.html", "placement": { "kind": "edge", "anchor": "top", "height": 40 } }, "code": "GLINT_SURFACE_UNSUPPORTED_PLACEMENT", "pointer": "/surfaces/notification/placement/kind" },
+    { "name": "desktop placement only for the desktop surface", "id": "panel", "surface": { "entry": "a.html", "placement": { "kind": "desktop" } }, "code": "GLINT_SURFACE_UNSUPPORTED_PLACEMENT", "pointer": "/surfaces/panel/placement/kind" },
+    { "name": "custom surface without placement kind", "id": "custom:dev.example.clock", "surface": { "entry": "a.html", "behavior": { "focus": "none" } }, "code": "GLINT_SURFACE_MISSING_FIELD", "pointer": "/surfaces/custom:dev.example.clock/placement/kind" },
+    { "name": "custom surface without focus policy", "id": "custom:dev.example.clock", "surface": { "entry": "a.html", "placement": { "kind": "overlay" } }, "code": "GLINT_SURFACE_MISSING_FIELD", "pointer": "/surfaces/custom:dev.example.clock/behavior/focus" },
+    { "name": "unknown anchor", "id": "launcher", "surface": { "entry": "a.html", "placement": { "anchor": "middle" } }, "code": "GLINT_SURFACE_INVALID_VALUE", "pointer": "/surfaces/launcher/placement/anchor" },
+    { "name": "corner anchor on an edge", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top-left", "height": 40 } }, "code": "GLINT_SURFACE_INVALID_VALUE", "pointer": "/surfaces/panel/placement/anchor" },
+    { "name": "edge without anchor when not the catalog default", "id": "dock", "surface": { "entry": "a.html", "placement": { "kind": "edge", "height": 64 } }, "code": "GLINT_SURFACE_MISSING_FIELD", "pointer": "/surfaces/dock/placement/anchor" },
+    { "name": "edge without thickness", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top" } }, "code": "GLINT_SURFACE_MISSING_FIELD", "pointer": "/surfaces/panel/placement/height" },
+    { "name": "panel without placement still needs a thickness", "id": "panel", "surface": { "entry": "a.html" }, "code": "GLINT_SURFACE_MISSING_FIELD", "pointer": "/surfaces/panel/placement/height" },
+    { "name": "vertical edge without width", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "right", "height": 40 } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/panel/placement/height" },
+    { "name": "width on a top edge", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top", "height": 40, "width": 800 } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/panel/placement/width" },
+    { "name": "min size on an edge", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top", "height": 40, "minHeight": 30 } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/panel/placement/minHeight" },
+    { "name": "anchor on desktop", "id": "desktop", "surface": { "entry": "a.html", "placement": { "anchor": "top" } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/desktop/placement/anchor" },
+    { "name": "size on desktop", "id": "desktop", "surface": { "entry": "a.html", "placement": { "width": 100 } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/desktop/placement/width" },
+    { "name": "unknown monitor target", "id": "launcher", "surface": { "entry": "a.html", "placement": { "monitor": "DELL U2720Q" } }, "code": "GLINT_SURFACE_INVALID_VALUE", "pointer": "/surfaces/launcher/placement/monitor" },
+    { "name": "popup on all monitors", "id": "calendar", "surface": { "entry": "a.html", "placement": { "monitor": "all" } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/calendar/placement/monitor" },
+    { "name": "zero width", "id": "launcher", "surface": { "entry": "a.html", "placement": { "width": 0 } }, "code": "GLINT_SURFACE_OUT_OF_RANGE", "pointer": "/surfaces/launcher/placement/width" },
+    { "name": "negative height", "id": "launcher", "surface": { "entry": "a.html", "placement": { "height": -10 } }, "code": "GLINT_SURFACE_OUT_OF_RANGE", "pointer": "/surfaces/launcher/placement/height" },
+    { "name": "width beyond the logical limit", "id": "launcher", "surface": { "entry": "a.html", "placement": { "width": 16385 } }, "code": "GLINT_SURFACE_OUT_OF_RANGE", "pointer": "/surfaces/launcher/placement/width" },
+    { "name": "huge width", "id": "launcher", "surface": { "entry": "a.html", "placement": { "width": 18446744073709551615 } }, "code": "GLINT_SURFACE_OUT_OF_RANGE", "pointer": "/surfaces/launcher/placement/width" },
+    { "name": "fractional width", "id": "launcher", "surface": { "entry": "a.html", "placement": { "width": 640.5 } }, "code": "GLINT_SURFACE_INVALID_TYPE", "pointer": "/surfaces/launcher/placement/width" },
+    { "name": "width as a string", "id": "launcher", "surface": { "entry": "a.html", "placement": { "width": "640px" } }, "code": "GLINT_SURFACE_INVALID_TYPE", "pointer": "/surfaces/launcher/placement/width" },
+    { "name": "margin beyond the limit", "id": "launcher", "surface": { "entry": "a.html", "placement": { "margin": 2000 } }, "code": "GLINT_SURFACE_OUT_OF_RANGE", "pointer": "/surfaces/launcher/placement/margin" },
+    { "name": "min width above max width", "id": "launcher", "surface": { "entry": "a.html", "placement": { "minWidth": 800, "maxWidth": 400 } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/launcher/placement/maxWidth" },
+    { "name": "height outside min and max", "id": "launcher", "surface": { "entry": "a.html", "placement": { "height": 100, "minHeight": 200 } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/launcher/placement/height" },
+    { "name": "behavior not an object", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top", "height": 40 }, "behavior": "exclusive" }, "code": "GLINT_SURFACE_INVALID_TYPE", "pointer": "/surfaces/panel/behavior" },
+    { "name": "unknown behavior field", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top", "height": 40 }, "behavior": { "nodeIntegration": true } }, "code": "GLINT_SURFACE_UNKNOWN_FIELD", "pointer": "/surfaces/panel/behavior/nodeIntegration" },
+    { "name": "unknown focus policy", "id": "launcher", "surface": { "entry": "a.html", "behavior": { "focus": "steal" } }, "code": "GLINT_SURFACE_INVALID_VALUE", "pointer": "/surfaces/launcher/behavior/focus" },
+    { "name": "reserve work area on a floating surface", "id": "launcher", "surface": { "entry": "a.html", "behavior": { "reserveWorkArea": true } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/launcher/behavior/reserveWorkArea" },
+    { "name": "reserve work area as a string", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top", "height": 40 }, "behavior": { "reserveWorkArea": "yes" } }, "code": "GLINT_SURFACE_INVALID_TYPE", "pointer": "/surfaces/panel/behavior/reserveWorkArea" },
+    { "name": "dismissing a persistent edge surface", "id": "panel", "surface": { "entry": "a.html", "placement": { "anchor": "top", "height": 40 }, "behavior": { "dismissOn": ["escape"] } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/panel/behavior/dismissOn" },
+    { "name": "dismiss triggers not an array", "id": "launcher", "surface": { "entry": "a.html", "behavior": { "dismissOn": "escape" } }, "code": "GLINT_SURFACE_INVALID_TYPE", "pointer": "/surfaces/launcher/behavior/dismissOn" },
+    { "name": "unknown dismiss trigger", "id": "launcher", "surface": { "entry": "a.html", "behavior": { "dismissOn": ["escape", "blur"] } }, "code": "GLINT_SURFACE_INVALID_VALUE", "pointer": "/surfaces/launcher/behavior/dismissOn/1" },
+    { "name": "duplicate dismiss trigger", "id": "launcher", "surface": { "entry": "a.html", "behavior": { "dismissOn": ["escape", "escape"] } }, "code": "GLINT_SURFACE_INVALID_VALUE", "pointer": "/surfaces/launcher/behavior/dismissOn/1" },
+    { "name": "auto-hide on a floating surface", "id": "launcher", "surface": { "entry": "a.html", "behavior": { "autoHideMs": 1000 } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/launcher/behavior/autoHideMs" },
+    { "name": "auto-hide too short", "id": "volume-osd", "surface": { "entry": "a.html", "behavior": { "autoHideMs": 10 } }, "code": "GLINT_SURFACE_OUT_OF_RANGE", "pointer": "/surfaces/volume-osd/behavior/autoHideMs" },
+    { "name": "click-through on a popup", "id": "calendar", "surface": { "entry": "a.html", "behavior": { "clickThrough": true } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/calendar/behavior/clickThrough" },
+    { "name": "click-through surface that takes focus", "id": "media-overlay", "surface": { "entry": "a.html", "behavior": { "clickThrough": true } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/media-overlay/behavior/clickThrough" },
+    { "name": "exclusive focus on the desktop", "id": "desktop", "surface": { "entry": "a.html", "behavior": { "focus": "exclusive" } }, "code": "GLINT_SURFACE_CONFLICT", "pointer": "/surfaces/desktop/behavior/focus" }
+  ]
+}

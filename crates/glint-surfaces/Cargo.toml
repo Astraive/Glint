@@ -1,0 +1,22 @@
+[package]
+name = "glint-surfaces"
+description = "Portable surface catalog and surface definition parser (proposed format)."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+# No OS-specific dependency may be added here: native surface hosts live in
+# glint-windows, glint-linux and glint-macos and consume these portable types.
+[dependencies]
+# Surface definitions are read from a validated ThemeManifest.
+glint-schema = { path = "../glint-schema" }
+# Catalog capabilities are typed, validated CapabilityIds.
+glint-platform = { path = "../glint-platform" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[lints]
+workspace = true
