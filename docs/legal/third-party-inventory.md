@@ -6,7 +6,7 @@ This file lists every third-party dependency recorded in `Cargo.lock` and the in
 
 It is an inventory of declared package metadata, not legal advice and not a release notice bundle. Where a package declares an `OR` expression, the license column shows the whole expression; the policy accepts a package when at least one alternative is on the allow-list. No Glint release exists yet, so no release-time NOTICE file has been produced (planned under REL-009).
 
-## Rust crates (90)
+## Rust crates (94)
 
 Source: `cargo metadata --locked`, which covers every target platform in `Cargo.lock`, excluding Glint's own workspace crates. Enforced by `deny.toml`.
 
@@ -26,6 +26,7 @@ Source: `cargo metadata --locked`, which covers every target platform in `Cargo.
 | digest | 0.11.3 | MIT OR Apache-2.0 |
 | dirs | 7.0.0 | MIT OR Apache-2.0 |
 | dirs-sys | 0.5.0 | MIT OR Apache-2.0 |
+| doctest-file | 1.1.1 | 0BSD |
 | equivalent | 1.0.3 | Apache-2.0 OR MIT |
 | errno | 0.3.15 | MIT OR Apache-2.0 |
 | fallible-iterator | 0.3.0 | MIT/Apache-2.0 |
@@ -37,6 +38,7 @@ Source: `cargo metadata --locked`, which covers every target platform in `Cargo.
 | hashbrown | 0.17.2 | MIT OR Apache-2.0 |
 | hybrid-array | 0.4.15 | MIT OR Apache-2.0 |
 | indexmap | 2.14.2 | Apache-2.0 OR MIT |
+| interprocess | 2.4.9 | 0BSD OR Apache-2.0 |
 | itoa | 1.0.19 | MIT OR Apache-2.0 |
 | js-sys | 0.3.107 | MIT OR Apache-2.0 |
 | libc | 0.2.191 | MIT OR Apache-2.0 |
@@ -51,6 +53,7 @@ Source: `cargo metadata --locked`, which covers every target platform in `Cargo.
 | proc-macro2 | 1.0.107 | MIT OR Apache-2.0 |
 | quote | 1.0.47 | MIT OR Apache-2.0 |
 | r-efi | 6.0.0 | MIT OR Apache-2.0 OR LGPL-2.1-or-later |
+| recvmsg | 1.0.0 | 0BSD |
 | redox_users | 0.5.3 | MIT |
 | rusqlite | 0.43.0 | MIT |
 | rustix | 1.1.6 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT |
@@ -84,6 +87,7 @@ Source: `cargo metadata --locked`, which covers every target platform in `Cargo.
 | webview2-com | 0.39.1 | MIT |
 | webview2-com-macros | 0.8.1 | MIT |
 | webview2-com-sys | 0.39.1 | MIT |
+| widestring | 1.2.1 | MIT OR Apache-2.0 |
 | windows | 0.62.2 | MIT OR Apache-2.0 |
 | windows-collections | 0.3.2 | MIT OR Apache-2.0 |
 | windows-core | 0.62.2 | MIT OR Apache-2.0 |
