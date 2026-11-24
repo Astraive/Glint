@@ -35,6 +35,19 @@ allow = [
     "MPL-2.0",
 ]
 
+# Per-crate exceptions; each is listed with its reason and approval in
+# docs/legal/license-policy.md#exceptions.
+# recvmsg and doctest-file: 0BSD (public-domain-like, no conditions),
+# dependencies of interprocess, the local IPC transport (ADR 0010, COR-003).
+# Approval: pending maintainer review of the COR-003 change.
+[[licenses.exceptions]]
+crate = "recvmsg"
+allow = ["0BSD"]
+
+[[licenses.exceptions]]
+crate = "doctest-file"
+allow = ["0BSD"]
+
 [bans]
 multiple-versions = "warn"
 wildcards = "deny"

@@ -50,7 +50,12 @@ An `OR` expression passes when at least one alternative is on the allow-list. Gl
 
 ### Exceptions
 
-There are none. Adding an exception (a `[[licenses.exceptions]]` entry in `deny.toml`, or a change to the npm allow-list) needs a comment naming the package, the license, why it is acceptable and who approved it, and an update to this page in the same change.
+Adding an exception (a `[[licenses.exceptions]]` entry in `deny.toml`, or a change to the npm allow-list) needs a comment naming the package, the license, why it is acceptable and who approved it, and an update to this page in the same change.
+
+| Crate | License | Why it is acceptable | Approved by |
+|---|---|---|---|
+| `recvmsg` 1.0.0 | 0BSD | Windows-only dependency of `interprocess`, the local IPC transport ([ADR 0010](../adr/0010-interprocess-for-local-ipc.md), COR-003). 0BSD is public-domain-like: no conditions at all, so it is strictly more permissive than MIT and already allowed for npm. Scoped to this crate instead of widening the Rust allow-list. | Pending maintainer review of the COR-003 change |
+| `doctest-file` 1.1.1 | 0BSD | Proc-macro dependency of `interprocess` (documentation includes); same reasoning. | Pending maintainer review of the COR-003 change |
 
 ## Apache-2.0 NOTICE and attribution
 
