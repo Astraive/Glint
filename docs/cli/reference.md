@@ -1,6 +1,6 @@
 # `glint` CLI reference
 
-Status: **proposed** (CLI-001, CLI-002, CLI-006). Command and flag names follow
+Status: **proposed** (CLI-001, CLI-002, CLI-003, CLI-006). Command and flag names follow
 [CLI and developer experience](../plan/06-engineering/cli-and-developer-experience.md#user-cli-proposed)
 and stay proposed until this page marks them stable. The exit codes and the
 JSON envelope below are the contract scripts may rely on; they only ever
@@ -19,7 +19,8 @@ thin: it parses arguments, calls the library crates and renders results.
 | `--` | Everything after it is a positional argument, so paths may start with `-`. |
 
 Options that take a value accept `--name VALUE`, `--name=VALUE` and, where
-listed, `-n VALUE`. Arguments must be valid Unicode.
+listed, `-n VALUE`. Boolean flags (`--include-sensitive`, `--yes`) take no
+value; each may be given once. Arguments must be valid Unicode.
 
 ## Commands
 
@@ -31,8 +32,8 @@ success. `details.plannedIn` names the owning ticket.
 | Command | Status | Planned in |
 |---|---|---|
 | `glint version` | implemented | - |
-| `glint doctor` | not implemented | CLI-003 |
-| `glint status` | not implemented | CLI-003 |
+| `glint doctor [-o PATH] [--include-sensitive] [--yes]` | implemented (redacted by default) | - |
+| `glint status [--include-sensitive] [--yes]` | implemented (redacted by default) | - |
 | `glint safe-mode` | implemented | - |
 | `glint theme` | interactive chooser, terminal only; not implemented | not scheduled |
 | `glint theme browse` | not implemented | CLI-005 |
@@ -167,6 +168,66 @@ database). Exit codes: not installed 7, ambiguous ID or unusable `-o` path
 2, permission denied 5, everything else 1. Package verdicts from `import`
 use the same codes as `theme validate`.
 
+### `glint doctor` and `glint status` (CLI-003)
+
+Read-only diagnostics. They never change state: the core is asked over IPC
+with a read (`get-snapshot`), the state database is opened read-only and
+only when it exists (`PRAGMA quick_check`, `user_version`, row counts), and
+the installer is never opened, so no recovery runs and the installer lock is
+never taken. Both exit 0 whatever they find (a broken installation is what
+they report); exit 2 for usage, 1 when the support bundle cannot be written.
+
+`glint status` (`data` shape `status`): the core (`core.state` is `running`,
+`not-running` or `unreachable`, with pid, lifecycle, sequence, server and
+API version, or the `GLINT_IPC_*` error), the active profile (`theme.active`,
+from the database or the active-theme record), the theme the core presents
+(`theme.presented`, with its fallback reason), the installed count and the
+number of core warnings.
+
+`glint doctor` (`data` shape `doctor`) adds `checks` (`paths`, `database`,
+`recovery`, `core`, `capabilities`, `theme`, each `ok`/`warn`/`fail`) and
+`overall`; `system` (OS, family, architecture, session type reduced to a
+fixed vocabulary, compositor, Wayland detection); `versions` (Glint, CLI
+output schema, IPC API range, the core's server name, database, manifest
+and entrypoint schema versions); `paths` (config, data and cache roots:
+exists, real directory); `storage` (database present/readable, schema
+version against the latest, quick check, active record, packages, profiles
+and pins, i.e. install locks); `installer` recovery state (journalled
+installs and removals, interrupted applies, staging and trash entries);
+`core`; `capabilities` (adapter, generation, advertised, usable, discovery
+error; from the core); `renderer` (the shipped core's headless backend);
+`protocols` (IPC transport and API range; Wayland protocols not checked
+yet); `theme`; the core's `warnings`; and `privacy`.
+
+**Redaction by default.** Two layers:
+
+1. Never collected, so never printed: Wi-Fi SSIDs, window titles, access
+   tokens, environment variables (only `SESSIONNAME`, `XDG_SESSION_TYPE`,
+   `XDG_CURRENT_DESKTOP` and the presence of `WAYLAND_DISPLAY` are read, and
+   reduced to a fixed vocabulary or a short identifier) and package
+   contents. `privacy.notCollected` lists them.
+2. Replaced in every string of the JSON, the human text and the support
+   bundle, longest match first and case-insensitively, with either slash:
+   the Glint roots (`<glint-config>`, `<glint-data>`, `<glint-cache>`,
+   `GLINT_HOME` as `<glint-home>`), the home directory (`<home>`, from
+   `USERPROFILE`/`HOME`), the user name (`<user>`, from
+   `USERNAME`/`USER`/`LOGNAME`) and the computer name (`<host>`, from
+   `COMPUTERNAME`/`HOSTNAME`). A value shorter than three characters is not
+   replaced (it would mangle unrelated text) and is named in
+   `privacy.notRedacted`.
+
+`--include-sensitive` skips layer 2 (and `status` then reports `dataDir`).
+It needs confirmation: `--yes`, or answering `y` to a prompt on stderr when
+stdin and stdout are terminals and `--json` is absent. Without either it is
+a usage error, `GLINT_CLI_CONFIRMATION_REQUIRED` (exit 2); `--yes` without
+`--include-sensitive` is `GLINT_CLI_USAGE`. Declining the prompt prints the
+redacted report. Layer 1 always applies.
+
+**Support bundle.** `glint doctor -o PATH` also writes
+`{"kind": "glint-support-bundle", "bundleVersion": 1, "glintVersion", "report"}`
+to `PATH`, where `report` is exactly the `data` printed (redacted unless
+sensitive output was confirmed); `data.bundle.path` names it.
+
 ### `glint theme validate [PATH]`
 
 Validates a theme directory or a `.glint` archive (default: the current
@@ -223,14 +284,14 @@ for success and failure alike:
 {
   "schemaVersion": 1,
   "glintVersion": "0.0.0",
-  "command": "doctor",
+  "command": "permissions list",
   "ok": false,
   "exitCode": 3,
   "error": {
     "kind": "unsupported",
     "code": "GLINT_CLI_NOT_IMPLEMENTED",
-    "message": "`glint doctor` is not implemented yet (planned in CLI-003); nothing was changed",
-    "details": { "plannedIn": "CLI-003" }
+    "message": "`glint permissions list` is not implemented yet (planned in CLI-004); nothing was changed",
+    "details": { "plannedIn": "CLI-004" }
   }
 }
 ```
@@ -250,12 +311,13 @@ Keys may appear in any order. Match on `exitCode`, `error.kind` and
 
 CLI-level codes: `GLINT_CLI_USAGE`, `GLINT_CLI_UNKNOWN_COMMAND`,
 `GLINT_CLI_MISSING_SUBCOMMAND`, `GLINT_CLI_NOT_IMPLEMENTED`, `GLINT_CLI_IO`,
-`GLINT_CLI_DAEMON_UNAVAILABLE`. Errors from the core keep their
+`GLINT_CLI_DAEMON_UNAVAILABLE`, `GLINT_CLI_CONFIRMATION_REQUIRED`. Errors from the core keep their
 `GLINT_IPC_*` code (`details.ipcCode`, `details.ipcCategory`).
 
 The schema also defines the documented per-command `data` shapes under
 `$defs/data` (`themeImport`, `themeList`, `themeExport`, `themeRemove`,
-`themeActivation`); the envelope's `data` stays a plain object, and tests
+`themeActivation`, `status`, `doctor`, with the shared `coreState` and
+`presentedTheme`); the envelope's `data` stays a plain object, and tests
 validate each command's `data` against its shape.
 
 ## Tests
@@ -279,3 +341,9 @@ validate each command's `data` against its shape.
   that the same state is read offline once the core stopped, that a core
   holding the instance lock without IPC is exit 6 and changes nothing, that
   a stale endpoint record is ignored and that a slow operation is exit 8.
+- `cargo test -p glint-cli --test doctor` runs `doctor` and `status`
+  offline and against a real `glint-daemon`, with a `GLINT_HOME`, home
+  directory, user name, computer name and token-like environment values
+  made up for the test, and checks that default JSON, text and the support
+  bundle contain none of them, that `--include-sensitive` needs `--yes`,
+  and that every document matches its `data` shape.
