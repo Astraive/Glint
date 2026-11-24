@@ -70,7 +70,7 @@ behaviour in this document is design intent and has not been run.
 
 | Component | Role | Trust | Exists today |
 |---|---|---|---|
-| Core process (`glint-daemon` + `glint-shell`) | Owns installed state, grants, profiles and the event bus; talks to OS adapters; hosts surfaces and supervises renderers. One process in the MVP (COR-001); split later (COR-007) | Trusted native code, runs as the logged-in user, never elevated (COR-008) | No |
+| Core process (`glint-daemon` + `glint-shell`) | Owns installed state, grants, profiles and the event bus; talks to OS adapters; hosts surfaces and supervises renderers. One process in the MVP (COR-001); split later (COR-007) | Trusted native code, runs as the logged-in user, never elevated (COR-008) | Partly: headless runtime (`glint-core`, `glint-daemon`, `glint-shell`, binary `glint-daemon`; COR-001) with no native adapter or surface host yet |
 | Theme renderer | A webview (WebView2, WKWebView, WebKitGTK) running a package's compiled HTML/CSS/JS for one surface or trust group | **Untrusted** | Spike only (SPK-001) |
 | Declarative theme content | Tokens, layouts and assets rendered by Glint's own default surfaces | Untrusted data | No |
 | SDK bridge | Allow-listed message protocol between a renderer and the core, checked against grants and capabilities | Boundary | Spike only (fixed-string messages) |
@@ -189,6 +189,10 @@ WebKitGTK build and sandbox settings, which is exactly what RND-008 must
 decide. A renderer escape in the MVP lands next to the core's state and OS
 access rather than in a separate low-privilege shell; COR-007 removes that
 shared failure domain later.
+The trade-off and the conditions for splitting are recorded in
+[core runtime](../architecture/core-runtime.md#trust-trade-off-of-the-combined-process);
+the shell crate has no storage or installer dependency, so even in one
+process only the daemon can write profile and package state.
 
 ## Assets
 
