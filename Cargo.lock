@@ -195,6 +195,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "glint-daemon"
+version = "0.0.0"
+dependencies = [
+ "glint-installer",
+ "glint-platform",
+ "glint-schema",
+ "glint-sources",
+ "glint-storage",
+ "glint-surfaces",
+ "tempfile",
+]
+
+[[package]]
 name = "glint-installer"
 version = "0.0.0"
 dependencies = [

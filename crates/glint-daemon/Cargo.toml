@@ -1,0 +1,28 @@
+[package]
+name = "glint-daemon"
+description = "Glint's per-user state authority: storage, installer recovery, config, capability discovery and theme selection."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+# The daemon is the only writer of profile and package state (COR-001). It
+# never depends on glint-shell: glint-core composes the two through their
+# service traits, so a later process split (COR-007) changes transport only.
+# No OS-specific dependency: native capability adapters plug in through
+# glint_platform::CapabilityAdapter.
+[dependencies]
+glint-installer = { path = "../glint-installer" }
+glint-platform = { path = "../glint-platform" }
+glint-schema = { path = "../glint-schema" }
+glint-storage = { path = "../glint-storage" }
+glint-surfaces = { path = "../glint-surfaces" }
+
+[dev-dependencies]
+glint-sources = { path = "../glint-sources" }
+tempfile = "3.27.0"
+
+[lints]
+workspace = true
