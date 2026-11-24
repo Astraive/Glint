@@ -18,6 +18,7 @@ use glint_storage::{ActiveTheme, GlintPaths};
 use glint_surfaces::SurfaceDefinition;
 
 use crate::error::DaemonError;
+use crate::operations::{ThemeOperation, ThemeOutcome};
 
 /// The daemon's state authority, driven by the core one boot stage at a
 /// time. Stages must run in declaration order; calling one early fails with
@@ -72,6 +73,24 @@ pub trait DaemonService {
     /// [`ErrorCode::FlushFailed`](crate::ErrorCode::FlushFailed); the
     /// database and the installer lock are released anyway.
     fn shutdown(&mut self) -> Result<FlushReport, DaemonError>;
+
+    /// Run a theme operation a client asked for (CLI-006) on the daemon's
+    /// own installer, once the daemon is serving. The core then re-selects
+    /// the theme when [`ThemeOperation::changes_state`].
+    ///
+    /// The default refuses with
+    /// [`ErrorCode::OperationUnsupported`](crate::ErrorCode::OperationUnsupported).
+    ///
+    /// # Errors
+    ///
+    /// [`ErrorCode::OperationFailed`](crate::ErrorCode::OperationFailed)
+    /// wrapping the installer or staging error (nothing was changed),
+    /// [`ErrorCode::InvalidRequest`](crate::ErrorCode::InvalidRequest) or
+    /// [`ErrorCode::InvalidState`](crate::ErrorCode::InvalidState) before
+    /// boot finished.
+    fn theme_operation(&mut self, operation: ThemeOperation) -> Result<ThemeOutcome, DaemonError> {
+        Err(DaemonError::OperationUnsupported(operation.name()))
+    }
 }
 
 /// Where a daemon is in its lifecycle.

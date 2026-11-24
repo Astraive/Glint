@@ -17,11 +17,18 @@ publish.workspace = true
 glint-installer = { path = "../glint-installer" }
 glint-platform = { path = "../glint-platform" }
 glint-schema = { path = "../glint-schema" }
+# Staging for `theme-import` requests (CLI-006).
+glint-sources = { path = "../glint-sources" }
 glint-storage = { path = "../glint-storage" }
 glint-surfaces = { path = "../glint-surfaces" }
 
+# build.rs packs themes/default with the deterministic writer, so the
+# embedded archive matches the CLI's byte for byte (CLI-006).
+[build-dependencies]
+glint-package = { path = "../glint-package" }
+
 [dev-dependencies]
-glint-sources = { path = "../glint-sources" }
+glint-package = { path = "../glint-package" }
 tempfile = "3.27.0"
 
 [lints]

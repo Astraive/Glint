@@ -27,6 +27,11 @@
 //! [`shutdown`](DaemonService::shutdown) mirrors the active-theme record,
 //! closes the database and releases the installer lock.
 //!
+//! Once serving, [`theme_operation`](DaemonService::theme_operation) runs
+//! the typed theme operations clients send over IPC (CLI-006: list,
+//! import, use, remove, export, safe mode) on the daemon's own installer,
+//! so the CLI and the manager never open the store while the core runs.
+//!
 //! An interrupted apply found at startup is reported in
 //! [`StateReport::recovery`] and left journalled: rolling it back needs the
 //! native adapters that made the changes (COR-006, native host epics).
@@ -36,10 +41,12 @@
 
 mod daemon;
 mod error;
+mod operations;
 mod service;
 
 pub use daemon::{BUNDLED_DEFAULT_MANIFEST, Daemon, HEADLESS_ADAPTER};
 pub use error::{DaemonError, ErrorCode};
+pub use operations::{BUNDLED_DEFAULT_THEME, ThemeOperation, ThemeOutcome};
 pub use service::{
     CapabilityReport, ConfigReport, DaemonService, DaemonStatus, FallbackReason, FlushReport,
     SkippedSurface, StateReport, ThemeOrigin, ThemeSelection, UserConfig,

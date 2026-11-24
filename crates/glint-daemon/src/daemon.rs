@@ -18,6 +18,7 @@ use glint_storage::{ActiveTheme, GlintPaths};
 use glint_surfaces::{SurfaceDefinition, surface_definitions};
 
 use crate::error::DaemonError;
+use crate::operations::{self, BUNDLED_DEFAULT_THEME, ThemeOperation, ThemeOutcome};
 use crate::service::{
     CapabilityReport, ConfigReport, DaemonService, DaemonStatus, FallbackReason, FlushReport,
     SkippedSurface, StateReport, ThemeOrigin, ThemeSelection, UserConfig,
@@ -376,6 +377,18 @@ impl DaemonService for Daemon {
 
     fn status(&self) -> DaemonStatus {
         self.status
+    }
+
+    fn theme_operation(&mut self, operation: ThemeOperation) -> Result<ThemeOutcome, DaemonError> {
+        self.require(operation.name(), DaemonStatus::Serving)?;
+        let installer = self.installer.as_mut().ok_or(DaemonError::InvalidState {
+            step: "theme_operation",
+            requires: "open_state",
+        })?;
+        operations::run(installer, &BUNDLED_DEFAULT_THEME, operation).map_err(|error| match error {
+            DaemonError::State(error) => DaemonError::Operation(error),
+            other => other,
+        })
     }
 
     fn shutdown(&mut self) -> Result<FlushReport, DaemonError> {
