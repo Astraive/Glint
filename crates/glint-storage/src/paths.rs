@@ -282,6 +282,18 @@ impl GlintPaths {
         self.data_dir.join("installer.lock")
     }
 
+    /// The per-user single-instance lock file (COR-002). Held for the core
+    /// process's lifetime; the OS releases it when the process exits.
+    pub fn instance_lock_file(&self) -> PathBuf {
+        self.data_dir.join("instance.lock")
+    }
+
+    /// The record naming the process that holds the instance lock, kept
+    /// beside the lock so a second instance can read it.
+    pub fn instance_owner_file(&self) -> PathBuf {
+        self.data_dir.join("instance.owner")
+    }
+
     /// The three roots.
     pub fn roots(&self) -> [&Path; 3] {
         [&self.config_dir, &self.data_dir, &self.cache_dir]

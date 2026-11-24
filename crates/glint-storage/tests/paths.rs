@@ -173,6 +173,8 @@ fn every_derived_location_is_inside_the_roots() {
         paths.staging_dir(),
         paths.trash_dir(),
         paths.installer_lock_file(),
+        paths.instance_lock_file(),
+        paths.instance_owner_file(),
     ] {
         assert!(paths.contains(&derived), "{}", derived.display());
         paths.check_within(&derived).unwrap();
