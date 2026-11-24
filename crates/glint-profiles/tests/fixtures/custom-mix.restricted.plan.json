@@ -1,0 +1,346 @@
+{
+  "colorScheme": "light",
+  "diagnostics": [
+    {
+      "code": "GLINT_RESOLVE_TOKEN_LOW_CONTRAST",
+      "pointer": "/tokenOverrides/background.default",
+      "severity": "warning",
+      "surface": null
+    },
+    {
+      "code": "GLINT_RESOLVE_SURFACE_BLOCKED",
+      "pointer": "/surfaces/notification",
+      "severity": "warning",
+      "surface": "notification"
+    },
+    {
+      "code": "GLINT_RESOLVE_OVERRIDE_RESTRICTED",
+      "pointer": "/tokenOverrides/motion.duration.fast",
+      "severity": "info",
+      "surface": null
+    }
+  ],
+  "profile": "profile.custom-mix",
+  "surfaces": {
+    "dock": {
+      "behavior": {
+        "clickThrough": false,
+        "dismissOn": [],
+        "focus": "non-activating",
+        "reserveWorkArea": false
+      },
+      "entrypoint": "glass/dock.html",
+      "layer": "surface-override",
+      "monitors": {
+        "secondary": {
+          "layer": "monitor",
+          "placement": {
+            "anchor": "bottom",
+            "height": 64,
+            "kind": "edge",
+            "margin": 0,
+            "monitor": "primary"
+          },
+          "visible": false
+        }
+      },
+      "placement": {
+        "anchor": "bottom",
+        "height": 64,
+        "kind": "edge",
+        "margin": 0,
+        "monitor": "primary"
+      },
+      "status": {
+        "state": "active"
+      },
+      "theme": {
+        "digest": "sha256:6465762e6578616d706c652e676c617373646f636b40312e312e300000000000",
+        "id": "dev.example.glassdock",
+        "origin": "registry:https://registry.example/glint",
+        "version": "1.1.0"
+      }
+    },
+    "notification": {
+      "behavior": {
+        "autoHideMs": 5000,
+        "clickThrough": false,
+        "dismissOn": [],
+        "focus": "none",
+        "reserveWorkArea": false
+      },
+      "entrypoint": "notifs/index.html",
+      "layer": "surface-override",
+      "monitors": {},
+      "placement": {
+        "anchor": "top-right",
+        "kind": "overlay",
+        "margin": 0,
+        "monitor": "primary"
+      },
+      "status": {
+        "capability": "surface.notification",
+        "layer": "host-restriction",
+        "state": "blocked"
+      },
+      "theme": {
+        "digest": "sha256:6465762e6578616d706c652e6e6f7469667340302e342e300000000000000000",
+        "id": "dev.example.notifs",
+        "origin": "registry:https://registry.example/glint",
+        "version": "0.4.0"
+      }
+    },
+    "panel": {
+      "behavior": {
+        "clickThrough": false,
+        "dismissOn": [],
+        "focus": "non-activating",
+        "reserveWorkArea": false
+      },
+      "entrypoint": "mono/panel.html",
+      "layer": "base-theme",
+      "monitors": {
+        "primary": {
+          "layer": "monitor",
+          "placement": {
+            "anchor": "bottom",
+            "height": 44,
+            "kind": "edge",
+            "margin": 0,
+            "monitor": "primary"
+          },
+          "visible": true
+        }
+      },
+      "placement": {
+        "anchor": "top",
+        "height": 36,
+        "kind": "edge",
+        "margin": 0,
+        "monitor": "primary"
+      },
+      "status": {
+        "state": "active"
+      },
+      "theme": {
+        "digest": "sha256:6465762e6578616d706c652e6d6f6e6f40312e302e3000000000000000000000",
+        "id": "dev.example.mono",
+        "origin": "registry:https://registry.example/glint",
+        "version": "1.0.0"
+      }
+    }
+  },
+  "tokens": {
+    "accent.default": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#3b3e45"
+    },
+    "accent.subtle": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#dcdee2"
+    },
+    "background.default": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#ebecee"
+    },
+    "background.subtle": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#f5f6f7"
+    },
+    "border.default": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#c4c7cd"
+    },
+    "border.subtle": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#dcdee2"
+    },
+    "border.width": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "1px"
+    },
+    "elevation.high": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "0 12px 32px #00000099"
+    },
+    "elevation.low": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "0 1px 2px #00000066"
+    },
+    "elevation.medium": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "0 4px 12px #00000073"
+    },
+    "focus.offset": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "2px"
+    },
+    "focus.ring": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#2e3036"
+    },
+    "focus.width": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "2px"
+    },
+    "font.family.base": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "system-ui, \"Segoe UI\", Ubuntu, Cantarell, \"Noto Sans\", sans-serif"
+    },
+    "font.family.mono": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "ui-monospace, \"Cascadia Mono\", Consolas, Menlo, monospace"
+    },
+    "font.line-height.base": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "1.4"
+    },
+    "font.size.base": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "13px"
+    },
+    "font.size.large": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "15px"
+    },
+    "font.size.small": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "12px"
+    },
+    "font.weight.regular": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "400"
+    },
+    "font.weight.strong": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "600"
+    },
+    "motion.duration.fast": {
+      "layer": "host-restriction",
+      "value": "0ms"
+    },
+    "motion.duration.normal": {
+      "layer": "host-restriction",
+      "value": "0ms"
+    },
+    "motion.duration.slow": {
+      "layer": "host-restriction",
+      "value": "0ms"
+    },
+    "motion.easing.emphasized": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "cubic-bezier(0.3, 0, 0, 1)"
+    },
+    "motion.easing.standard": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "cubic-bezier(0.2, 0, 0, 1)"
+    },
+    "panel.height": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "36px"
+    },
+    "radius.lg": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "12px"
+    },
+    "radius.md": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "8px"
+    },
+    "radius.sm": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "4px"
+    },
+    "space.lg": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "16px"
+    },
+    "space.md": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "12px"
+    },
+    "space.sm": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "8px"
+    },
+    "space.xl": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "24px"
+    },
+    "space.xs": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "4px"
+    },
+    "surface.default": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#f5f6f7"
+    },
+    "surface.overlay": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#ffffff"
+    },
+    "surface.raised": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#ffffff"
+    },
+    "text.muted": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#5b5f68"
+    },
+    "text.on-accent": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#f5f6f7"
+    },
+    "text.primary": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#141518"
+    },
+    "text.secondary": {
+      "layer": "base-theme",
+      "theme": "dev.example.mono",
+      "value": "#3b3e45"
+    }
+  },
+  "wallpaper": {
+    "layer": "user",
+    "path": "user-assets/wallpaper.png"
+  }
+}

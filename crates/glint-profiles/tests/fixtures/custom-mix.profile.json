@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "profile.custom-mix",
+  "name": "Custom Mix",
+  "baseTheme": { "id": "dev.example.mono", "version": "1.0.0" },
+  "surfaces": {
+    "dock": { "theme": "dev.example.glassdock", "version": "1.1.0" },
+    "notification": { "theme": "dev.example.notifs", "version": "0.4.0" }
+  },
+  "wallpaper": { "path": "user-assets/wallpaper.png" },
+  "monitors": {
+    "primary": { "panel": { "anchor": "bottom", "height": 44 } },
+    "secondary": { "dock": { "visible": false } }
+  },
+  "tokenOverrides": {
+    "background.default": "#0B0C0F",
+    "motion.duration.fast": "90ms"
+  }
+}
