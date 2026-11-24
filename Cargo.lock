@@ -242,6 +242,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "glint-shell"
+version = "0.0.0"
+dependencies = [
+ "glint-schema",
+ "glint-surfaces",
+]
+
+[[package]]
 name = "glint-sources"
 version = "0.0.0"
 dependencies = [

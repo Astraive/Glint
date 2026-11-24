@@ -1,0 +1,23 @@
+[package]
+name = "glint-shell"
+description = "Glint's surface shell: presents a theme's resolved surfaces through a surface backend and releases them on shutdown."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+# The shell never depends on glint-daemon, glint-storage or glint-installer:
+# it receives resolved surface definitions and has no handle that could write
+# profile or package state (COR-001). No OS-specific dependency: native
+# surface hosts implement SurfaceBackend in glint-windows, glint-linux and
+# glint-macos.
+[dependencies]
+glint-surfaces = { path = "../glint-surfaces" }
+
+[dev-dependencies]
+glint-schema = { path = "../glint-schema" }
+
+[lints]
+workspace = true

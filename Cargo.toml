@@ -9,6 +9,7 @@ members = [
     "crates/glint-package",
     "crates/glint-platform",
     "crates/glint-schema",
+    "crates/glint-shell",
     "crates/glint-sources",
     "crates/glint-storage",
     "crates/glint-surfaces",
