@@ -1,6 +1,6 @@
 # Core runtime: one process, separate crates
 
-Status: **implemented for the headless MVP** (COR-001, COR-002). This page records how
+Status: **implemented for the headless MVP** (COR-001, COR-002, COR-003). This page records how
 the core process is put together, what the combined process costs in trust,
 and when it must be split. It follows [ADR 0001](../adr/0001-single-process-mvp-with-separate-crates.md)
 and the plan's [process table](../plan/02-architecture/system-architecture.md#processes-recommended);
@@ -12,8 +12,9 @@ the plan's multi-process design stays the target (COR-007).
 |---|---|---|
 | `crates/glint-daemon` | State authority: the only holder of the `Installer`, and with it the only read-write handle to the state database and the package store. Opens state with startup recovery, resolves config, discovers capabilities, selects the theme | storage, installer, schema, platform, surfaces |
 | `crates/glint-shell` | Surface presentation: opens the selected surfaces through a `SurfaceBackend`, closes them and releases work-area reservations | surfaces only |
-| `crates/glint-core` | Lifecycle and orchestration: `Runtime` drives both services through their traits, emits typed events, owns shutdown | daemon, shell, storage (paths) |
-| `apps/daemon` (binary `glint-daemon`) | Thin host: arguments, stdin control channel, exit codes | core |
+| `crates/glint-core` | Lifecycle and orchestration: `Runtime` drives both services through their traits, emits typed events, owns shutdown; `CoreIpc` publishes its state over local IPC | daemon, shell, storage (paths), ipc |
+| `crates/glint-ipc` | Local IPC (COR-003, [ADR 0010](../adr/0010-interprocess-for-local-ipc.md)): versioned envelope, snapshot hub, server, client, named pipe / Unix socket endpoint | storage (paths), `interprocess` |
+| `apps/daemon` (binary `glint-daemon`) | Thin host: arguments, stdin control channel, IPC wiring, exit codes | core |
 
 `glint-daemon` and `glint-shell` do not depend on each other or on
 `glint-core`, so the graph has no cycle (Cargo would refuse one, and
@@ -117,11 +118,71 @@ locked range.
 A second launch fails `acquire-instance` with `GLINT_CORE_ALREADY_RUNNING`
 (category unavailable) carrying the owner record, before the database or
 the installer lock is touched; the binary prints `already-running
-pid=<pid>` and exits with code 9. `probe_instance` answers "is a core
-running?" without taking the lock, for clients such as the CLI. The plan
-asks the second launch to connect to the running instance: that needs the
-local IPC transport (COR-003), so today it only reports the running one.
-A stale owner record left by a crash is replaced by the next holder.
+pid=<pid> ipc=<state>` and exits with code 9. `probe_instance` answers "is
+a core running?" without taking the lock, for clients such as the CLI. As
+the plan asks, the second launch connects to the running instance: it
+sends `get-status` over local IPC (`probe_ipc`) and prints the running
+core's lifecycle state, or `unreachable` when the endpoint does not answer
+(for example while the first instance is still booting). It does not yet
+forward a request; the CLI routing that would use this is CLI-006. A stale
+owner record left by a crash is replaced by the next holder.
+
+## Local IPC
+
+Once `Runtime::start` returns, the host serves the core over local IPC
+(COR-003, [ADR 0010](../adr/0010-interprocess-for-local-ipc.md)); the
+`glint-daemon` binary prints `ipc listening <endpoint>`.
+
+- **Endpoint.** A named pipe `\\.\pipe\glint-ipc-<16 hex>` on Windows (a
+  random suffix per start, so the name cannot be predicted and squatted)
+  or `<data>/ipc.sock` on Unix, through the portable `interprocess` crate.
+  The server records it in `<data>/ipc.endpoint` after binding and removes
+  the record when it stops; clients read the record and refuse names Glint
+  would not create.
+- **Who may connect.** Windows: a protected DACL granting access only to
+  `OWNER RIGHTS` (the user that runs the core; checked live, the pipe's
+  owner is the user's SID and the DACL has that single entry),
+  `FILE_FLAG_FIRST_PIPE_INSTANCE`, `PIPE_REJECT_REMOTE_CLIENTS`, default
+  medium integrity. Unix: socket mode `0600` in the `0700` data root.
+  Peer credential checks and the cross-user refusal test are SEC-002's.
+- **Protocol (API version 1).** Length-prefixed JSON frames (requests up to
+  64 KiB, responses up to 1 MiB, checked before the body is read), a
+  `hello`/`welcome` version negotiation, then request envelopes with a
+  `request_id` and `api_version` and exactly one response each: a typed
+  body or a typed error with a stable `GLINT_IPC_*` code and a category
+  (unsupported, permission-denied, unavailable, timeout, failure). The
+  requests are a closed set: `ping`, `get-status`, `get-snapshot`,
+  `get-state`, `get-config`, `get-capabilities`, `get-theme`, `subscribe`,
+  `shutdown`; anything else is `GLINT_IPC_UNKNOWN_REQUEST`. Golden
+  fixtures: `crates/glint-ipc/tests/fixtures/`.
+- **Single writer kept.** `CoreIpc` feeds a `Hub` from the runtime's
+  observer (lifecycle changes, warnings, shutdown steps) and from the boot
+  reports (`publish_ready`). Reads are answered from that published
+  snapshot; no IPC request reaches the daemon's database or installer. The
+  only action, `shutdown`, fires the same `ShutdownSignal` as the stdin
+  `shutdown` line.
+- **Subscriptions.** `subscribe` returns the snapshot and its sequence
+  number, then the connection streams deltas (`sequence + 1` each),
+  heartbeats, a resync snapshot when the subscriber's bounded queue
+  overflowed, and `closed` after the shutdown deltas. The client library
+  refuses a gap (`GLINT_IPC_SEQUENCE_GAP`) and `reconnect` subscribes again
+  for the current snapshot, so a client never depends on deltas it missed.
+- **Bounds and timeouts.** At most 32 connections (the next gets
+  `GLINT_IPC_BUSY`); 256 queued deltas per subscriber; client requests time
+  out (5 s by default) and a timed-out connection is not reused. Windows
+  pipes have no read timeouts, so the server has no per-connection read
+  deadline; a same-user client can hold a connection slot open (threat
+  model B7.5).
+- **Failure.** If the endpoint cannot be served the binary shuts the
+  runtime down and exits 1 (`GLINT_CORE_IPC_FAILED` with the
+  `GLINT_IPC_*` source code): a core nobody can reach is not reported as
+  running.
+
+Tests: `crates/glint-ipc/tests/` (codec, golden fixtures, the real
+transport in process), `crates/glint-core/tests/ipc.rs` and
+`apps/daemon/tests/ipc.rs` (the real binary: requests, a subscription
+snapshot followed by ordered shutdown deltas, reconnect, an unknown request
+refused, the second launch).
 
 ## Trust trade-off of the combined process
 
@@ -157,4 +218,7 @@ holds:
   restart.
 
 The split replaces the in-process trait calls with IPC clients over the
-transport COR-003 defines; the contracts above do not change.
+transport COR-003 defines (`glint-ipc`); the contracts above do not change.
+Today's protocol only exposes reads of what each daemon stage reported and
+`shutdown`; the stage calls themselves become requests when the split
+needs them, as an additive protocol change.
