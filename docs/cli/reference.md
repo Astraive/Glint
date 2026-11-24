@@ -1,6 +1,6 @@
 # `glint` CLI reference
 
-Status: **proposed** (CLI-001, CLI-002). Command and flag names follow
+Status: **proposed** (CLI-001, CLI-002, CLI-006). Command and flag names follow
 [CLI and developer experience](../plan/06-engineering/cli-and-developer-experience.md#user-cli-proposed)
 and stay proposed until this page marks them stable. The exit codes and the
 JSON envelope below are the contract scripts may rely on; they only ever
@@ -65,17 +65,67 @@ and stdout are terminals and `--json` is absent. Otherwise it is a usage
 error (exit 2, `GLINT_CLI_MISSING_SUBCOMMAND`), so scripts never block on a
 prompt. On a terminal the chooser is recognised but not built yet (exit 3).
 
-### Theme state commands (CLI-002)
+### Theme state commands (CLI-002, CLI-006)
 
-`theme import`, `list`, `export`, `remove`, `use` and `safe-mode` work
-offline on Glint's own state through `glint-installer`: the
-content-addressed store, the state database and the active-theme record
-under the Glint home (`GLINT_HOME` when set, otherwise the OS directories;
-see `glint-storage`). They never change a native OS setting and never run a
-package script. Every invocation opens the installer, which takes the
-exclusive installer lock (another running installer is
-`GLINT_INSTALL_BUSY`, exit 1) and first recovers interrupted operations and
-a corrupt database.
+`theme import`, `list`, `export`, `remove`, `use` and `safe-mode` work on
+Glint's own state: the content-addressed store, the state database and the
+active-theme record under the Glint home (`GLINT_HOME` when set, otherwise
+the OS directories; see `glint-storage`). They never change a native OS
+setting and never run a package script.
+
+While a Glint core runs it is the single writer of that state (it holds the
+installer lock), so these commands go through it (see
+[Routing through the core](#routing-through-the-core-cli-006)). With no core
+running they open the installer themselves, which takes the exclusive
+installer lock and first recovers interrupted operations and a corrupt
+database. Both paths run the same installer operations and print the same
+`data`, apart from `route`.
+
+### Routing through the core (CLI-006)
+
+Before touching state, a theme state command looks for a running core: it
+reads the endpoint record `<data>/ipc.endpoint`, connects with the typed IPC
+client (`glint-ipc`, API version 1, the same API the manager uses) and
+probes the per-user single-instance lock. The decision never silently
+diverges and never mutates behind a running core:
+
+| Endpoint record | Connect | Instance lock | Route |
+|---|---|---|---|
+| present | ok | - | `daemon`: the core runs the operation on its own installer |
+| present | nothing listens (stale record after a crash) | free | `offline` |
+| present | nothing listens | held | exit 6 |
+| absent or unusable | - | free | `offline` |
+| absent or unusable | - | held (a core that is booting or not serving IPC) | exit 6, `GLINT_CLI_DAEMON_UNAVAILABLE` |
+| - | no answer in time | - | exit 8, `GLINT_IPC_TIMEOUT` |
+| - | access refused | - | exit 5, `GLINT_IPC_PERMISSION_DENIED` |
+| - | busy, incompatible version, shutting down | - | exit 6 with the `GLINT_IPC_*` code |
+
+A core that starts between the decision and the offline installer opening
+is also exit 6 (`GLINT_CLI_DAEMON_UNAVAILABLE`, `details.installCode:
+GLINT_INSTALL_BUSY`), so a CLI never reports the lock as a plain failure.
+Every result reports where it ran: `data.route` (`daemon` or `offline`) on
+success, `error.details.route` on failure.
+
+The IPC requests are `theme-list`, `theme-import`, `theme-use`,
+`theme-remove`, `theme-export` and `safe-mode`. Paths are made absolute
+against the CLI's working directory before they are sent (the core's working
+directory differs). `theme export` without `-o` asks the core to write a
+temporary file in the working directory and renames it to
+`./<id>-<version>.glint`. A failed operation keeps the component's code in
+`error.code` (`GLINT_INSTALL_*`, `GLINT_IDENTITY_*`, `GLINT_PACKAGE_*`,
+`GLINT_SOURCE_*`, ...) with the same exit codes as offline, plus
+`details.ipcCode: GLINT_IPC_OPERATION_FAILED`. A core that does not perform
+operations (`GLINT_IPC_UNKNOWN_REQUEST`, `GLINT_IPC_OPERATION_UNSUPPORTED`)
+is exit 3.
+
+Deadlines: 5 s for the handshake and `theme list`, 90 s for operations (the
+core gives up after 60 s and answers `GLINT_IPC_TIMEOUT` itself).
+`GLINT_IPC_TIMEOUT_MS` overrides every deadline in milliseconds. A timed-out
+operation may still complete in the core; run `glint theme list` to see the
+outcome.
+
+`theme validate` never routes: it only reads the given package through the
+libraries.
 
 **Theme IDs.** `ID` is a package ID (`dev.example.midnight`), `ID@VERSION`,
 a digest (64 hex digits, optionally `sha256:`-prefixed) or `default` for the
@@ -102,6 +152,7 @@ theme is a no-op.
 | `glint theme use ID` | Makes the release the base theme of the active profile, or of the `default` profile when none is active or safe mode is on | `themeActivation` |
 | `glint safe-mode` | Activates the bundled default theme in the separate `safe-mode` profile; other profiles keep their themes | `themeActivation` |
 
+Every shape also has `route` (`daemon` or `offline`).
 `themePackage` (in `themeImport`, `themeList` and `themeActivation`) has
 `id`, `version`, `digest`, `origin` (ADR 0006: `local`, ...), `source.kind`
 and `source.locator` (the bundled theme's locator is
@@ -155,9 +206,9 @@ Failures keep the most specific library code in `error.code`
 | 3 | `unsupported` | Recognised but not implemented or not supported here |
 | 4 | `invalid-package` | A theme package or manifest failed validation |
 | 5 | `permission-denied` | The operating system refused access |
-| 6 | `daemon-unavailable` | The command needs the Glint daemon and it is not reachable (reserved: no daemon exists yet) |
+| 6 | `daemon-unavailable` | A Glint core runs (or is shutting down) but cannot be asked: not serving IPC yet, busy, incompatible; nothing was changed |
 | 7 | `not-found` | A named file, directory, theme or profile does not exist |
-| 8 | `timeout` | An operation did not finish in time (reserved) |
+| 8 | `timeout` | The core did not answer in time (`GLINT_IPC_TIMEOUT`) |
 
 `glint --help` prints this table and `glint --help --json` returns it as
 `data.exitCodes`.
@@ -198,7 +249,9 @@ Keys may appear in any order. Match on `exitCode`, `error.kind` and
 `error.code`, never on `message`.
 
 CLI-level codes: `GLINT_CLI_USAGE`, `GLINT_CLI_UNKNOWN_COMMAND`,
-`GLINT_CLI_MISSING_SUBCOMMAND`, `GLINT_CLI_NOT_IMPLEMENTED`, `GLINT_CLI_IO`.
+`GLINT_CLI_MISSING_SUBCOMMAND`, `GLINT_CLI_NOT_IMPLEMENTED`, `GLINT_CLI_IO`,
+`GLINT_CLI_DAEMON_UNAVAILABLE`. Errors from the core keep their
+`GLINT_IPC_*` code (`details.ipcCode`, `details.ipcCategory`).
 
 The schema also defines the documented per-command `data` shapes under
 `$defs/data` (`themeImport`, `themeList`, `themeExport`, `themeRemove`,
@@ -218,3 +271,11 @@ validate each command's `data` against its shape.
   `GLINT_HOME` (including an invalid archive that must leave the active
   theme unchanged, a damaged store entry and a corrupt database) and
   validates every `--json` document and its `data` shape.
+- `cargo test -p glint-cli --test ipc_client` starts a real `glint-daemon`
+  with a temporary `GLINT_HOME` (building it once if the workspace has not)
+  and checks that import, use, list, export, remove and safe mode go
+  through it (`route: daemon`, no `GLINT_INSTALL_BUSY`), that the change is
+  visible to a second IPC client (a subscription delta and a fresh read),
+  that the same state is read offline once the core stopped, that a core
+  holding the instance lock without IPC is exit 6 and changes nothing, that
+  a stale endpoint record is ignored and that a slow operation is exit 8.

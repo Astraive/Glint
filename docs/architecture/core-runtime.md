@@ -1,6 +1,6 @@
 # Core runtime: one process, separate crates
 
-Status: **implemented for the headless MVP** (COR-001, COR-002, COR-003). This page records how
+Status: **implemented for the headless MVP** (COR-001, COR-002, COR-003, CLI-006). This page records how
 the core process is put together, what the combined process costs in trust,
 and when it must be split. It follows [ADR 0001](../adr/0001-single-process-mvp-with-separate-crates.md)
 and the plan's [process table](../plan/02-architecture/system-architecture.md#processes-recommended);
@@ -123,8 +123,8 @@ a core running?" without taking the lock, for clients such as the CLI. As
 the plan asks, the second launch connects to the running instance: it
 sends `get-status` over local IPC (`probe_ipc`) and prints the running
 core's lifecycle state, or `unreachable` when the endpoint does not answer
-(for example while the first instance is still booting). It does not yet
-forward a request; the CLI routing that would use this is CLI-006. A stale
+(for example while the first instance is still booting). It does not
+forward a request; the CLI does (CLI-006, see the Local IPC section below). A stale
 owner record left by a crash is replaced by the next holder.
 
 ## Local IPC
@@ -153,14 +153,39 @@ Once `Runtime::start` returns, the host serves the core over local IPC
   (unsupported, permission-denied, unavailable, timeout, failure). The
   requests are a closed set: `ping`, `get-status`, `get-snapshot`,
   `get-state`, `get-config`, `get-capabilities`, `get-theme`, `subscribe`,
-  `shutdown`; anything else is `GLINT_IPC_UNKNOWN_REQUEST`. Golden
-  fixtures: `crates/glint-ipc/tests/fixtures/`.
+  `shutdown`, and the typed theme operations `theme-list`, `theme-import`,
+  `theme-use`, `theme-remove`, `theme-export`, `safe-mode` (CLI-006, added
+  to version 1 as new request types, which ADR 0010's evolution rule
+  allows; a core without them answers `GLINT_IPC_UNKNOWN_REQUEST`, one that
+  does not perform operations `GLINT_IPC_OPERATION_UNSUPPORTED`). Anything
+  else is `GLINT_IPC_UNKNOWN_REQUEST`. Golden fixtures:
+  `crates/glint-ipc/tests/fixtures/`.
 - **Single writer kept.** `CoreIpc` feeds a `Hub` from the runtime's
   observer (lifecycle changes, warnings, shutdown steps) and from the boot
   reports (`publish_ready`). Reads are answered from that published
-  snapshot; no IPC request reaches the daemon's database or installer. The
-  only action, `shutdown`, fires the same `ShutdownSignal` as the stdin
-  `shutdown` line.
+  snapshot; no read reaches the daemon's database or installer.
+  `shutdown` fires the same `ShutdownSignal` as the stdin `shutdown` line.
+- **Theme operations go through the single writer (CLI-006).** The server
+  hands each operation to the host's `Control::operate`. `CoreIpc` queues it
+  through an `operation_channel` to the runtime's own thread, where
+  `Runtime::run_serving` (which replaces `run_until` in the binary) calls
+  `Runtime::perform`: the daemon runs it on the installer it alone holds
+  (`DaemonService::theme_operation`, embedding the bundled default theme
+  archive like the CLI), and after a state change the runtime selects the
+  theme again and re-presents the shell when the selection changed
+  (`GLINT_CORE_WARN_RESELECT_FAILED` if it cannot). Operations run one at a
+  time; the control waits at most 60 s (`GLINT_IPC_TIMEOUT`), and operations
+  still queued at shutdown are refused. Before answering, the control
+  publishes `state` (installed count) and `theme` deltas, so a second client
+  that reads after the answer, or is subscribed, sees the change. A failed
+  operation is `GLINT_IPC_OPERATION_FAILED` with an `operation` object
+  carrying the component's code (`GLINT_INSTALL_*`, `GLINT_SOURCE_*`,
+  `GLINT_PACKAGE_*`, ...), a kind (`not-found`, `invalid-request`,
+  `invalid-package`, `permission-denied`, `unsupported`, `failure`) and the
+  code chain; it never becomes a success body. Paths in `theme-import` and
+  `theme-export` must be absolute; nothing is executed. The CLI routes
+  through this whenever a core runs ([CLI reference](../cli/reference.md#routing-through-the-core-cli-006)),
+  so it never contends for the installer lock with the core.
 - **Subscriptions.** `subscribe` returns the snapshot and its sequence
   number, then the connection streams deltas (`sequence + 1` each),
   heartbeats, a resync snapshot when the subscriber's bounded queue
@@ -179,10 +204,13 @@ Once `Runtime::start` returns, the host serves the core over local IPC
   running.
 
 Tests: `crates/glint-ipc/tests/` (codec, golden fixtures, the real
-transport in process), `crates/glint-core/tests/ipc.rs` and
-`apps/daemon/tests/ipc.rs` (the real binary: requests, a subscription
-snapshot followed by ordered shutdown deltas, reconnect, an unknown request
-refused, the second launch).
+transport in process), `crates/glint-core/tests/ipc.rs` (also operations
+on the runtime thread seen by a second client),
+`crates/glint-daemon/tests/daemon.rs` (operations on the daemon's
+installer), `apps/daemon/tests/ipc.rs` (the real binary: requests, a
+subscription snapshot followed by ordered shutdown deltas, reconnect, an
+unknown request refused, the second launch) and
+`apps/cli/tests/ipc_client.rs` (the CLI against the real binary).
 
 ## Trust trade-off of the combined process
 
@@ -219,6 +247,6 @@ holds:
 
 The split replaces the in-process trait calls with IPC clients over the
 transport COR-003 defines (`glint-ipc`); the contracts above do not change.
-Today's protocol only exposes reads of what each daemon stage reported and
-`shutdown`; the stage calls themselves become requests when the split
-needs them, as an additive protocol change.
+Today's protocol exposes reads of what each daemon stage reported,
+`shutdown` and the typed theme operations; the stage calls themselves
+become requests when the split needs them, as an additive protocol change.
