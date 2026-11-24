@@ -318,3 +318,132 @@ fn shutdown_mirrors_the_active_theme_record() {
     let record = fs::read_to_string(home.paths.active_record_file()).unwrap();
     assert!(record.contains(&digest));
 }
+
+fn booted(home: &Home) -> Daemon {
+    let mut daemon = Daemon::headless();
+    daemon.open_state(&home.paths).unwrap();
+    daemon.resolve_config().unwrap();
+    daemon.discover_capabilities().unwrap();
+    daemon.select_theme().unwrap();
+    daemon
+}
+
+/// The embedded default theme archive is exactly what the deterministic
+/// packer writes for `themes/default`, as the CLI's is (CLI-006).
+#[test]
+fn bundled_default_archive_matches_a_fresh_pack() {
+    let theme = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../themes/default");
+    let tmp = tempfile::tempdir().unwrap();
+    let out = tmp.path().join("default.glint");
+    let digest = glint_package::pack_directory(&theme, &out).unwrap();
+    assert_eq!(
+        fs::read(&out).unwrap(),
+        glint_daemon::BUNDLED_DEFAULT_THEME.archive()
+    );
+    assert_eq!(
+        digest.sha256_hex(),
+        glint_daemon::BUNDLED_DEFAULT_THEME.digest()
+    );
+}
+
+/// Theme operations run on the daemon's own installer once it serves
+/// (CLI-006): import, list, use, export, remove and safe mode, with typed
+/// failures that change nothing.
+#[test]
+fn theme_operations_run_on_the_daemons_installer() {
+    use glint_daemon::{ThemeOperation, ThemeOutcome};
+
+    let home = Home::new();
+    let mut fresh = Daemon::headless();
+    let early = fresh
+        .theme_operation(ThemeOperation::List)
+        .expect_err("not serving yet");
+    assert_eq!(early.code(), ErrorCode::InvalidState);
+
+    let mut daemon = booted(&home);
+    let dir = home.tmp.path().join("src-dev.example.ops");
+    write_theme(&dir, "dev.example.ops", false);
+    let ThemeOutcome::Imported { imported, active } = daemon
+        .theme_operation(ThemeOperation::Import { path: dir.clone() })
+        .unwrap()
+    else {
+        panic!("import outcome");
+    };
+    assert!(!imported.already_installed);
+    assert_eq!(active, None, "imports never activate");
+
+    let relative = daemon
+        .theme_operation(ThemeOperation::Import {
+            path: "relative/theme".into(),
+        })
+        .unwrap_err();
+    assert_eq!(relative.code(), ErrorCode::InvalidRequest);
+
+    let ThemeOutcome::Activated {
+        activated,
+        safe_mode,
+    } = daemon
+        .theme_operation(ThemeOperation::Use {
+            theme: "dev.example.ops".into(),
+        })
+        .unwrap()
+    else {
+        panic!("use outcome");
+    };
+    assert!(!safe_mode);
+    assert_eq!(activated.package.id, "dev.example.ops");
+
+    let in_use = daemon
+        .theme_operation(ThemeOperation::Remove {
+            theme: "dev.example.ops".into(),
+        })
+        .unwrap_err();
+    assert_eq!(in_use.code(), ErrorCode::OperationFailed);
+    assert_eq!(
+        in_use.install_error().unwrap().code().as_str(),
+        "GLINT_INSTALL_IN_USE"
+    );
+
+    let missing = daemon
+        .theme_operation(ThemeOperation::Use {
+            theme: "dev.example.missing".into(),
+        })
+        .unwrap_err();
+    assert_eq!(
+        missing.install_error().unwrap().code().as_str(),
+        "GLINT_INSTALL_NOT_INSTALLED"
+    );
+
+    let out = home.tmp.path().join("ops.glint");
+    let ThemeOutcome::Exported { exported } = daemon
+        .theme_operation(ThemeOperation::Export {
+            theme: "dev.example.ops".into(),
+            destination: out.clone(),
+        })
+        .unwrap()
+    else {
+        panic!("export outcome");
+    };
+    assert!(out.is_file());
+    assert!(exported.is_canonical());
+
+    let ThemeOutcome::Activated { safe_mode, .. } =
+        daemon.theme_operation(ThemeOperation::SafeMode).unwrap()
+    else {
+        panic!("safe mode outcome");
+    };
+    assert!(safe_mode);
+    let ThemeOutcome::Listed { packages, active } =
+        daemon.theme_operation(ThemeOperation::List).unwrap()
+    else {
+        panic!("list outcome");
+    };
+    assert_eq!(packages.len(), 2);
+    assert_eq!(active.unwrap().profile_id, "safe-mode");
+
+    // The previously active release is no longer used by the safe-mode
+    // profile but still by `default`.
+    daemon.shutdown().unwrap();
+    let stopped = daemon.theme_operation(ThemeOperation::List).unwrap_err();
+    assert_eq!(stopped.code(), ErrorCode::InvalidState);
+}
