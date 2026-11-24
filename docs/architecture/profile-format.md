@@ -94,7 +94,7 @@ by default.
 code: `GLINT_PROFILE_LOCK_PROFILE_MISMATCH`, `..._UNLOCKED` (a referenced theme
 is not pinned), `..._VERSION_MISMATCH` and `..._UNUSED` (a stale pin). Whether
 each pinned release is installed with that origin and digest is the
-installer's check (INS).
+installer's check (INS); `check_lock` in `glint-profiles` compares the lock with installed releases (see [Locking and fallback](#locking-and-fallback)).
 
 ## Composition and precedence
 
@@ -176,6 +176,8 @@ default theme itself is at fault) and the surface concerned.
 | `GLINT_RESOLVE_MONITOR_SURFACE_UNKNOWN` | warning | Monitor override for a surface not in the plan |
 | `GLINT_RESOLVE_MONITOR_OVERRIDE_INVALID` | warning | Malformed `visible` or an invalid resulting placement |
 | `GLINT_RESOLVE_WALLPAPER_ASSET_MISSING` | warning | The chosen asset is not in the base theme |
+| `GLINT_RESOLVE_FALLBACK_TO_BASE` | warning | A surface fell back from its override theme to the base theme (PRF-002) |
+| `GLINT_RESOLVE_FALLBACK_TO_DEFAULT` | warning | A surface, or the tokens and wallpaper, fell back to the default theme (PRF-002) |
 | `GLINT_RESOLVE_SCHEME_UNAVAILABLE` | info | The host's colour scheme is not offered |
 | `GLINT_RESOLVE_OVERRIDE_RESTRICTED` | info | A user override was superseded by a host restriction |
 
@@ -185,6 +187,61 @@ Not yet wired: the daemon still selects one active release at boot
 follow-up (COR). Safe areas, real monitor discovery and unknown monitor keys
 are the surface host's (SRF-003); widget instances and layouts are not in
 the v1 profile.
+
+## Locking and fallback
+
+Status: **proposed** (PRF-002). The ticket proposed
+`crates/glint-theme/src/lock.rs`; the code is `crates/glint-profiles/src/lock.rs`
+next to the resolver, plus the writer in `glint-schema`.
+
+- **Writing.** `ProfileLock::new(profile, packages)` sorts pins by package
+  key and refuses duplicates; `ProfileLock::to_json_string()` writes the
+  canonical text: fields in the order shown above (without `$schema`), two
+  spaces, LF, final newline. `parse_profile_lock` reads it back to an equal
+  lock and writing again is byte-identical.
+- **Generating.** `generate_lock(profile, installed)` pins every referenced
+  theme to the exact installed release (kind, id, version, origin, digest).
+  The caller maps the installer's inventory to `PackageRelease`s. A reference
+  with no installed release is `GLINT_LOCK_NOT_INSTALLED`; one with several
+  (same id and version from different origins or digests) is
+  `GLINT_LOCK_AMBIGUOUS`. Both point into `profile.json`, and no partial lock
+  is returned.
+- **Drift.** `check_lock(profile, lock, installed)` returns the
+  `verify_profile_lock` problems (`GLINT_PROFILE_LOCK_*`) and, per pin whose
+  exact release is not installed, `GLINT_LOCK_DIGEST_MISMATCH` (same origin,
+  other bytes), `GLINT_LOCK_ORIGIN_MISMATCH` or `GLINT_LOCK_NOT_INSTALLED`,
+  pointing into `profile.lock`.
+- **Locked resolution.** `LockedThemes::new(&lock, &themes)` is a
+  `ThemeProvider` that only hands out pinned releases. An unpinned theme
+  (`unlocked`), another version (`lock-version-mismatch`), digest
+  (`digest-mismatch`) or origin (`origin-mismatch`) is unavailable, so a
+  moving source or an in-place reinstall never changes what a locked profile
+  loads.
+
+**Fallback.** When the layer the profile asks for cannot be used, each
+affected surface falls back to the base theme, then the bundled default
+theme, and is never silent: the surface records a `Fallback { requested,
+theme, reason, to }` (also in `ResolvedPlan::to_json`) and the plan carries a
+`GLINT_RESOLVE_FALLBACK_TO_BASE` or `GLINT_RESOLVE_FALLBACK_TO_DEFAULT`
+warning after the root cause (`GLINT_RESOLVE_THEME_UNAVAILABLE`,
+`..._SURFACE_NOT_PROVIDED` or `..._SURFACE_INVALID`). Reasons are the
+unavailability reasons above plus `missing`, `corrupt`, `mismatch`,
+`not-provided` and `invalid`.
+
+| Case | Result |
+|---|---|
+| Override theme missing, corrupt or drifted; base declares the surface | Base surface, `FALLBACK_TO_BASE` at `/surfaces/<id>` |
+| Same, base does not declare it | Default surface, `FALLBACK_TO_DEFAULT` at `/surfaces/<id>` |
+| Base theme unusable | Every surface not overridden resolves from the default with `FALLBACK_TO_DEFAULT` at `/baseTheme`, plus one for tokens and wallpaper (no surface) |
+| No lower layer has the surface | `GLINT_RESOLVE_SURFACE_UNRESOLVED`; the surface is not shown |
+
+Whether a store entry is corrupt is decided by the caller (the installer
+verifies digests); it marks the release unusable (`ThemeSet::mark_corrupt`).
+The bundled default theme's own integrity is `ensure_bundled`'s job. Removal
+of a pinned release is already refused by the installer (`install_locks`).
+Not yet wired: writing `profile.lock` next to `profile.json`, mirroring pins
+into `install_locks`, and resolving through `LockedThemes` at boot are daemon
+follow-ups (COR-006, INS-009), as is offering migration when a lock drifts.
 
 ## Error codes
 
