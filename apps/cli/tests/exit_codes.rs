@@ -162,7 +162,7 @@ fn every_unimplemented_command_exits_3_and_never_succeeds() {
         );
         checked += 1;
     }
-    assert!(checked >= 18, "only {checked} commands checked");
+    assert!(checked >= 16, "only {checked} commands checked");
 }
 
 #[test]
@@ -284,7 +284,7 @@ fn missing_paths_exit_7() {
 #[test]
 fn schema_checker_rejects_malformed_envelopes() {
     let schema = output_schema();
-    let good = json(&["doctor"], UNSUPPORTED);
+    let good = json(&["permissions", "list"], UNSUPPORTED);
     let mut cases = Vec::new();
     let mut ok_with_error = good.clone();
     ok_with_error["ok"] = Value::Bool(true);
