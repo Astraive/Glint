@@ -1,0 +1,45 @@
+[package]
+name = "glint-desktop"
+description = "The Glint manager (thin Tauri 2 host): reads the core's state over local IPC for the React and UI SDK interface in apps/desktop."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+# MGR-001, ADR 0011. Windows is the only host the manager is built for and
+# tested on (ADR 0002): Tauri is a Windows-only dependency, so Linux and
+# macOS CI compile and test the portable bridge without WebKitGTK or WKWebView
+# and the binary reports "unsupported" there. That is not platform support.
+
+[lib]
+name = "glint_desktop"
+path = "src/lib.rs"
+
+[[bin]]
+name = "glint-desktop"
+path = "src/main.rs"
+
+[features]
+# Production asset serving; pass it for release builds
+# (`cargo build -p glint-desktop --release --features custom-protocol`).
+custom-protocol = ["tauri/custom-protocol"]
+
+[dependencies]
+glint-ipc = { path = "../../../crates/glint-ipc" }
+glint-storage = { path = "../../../crates/glint-storage" }
+serde = { version = "1.0.229", features = ["derive"] }
+
+[target.'cfg(windows)'.dependencies]
+tauri = { version = "2.12.7", default-features = false, features = ["wry"] }
+
+[target.'cfg(windows)'.build-dependencies]
+tauri-build = { version = "2.7.6", default-features = false }
+
+[dev-dependencies]
+serde_json = "1.0.154"
+tempfile = "3.27.0"
+
+[lints]
+workspace = true

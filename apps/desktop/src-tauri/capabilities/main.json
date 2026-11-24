@@ -1,0 +1,8 @@
+{
+  "identifier": "main",
+  "description": "MGR-001: the manager window may call the two read-only core commands and nothing else. No Tauri core plugin permission (window, event, path, webview, app, ...) is granted, and remote origins get no IPC access.",
+  "local": true,
+  "windows": ["main"],
+  "platforms": ["windows"],
+  "permissions": ["allow-daemon-status", "allow-daemon-ping"]
+}

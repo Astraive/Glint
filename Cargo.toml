@@ -6,6 +6,7 @@ resolver = "3"
 members = [
     "apps/cli",
     "apps/daemon",
+    "apps/desktop/src-tauri",
     "crates/glint-core",
     "crates/glint-daemon",
     "crates/glint-installer",
