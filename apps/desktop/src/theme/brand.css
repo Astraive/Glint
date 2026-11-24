@@ -1,0 +1,85 @@
+/*
+ * Glint brand tokens for the manager UI (MGR-001, ADR 0011).
+ *
+ * Brand constants come from the accepted palette in the plan's brand and
+ * design language: monochrome metallic tones, no green. They are named
+ * here, in Glint's own app, and nowhere in the public theme contract.
+ * The manager then uses the semantic `--glint-*` names of the design token
+ * contract (docs/architecture/design-tokens.md), so its styles read like a
+ * theme's. Every colour resolves through CSS light-dark() from the scheme
+ * UI SDK's createColorScheme puts on <html data-color-scheme>; "system"
+ * follows prefers-color-scheme. test/palette.test.ts fails on any green.
+ */
+
+/* ui-sdk's own layer first, so every rule below wins over it. */
+@layer ui-sdk;
+
+@layer ui-sdk {
+  :where([data-slot][hidden]:not([hidden="until-found"])) {
+    /* biome-ignore lint/complexity/noImportantStyles: UI SDK's documented rule for closed parts (styling-and-animation, "The ui-sdk Layer"); without it a hidden popup could show before hydration. */
+    display: none !important;
+  }
+}
+
+:root {
+  --brand-obsidian: #0b0c0f;
+  --brand-graphite: #181a20;
+  --brand-gunmetal: #2b2f38;
+  --brand-titanium: #727a89;
+  --brand-silver: #b9c0cc;
+  --brand-chrome: #d7dbe3;
+  --brand-frost: #f5f6f8;
+  --brand-white: #ffffff;
+  --brand-muted: #9298a3;
+  /* A darker titanium for small muted text on light surfaces (contrast). */
+  --brand-titanium-deep: #565d6b;
+
+  color-scheme: light dark;
+
+  /* light-dark(<light>, <dark>) */
+  --glint-background-default: light-dark(var(--brand-frost), var(--brand-obsidian));
+  --glint-background-subtle: light-dark(var(--brand-white), var(--brand-graphite));
+  --glint-surface-default: light-dark(var(--brand-white), var(--brand-graphite));
+  --glint-surface-raised: light-dark(var(--brand-white), var(--brand-gunmetal));
+  --glint-text-primary: light-dark(var(--brand-obsidian), var(--brand-frost));
+  --glint-text-secondary: light-dark(var(--brand-gunmetal), var(--brand-silver));
+  --glint-text-muted: light-dark(var(--brand-titanium-deep), var(--brand-muted));
+  --glint-text-on-accent: light-dark(var(--brand-frost), var(--brand-obsidian));
+  --glint-border-subtle: light-dark(var(--brand-chrome), var(--brand-gunmetal));
+  --glint-border-default: light-dark(var(--brand-silver), var(--brand-titanium));
+  --glint-accent-default: light-dark(var(--brand-gunmetal), var(--brand-chrome));
+  --glint-accent-subtle: light-dark(var(--brand-chrome), var(--brand-gunmetal));
+  --glint-focus-ring: light-dark(var(--brand-obsidian), var(--brand-chrome));
+
+  --glint-font-family-base: system-ui, "Segoe UI", sans-serif;
+  --glint-font-family-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --glint-font-size-small: 12px;
+  --glint-font-size-base: 14px;
+  --glint-font-size-large: 20px;
+  --glint-space-xs: 4px;
+  --glint-space-sm: 8px;
+  --glint-space-md: 12px;
+  --glint-space-lg: 16px;
+  --glint-space-xl: 24px;
+  --glint-radius-sm: 4px;
+  --glint-radius-md: 8px;
+  --glint-border-width: 1px;
+  --glint-focus-width: 2px;
+  --glint-focus-offset: 2px;
+  --glint-motion-duration-fast: 100ms;
+  --glint-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root[data-color-scheme="light"] {
+  color-scheme: light;
+}
+
+:root[data-color-scheme="dark"] {
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --glint-motion-duration-fast: 0ms;
+  }
+}

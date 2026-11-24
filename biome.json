@@ -1,17 +1,31 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
   "files": {
     "includes": [
       "packages/**/*.ts",
       "packages/**/*.mjs",
       "scripts/**/*.mjs",
+      "apps/desktop/src/**/*.ts",
+      "apps/desktop/src/**/*.tsx",
+      "apps/desktop/src/**/*.css",
+      "apps/desktop/test/**/*.ts",
+      "apps/desktop/test/**/*.tsx",
+      "apps/desktop/vite.config.ts",
       "!**/generated",
       "!**/node_modules"
     ]
   },
-  "formatter": { "enabled": false },
-  "assist": { "enabled": false },
+  "formatter": {
+    "enabled": false
+  },
+  "assist": {
+    "enabled": false
+  },
   "linter": {
     "enabled": true
   }

@@ -1,0 +1,32 @@
+{
+  "name": "@glint/desktop",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Glint manager UI (MGR-001, ADR 0011): React 19 and UI SDK in a Tauri 2 window. Reads the core's state through the allow-listed Tauri commands in src-tauri; no remote content.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.12.5",
+    "@ui-sdk/core": "0.1.0-beta.13",
+    "@ui-sdk/react": "0.1.0-beta.13",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.1"
+  }
+}
