@@ -8,7 +8,7 @@ ADRs are the additive change log for decisions about Glint. The planning archive
 |---|---|---|---|
 | [0001](0001-single-process-mvp-with-separate-crates.md) | Single-process MVP with separate crates | Accepted | 2026-11-23 |
 | [0002](0002-windows-11-only-hands-on-test-host.md) | Windows 11 is the only hands-on test host | Accepted | 2026-11-23 |
-| [0003](0003-ui-sdk-for-glint-manager-ui.md) | UI SDK for Glint's own manager and settings UI | Accepted | 2026-11-23 |
+| [0003](0003-ui-sdk-for-glint-manager-ui.md) | UI SDK for Glint's own manager and settings UI | Superseded by 0011 | 2026-11-23 |
 | [0004](0004-plan-docs-frozen-changes-via-adrs.md) | Plan docs are a frozen baseline; changes go through ADRs | Accepted | 2026-11-23 |
 | [0005](0005-conventional-commits-with-ticket-ids.md) | Conventional commits with external ticket IDs | Accepted | 2026-11-23 |
 | [0006](0006-package-identity-and-origin-collisions.md) | Package identity and cross-origin collision policy | Proposed | 2026-11-23 |
@@ -16,6 +16,7 @@ ADRs are the additive change log for decisions about Glint. The planning archive
 | [0008](0008-rusqlite-with-bundled-sqlite-for-state.md) | rusqlite with bundled SQLite for the state database | Accepted | 2026-11-23 |
 | [0009](0009-frozen-v1-capability-registry.md) | Frozen v1 capability registry | Proposed | 2026-11-24 |
 | [0010](0010-interprocess-for-local-ipc.md) | `interprocess` for the local IPC transport, with a versioned JSON envelope | Accepted | 2026-11-24 |
+| [0011](0011-manager-ui-stack-tauri-react-ui-sdk.md) | Manager UI stack: Tauri 2, React 19, UI SDK and Vite, with exact pins | Accepted | 2026-11-25 |
 
 Every new ADR must add a row to this table in the same change. The original plan-era register of what was decided versus only recommended stays at [`docs/plan/00-history/decisions-and-open-questions.md`](../plan/00-history/decisions-and-open-questions.md); ADRs 0001 to 0005 record the decisions already made at that snapshot.
 

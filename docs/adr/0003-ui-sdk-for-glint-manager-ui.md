@@ -1,10 +1,10 @@
 # ADR 0003: UI SDK for Glint's own manager and settings UI
 
-- **Status:** Accepted
+- **Status:** Superseded
 - **Date:** 2026-11-23
 - **Ticket:** DOC-001
 - **Supersedes:** none
-- **Superseded by:** none
+- **Superseded by:** [ADR 0011](0011-manager-ui-stack-tauri-react-ui-sdk.md)
 - **Plan label affected:** RECOMMENDED (manager UI stack)
 - **Plan sections affected:** [SDK and React authoring](../plan/04-themes/sdk-and-react-authoring.md)
 
