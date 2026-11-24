@@ -1,0 +1,25 @@
+[package]
+name = "glint-core"
+description = "Glint core runtime: lifecycle, boot orchestration and shutdown of the daemon and shell services in one process."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+# glint-core composes glint-daemon and glint-shell through their service
+# traits (COR-001, ADR 0001). Neither of those depends on the other or on
+# glint-core, so the graph has no cycle. No OS-specific dependency.
+[dependencies]
+glint-daemon = { path = "../glint-daemon" }
+glint-shell = { path = "../glint-shell" }
+glint-storage = { path = "../glint-storage" }
+
+[dev-dependencies]
+glint-platform = { path = "../glint-platform" }
+glint-installer = { path = "../glint-installer" }
+tempfile = "3.27.0"
+
+[lints]
+workspace = true
