@@ -232,7 +232,7 @@ impl Endpoint {
             .name(name)
             .nonblocking(ListenerNonblockingMode::Accept);
         let options = restrict_to_current_user(options)?;
-        options.create_sync().map_err(|error| {
+        let listener = options.create_sync().map_err(|error| {
             let mut ipc = IpcError::from_io("create endpoint", &error);
             // The first-instance flag (Windows) turns a squatted name into
             // access denied or "in use"; report both as in use.
@@ -246,7 +246,11 @@ impl Endpoint {
                 );
             }
             ipc
-        })
+        })?;
+        if self.transport == Transport::UnixSocket {
+            restrict_socket_file(&self.name)?;
+        }
+        Ok(listener)
     }
 
     /// Connect to the endpoint.
@@ -297,7 +301,7 @@ fn restrict_to_current_user(options: ListenerOptions<'_>) -> Result<ListenerOpti
     Ok(options.security_descriptor(descriptor))
 }
 
-#[cfg(unix)]
+#[cfg(target_os = "linux")]
 fn restrict_to_current_user(options: ListenerOptions<'_>) -> Result<ListenerOptions<'_>, IpcError> {
     use interprocess::os::unix::local_socket::ListenerOptionsExt;
 
@@ -305,6 +309,30 @@ fn restrict_to_current_user(options: ListenerOptions<'_>) -> Result<ListenerOpti
     // holds the single-instance lock, so a socket file left at the path is
     // a crashed core's and is replaced.
     Ok(options.mode(0o600).try_overwrite(true))
+}
+
+#[cfg(all(unix, not(target_os = "linux")))]
+fn restrict_to_current_user(options: ListenerOptions<'_>) -> Result<ListenerOptions<'_>, IpcError> {
+    // macOS and the BSDs reject fchmod on a socket, so the listener cannot
+    // set the mode at bind time; `restrict_socket_file` chmods the socket by
+    // path right after binding. The 0700 data root keeps other users out of
+    // that window. A stale socket from a crashed core is replaced, as above.
+    Ok(options.try_overwrite(true))
+}
+
+/// After binding, make the socket file owner-only on Unix systems where the
+/// listener could not set the mode itself.
+#[cfg(all(unix, not(target_os = "linux")))]
+fn restrict_socket_file(path: &str) -> Result<(), IpcError> {
+    use std::os::unix::fs::PermissionsExt;
+
+    fs::set_permissions(path, fs::Permissions::from_mode(0o600))
+        .map_err(|error| IpcError::from_io("restrict endpoint socket", &error))
+}
+
+#[cfg(not(all(unix, not(target_os = "linux"))))]
+fn restrict_socket_file(_: &str) -> Result<(), IpcError> {
+    Ok(())
 }
 
 #[cfg(not(any(windows, unix)))]
