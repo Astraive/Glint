@@ -5,6 +5,7 @@ resolver = "3"
 # throwaway feasibility code that is never shipped.
 members = [
     "apps/cli",
+    "apps/daemon",
     "crates/glint-core",
     "crates/glint-daemon",
     "crates/glint-installer",

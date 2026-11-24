@@ -220,6 +220,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "glint-daemon-app"
+version = "0.0.0"
+dependencies = [
+ "glint-core",
+ "tempfile",
+]
+
+[[package]]
 name = "glint-installer"
 version = "0.0.0"
 dependencies = [

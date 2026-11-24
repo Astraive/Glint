@@ -1,0 +1,22 @@
+[package]
+name = "glint-daemon-app"
+description = "The Glint core process (thin): hosts the daemon and shell services in one process (ADR 0001)."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "glint-daemon"
+path = "src/main.rs"
+
+[dependencies]
+glint-core = { path = "../../crates/glint-core" }
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[lints]
+workspace = true
