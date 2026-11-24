@@ -9,6 +9,7 @@ members = [
     "crates/glint-core",
     "crates/glint-daemon",
     "crates/glint-installer",
+    "crates/glint-ipc",
     "crates/glint-package",
     "crates/glint-platform",
     "crates/glint-schema",

@@ -1,0 +1,31 @@
+[package]
+name = "glint-ipc"
+description = "Glint's versioned, typed local IPC: message envelopes, subscription snapshots and deltas, and the named pipe / Unix socket transport."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+# COR-003, ADR 0010. The transport is `interprocess` (a portable crate:
+# named pipes on Windows, Unix domain sockets elsewhere), so this core crate
+# names no OS-binding crate itself (module-boundaries R3). It does not
+# depend on glint-core, glint-daemon or glint-shell: the wire types are its
+# own plain data and glint-core maps runtime state onto them.
+[dependencies]
+glint-storage = { path = "../glint-storage" }
+interprocess = { version = "2.4.9", default-features = false }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+
+# Windows: the named pipe's security descriptor is parsed from SDDL, which
+# interprocess takes as a NUL-terminated UTF-16 string.
+[target.'cfg(windows)'.dependencies]
+widestring = "1.2.0"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[lints]
+workspace = true
