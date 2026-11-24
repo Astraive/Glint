@@ -61,12 +61,31 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-    timeout-minutes: 25
+    # MGR-001: the Windows leg also builds the manager's Tauri host (about
+    # 300 more crates), so it gets more time.
+    timeout-minutes: 40
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # MGR-001: glint-desktop embeds apps/desktop/dist on Windows (Tauri is
+      # a Windows-only dependency, ADR 0011). Building the UI first makes
+      # Clippy and the tests compile the real window; elsewhere the crate
+      # only builds its portable IPC bridge and needs no UI or WebKitGTK.
+      - name: Install pnpm from packageManager (manager UI)
+        if: matrix.os == 'windows-latest'
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - name: Set up Node.js (manager UI)
+        if: matrix.os == 'windows-latest'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - name: Build the manager UI for the Tauri host
+        if: matrix.os == 'windows-latest'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @glint/desktop build
       - name: Detect Cargo workspace
         id: workspace
         shell: bash
@@ -168,3 +187,30 @@ jobs:
         run: pnpm --filter @glint/types typecheck
       - name: Run surface type tests
         run: pnpm --filter @glint/types test
+
+  manager-ui:
+    name: Manager UI (TypeScript)
+    # MGR-001, ADR 0011: type-check, test (status mapping, command bridge,
+    # palette lint, smoke render) and build the React + UI SDK manager UI.
+    # The Tauri host that embeds it is built in rust-workspace on Windows.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pnpm from packageManager
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - name: Install dependencies from the lockfile
+        run: pnpm install --frozen-lockfile
+      - name: Type-check the manager UI
+        run: pnpm --filter @glint/desktop typecheck
+      - name: Run manager UI tests
+        run: pnpm --filter @glint/desktop test
+      - name: Build the manager UI
+        run: pnpm --filter @glint/desktop build
