@@ -8,6 +8,9 @@ use std::fmt;
 pub enum BootStage {
     /// Resolve Glint's configuration, data and cache roots.
     ResolvePaths,
+    /// Take the per-user single-instance lock, before the database is
+    /// opened (COR-002).
+    AcquireInstance,
     /// Open the state database and installer and run startup recovery.
     OpenState,
     /// Merge the bundled defaults with the user config.
@@ -24,6 +27,7 @@ impl BootStage {
     /// Every stage, in boot order.
     pub const ALL: &'static [BootStage] = &[
         BootStage::ResolvePaths,
+        BootStage::AcquireInstance,
         BootStage::OpenState,
         BootStage::ResolveConfig,
         BootStage::DiscoverCapabilities,
@@ -35,6 +39,7 @@ impl BootStage {
     pub const fn as_str(self) -> &'static str {
         match self {
             BootStage::ResolvePaths => "resolve-paths",
+            BootStage::AcquireInstance => "acquire-instance",
             BootStage::OpenState => "open-state",
             BootStage::ResolveConfig => "resolve-config",
             BootStage::DiscoverCapabilities => "discover-capabilities",
@@ -129,6 +134,8 @@ pub enum ShutdownStage {
     CloseShell,
     /// Flush state, close the database, release the installer lock.
     FlushState,
+    /// Remove the owner record and release the instance lock.
+    ReleaseInstance,
 }
 
 impl ShutdownStage {
@@ -137,6 +144,7 @@ impl ShutdownStage {
         match self {
             ShutdownStage::CloseShell => "close-shell",
             ShutdownStage::FlushState => "flush-state",
+            ShutdownStage::ReleaseInstance => "release-instance",
         }
     }
 }

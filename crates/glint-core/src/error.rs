@@ -6,6 +6,7 @@ use glint_daemon::DaemonError;
 use glint_shell::ShellError;
 use glint_storage::{ErrorCategory, StorageError};
 
+use crate::instance::{InstanceError, InstanceOwner};
 use crate::lifecycle::BootStage;
 
 /// Stable, machine-readable core error codes.
@@ -23,6 +24,11 @@ pub enum ErrorCode {
     ShellFailed,
     /// The call does not fit the runtime's lifecycle state.
     InvalidState,
+    /// Another Glint core already runs for this user (COR-002); see
+    /// [`CoreError::owner`]. The database was not opened.
+    AlreadyRunning,
+    /// The instance lock could not be taken or released for another reason.
+    InstanceLockFailed,
 }
 
 impl ErrorCode {
@@ -32,6 +38,8 @@ impl ErrorCode {
         ErrorCode::DaemonFailed,
         ErrorCode::ShellFailed,
         ErrorCode::InvalidState,
+        ErrorCode::AlreadyRunning,
+        ErrorCode::InstanceLockFailed,
     ];
 
     /// The stable string form, e.g. `GLINT_CORE_PATHS_UNAVAILABLE`.
@@ -41,6 +49,8 @@ impl ErrorCode {
             ErrorCode::DaemonFailed => "GLINT_CORE_DAEMON_FAILED",
             ErrorCode::ShellFailed => "GLINT_CORE_SHELL_FAILED",
             ErrorCode::InvalidState => "GLINT_CORE_INVALID_STATE",
+            ErrorCode::AlreadyRunning => "GLINT_CORE_ALREADY_RUNNING",
+            ErrorCode::InstanceLockFailed => "GLINT_CORE_INSTANCE_LOCK_FAILED",
         }
     }
 }
@@ -62,6 +72,7 @@ pub struct CoreError {
     source_code: Option<String>,
     category: ErrorCategory,
     message: String,
+    owner: Option<InstanceOwner>,
 }
 
 impl CoreError {
@@ -78,6 +89,32 @@ impl CoreError {
             source_code: None,
             category,
             message: message.into(),
+            owner: None,
+        }
+    }
+
+    pub(crate) fn instance(stage: Option<BootStage>, error: &InstanceError) -> Self {
+        match error {
+            InstanceError::AlreadyRunning { owner, .. } => {
+                let mut core = Self::new(
+                    ErrorCode::AlreadyRunning,
+                    stage,
+                    ErrorCategory::Unavailable,
+                    error.to_string(),
+                );
+                core.owner = owner.clone();
+                core
+            }
+            InstanceError::Io { source, .. } => Self::new(
+                ErrorCode::InstanceLockFailed,
+                stage,
+                match source.kind() {
+                    std::io::ErrorKind::PermissionDenied => ErrorCategory::PermissionDenied,
+                    std::io::ErrorKind::Unsupported => ErrorCategory::Unsupported,
+                    _ => ErrorCategory::Failure,
+                },
+                error.to_string(),
+            ),
         }
     }
 
@@ -158,6 +195,12 @@ impl CoreError {
     /// Human-readable detail (not stable).
     pub fn message(&self) -> &str {
         &self.message
+    }
+
+    /// The running instance behind [`ErrorCode::AlreadyRunning`], when its
+    /// owner record could be read.
+    pub fn owner(&self) -> Option<&InstanceOwner> {
+        self.owner.as_ref()
     }
 }
 

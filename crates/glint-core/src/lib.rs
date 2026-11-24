@@ -16,14 +16,18 @@
 //!
 //! 1. `resolve-paths`: [`GlintPaths`] from `GLINT_HOME` or the OS, Glint's
 //!    directories created.
-//! 2. `open-state`: the daemon opens the state database and the installer
+//! 2. `acquire-instance`: the per-user single-instance lock under the data
+//!    root ([`InstanceLock`]). A second instance stops here with
+//!    [`ErrorCode::AlreadyRunning`] naming the running one, before it would
+//!    open the database.
+//! 3. `open-state`: the daemon opens the state database and the installer
 //!    and runs startup recovery.
-//! 3. `resolve-config`: bundled defaults merged with the user config.
-//! 4. `discover-capabilities`: through the daemon's capability adapter
+//! 4. `resolve-config`: bundled defaults merged with the user config.
+//! 5. `discover-capabilities`: through the daemon's capability adapter
 //!    (an adapter that advertises nothing when headless).
-//! 5. `select-theme`: the active profile's theme through the capability
+//! 6. `select-theme`: the active profile's theme through the capability
 //!    gate, or the bundled default theme.
-//! 6. `start-shell`: the shell presents the selected surfaces.
+//! 7. `start-shell`: the shell presents the selected surfaces.
 //!
 //! Degraded outcomes (recovered database, rejected config, fallback theme,
 //! skipped surface) are reported as [`LifecycleEvent::Warning`]s with stable
@@ -51,17 +55,21 @@
 #![warn(missing_docs)]
 
 mod error;
+mod instance;
 mod lifecycle;
 mod runtime;
+mod signal;
 
 pub use error::{CoreError, ErrorCode};
 pub use glint_daemon::{Daemon, DaemonService};
 pub use glint_shell::{HeadlessBackend, Shell, ShellService};
 pub use glint_storage::GlintPaths;
+pub use instance::{InstanceError, InstanceLock, InstanceOwner, InstanceProbe, probe_instance};
 pub use lifecycle::{
     BootStage, LifecycleEvent, LifecycleState, ShutdownReason, ShutdownStage, warnings,
 };
 pub use runtime::{ReadyReport, Runtime, RuntimeOptions, ShutdownReport};
+pub use signal::ShutdownSignal;
 
 /// The runtime Glint runs today: the real daemon with the headless
 /// capability adapter (advertises nothing) and the shell over the headless

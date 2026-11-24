@@ -87,6 +87,7 @@ fn core_starts_loads_storage_and_shuts_down_cleanly() {
     let report = runtime.shutdown(ShutdownReason::Requested).unwrap();
     assert!(report.is_clean(), "{:?}", report.errors);
     assert!(report.flush.state_closed);
+    assert!(report.instance_released);
     assert_eq!(runtime.state(), LifecycleState::Stopped);
     assert!(runtime.ready_report().is_none());
     // The installer lock and the database were released.
@@ -141,7 +142,11 @@ fn surfaces_are_presented_and_released_with_their_reservations() {
         .collect();
     assert_eq!(
         steps,
-        vec![ShutdownStage::CloseShell, ShutdownStage::FlushState]
+        vec![
+            ShutdownStage::CloseShell,
+            ShutdownStage::FlushState,
+            ShutdownStage::ReleaseInstance
+        ]
     );
 }
 

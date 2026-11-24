@@ -11,12 +11,14 @@ use glint_shell::{CloseReport, PresentReport, PresentRequest, ShellError, ShellS
 use glint_storage::GlintPaths;
 
 use crate::error::CoreError;
+use crate::instance::InstanceLock;
 use crate::lifecycle::{
     BootStage, LifecycleEvent, LifecycleState, ShutdownReason, ShutdownStage, warnings,
 };
+use crate::signal::ShutdownSignal;
 
 /// How the runtime finds its paths.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct RuntimeOptions {
     /// Explicit paths; `None` resolves them from `GLINT_HOME` or the OS
@@ -24,10 +26,16 @@ pub struct RuntimeOptions {
     pub paths: Option<GlintPaths>,
 }
 
+impl Default for RuntimeOptions {
+    fn default() -> Self {
+        Self::resolve()
+    }
+}
+
 impl RuntimeOptions {
     /// Resolve paths from `GLINT_HOME` or the OS.
     pub fn resolve() -> Self {
-        Self::default()
+        Self { paths: None }
     }
 
     /// Use these paths (tests, portable runs).
@@ -64,6 +72,8 @@ pub struct ShutdownReport {
     pub shell: CloseReport,
     /// State flushed and closed.
     pub flush: FlushReport,
+    /// Whether the single-instance lock was released.
+    pub instance_released: bool,
     /// Steps that failed. Every later step still ran.
     pub errors: Vec<CoreError>,
 }
@@ -91,6 +101,7 @@ pub struct Runtime<D: DaemonService, S: ShellService> {
     events: Vec<LifecycleEvent>,
     observer: Option<Observer>,
     ready: Option<ReadyReport>,
+    instance: Option<InstanceLock>,
 }
 
 impl<D: DaemonService, S: ShellService> fmt::Debug for Runtime<D, S> {
@@ -114,6 +125,7 @@ impl<D: DaemonService, S: ShellService> Runtime<D, S> {
             events: Vec::new(),
             observer: None,
             ready: None,
+            instance: None,
         }
     }
 
@@ -206,6 +218,9 @@ impl<D: DaemonService, S: ShellService> Runtime<D, S> {
                 // secondary to the boot failure being reported.
                 let _ = self.shell.close_all();
                 let _ = self.daemon.shutdown();
+                if let Some(lock) = self.instance.take() {
+                    let _ = lock.release();
+                }
                 let stage = error.stage().unwrap_or(BootStage::ResolvePaths);
                 self.transition(LifecycleState::Failed(stage));
                 Err(error)
@@ -215,6 +230,7 @@ impl<D: DaemonService, S: ShellService> Runtime<D, S> {
 
     fn boot(&mut self) -> Result<ReadyReport, CoreError> {
         let paths = self.stage_paths()?;
+        self.stage_instance(&paths)?;
         let state = self.stage_state(&paths)?;
         let config = self.stage_config()?;
         let capabilities = self.stage_capabilities()?;
@@ -242,6 +258,16 @@ impl<D: DaemonService, S: ShellService> Runtime<D, S> {
             .map_err(|error| CoreError::paths(&error))?;
         self.completed(stage, format!("data {}", paths.data_dir().display()));
         Ok(paths)
+    }
+
+    fn stage_instance(&mut self, paths: &GlintPaths) -> Result<(), CoreError> {
+        let stage = BootStage::AcquireInstance;
+        self.transition(LifecycleState::Starting(stage));
+        let lock = InstanceLock::acquire(paths)
+            .map_err(|error| CoreError::instance(Some(stage), &error))?;
+        self.completed(stage, format!("pid {}", lock.owner().pid));
+        self.instance = Some(lock);
+        Ok(())
     }
 
     fn stage_state(&mut self, paths: &GlintPaths) -> Result<StateReport, CoreError> {
@@ -416,9 +442,27 @@ impl<D: DaemonService, S: ShellService> Runtime<D, S> {
         Ok(report)
     }
 
+    /// Wait until `signal` fires, then [`shutdown`](Self::shutdown) with its
+    /// reason.
+    ///
+    /// # Errors
+    ///
+    /// [`ErrorCode::InvalidState`](crate::ErrorCode::InvalidState) unless the
+    /// runtime is [`LifecycleState::Ready`] (checked before waiting).
+    pub fn run_until(&mut self, signal: &ShutdownSignal) -> Result<ShutdownReport, CoreError> {
+        if self.state != LifecycleState::Ready {
+            return Err(CoreError::invalid_state(format!(
+                "run_until called while {}",
+                self.state
+            )));
+        }
+        let reason = signal.wait();
+        self.shutdown(reason)
+    }
+
     /// Shut down: close the shell (releasing every surface and work-area
-    /// reservation), then flush and close state (releasing the installer
-    /// lock). Every step runs even if an earlier one failed; failures are
+    /// reservation), flush and close state (releasing the installer lock),
+    /// then release the single-instance lock. Every step runs even if an earlier one failed; failures are
     /// listed in [`ShutdownReport::errors`].
     ///
     /// # Errors
@@ -479,12 +523,33 @@ impl<D: DaemonService, S: ShellService> Runtime<D, S> {
             summary: summary.to_owned(),
         });
 
+        // Last, so a new instance can only start once state is closed.
+        let instance_released = match self.instance.take() {
+            None => false,
+            Some(lock) => match lock.release() {
+                Ok(()) => true,
+                Err(error) => {
+                    errors.push(CoreError::instance(None, &error));
+                    true
+                }
+            },
+        };
+        self.emit(LifecycleEvent::ShutdownStepCompleted {
+            stage: ShutdownStage::ReleaseInstance,
+            summary: if instance_released {
+                "instance lock released".to_owned()
+            } else {
+                "no instance lock was held".to_owned()
+            },
+        });
+
         self.ready = None;
         self.transition(LifecycleState::Stopped);
         ShutdownReport {
             reason,
             shell,
             flush,
+            instance_released,
             errors,
         }
     }
