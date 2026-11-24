@@ -44,6 +44,12 @@ pub enum ResolveCode {
     MonitorOverrideInvalid,
     /// The selected wallpaper asset is not provided by the base theme.
     WallpaperAssetMissing,
+    /// A surface fell back from an unusable override theme to the base
+    /// theme.
+    FallbackToBase,
+    /// A surface, or the tokens and wallpaper, fell back to the bundled
+    /// default theme.
+    FallbackToDefault,
 }
 
 impl ResolveCode {
@@ -65,6 +71,8 @@ impl ResolveCode {
         ResolveCode::MonitorSurfaceUnknown,
         ResolveCode::MonitorOverrideInvalid,
         ResolveCode::WallpaperAssetMissing,
+        ResolveCode::FallbackToBase,
+        ResolveCode::FallbackToDefault,
     ];
 
     /// The stable string form, e.g. `GLINT_RESOLVE_THEME_UNAVAILABLE`.
@@ -86,6 +94,8 @@ impl ResolveCode {
             ResolveCode::MonitorSurfaceUnknown => "GLINT_RESOLVE_MONITOR_SURFACE_UNKNOWN",
             ResolveCode::MonitorOverrideInvalid => "GLINT_RESOLVE_MONITOR_OVERRIDE_INVALID",
             ResolveCode::WallpaperAssetMissing => "GLINT_RESOLVE_WALLPAPER_ASSET_MISSING",
+            ResolveCode::FallbackToBase => "GLINT_RESOLVE_FALLBACK_TO_BASE",
+            ResolveCode::FallbackToDefault => "GLINT_RESOLVE_FALLBACK_TO_DEFAULT",
         }
     }
 
@@ -105,7 +115,9 @@ impl ResolveCode {
             | ResolveCode::TokenLowContrast
             | ResolveCode::MonitorSurfaceUnknown
             | ResolveCode::MonitorOverrideInvalid
-            | ResolveCode::WallpaperAssetMissing => Severity::Warning,
+            | ResolveCode::WallpaperAssetMissing
+            | ResolveCode::FallbackToBase
+            | ResolveCode::FallbackToDefault => Severity::Warning,
             ResolveCode::SchemeUnavailable | ResolveCode::OverrideRestricted => Severity::Info,
         }
     }

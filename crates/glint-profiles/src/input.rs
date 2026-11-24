@@ -4,7 +4,9 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
-use glint_schema::{ColorScheme, PackageRelease, ThemeManifest, ThemeRef, TokenFile};
+use glint_schema::{
+    ColorScheme, PackageOrigin, PackageRelease, Sha256Digest, ThemeManifest, ThemeRef, TokenFile,
+};
 use semver::Version;
 
 /// A theme release as the resolver sees it: its identity, its validated
@@ -91,14 +93,40 @@ pub enum Unavailable {
         /// What the caller found wrong.
         detail: String,
     },
+    /// The profile lock does not pin the theme (PRF-002).
+    Unlocked,
+    /// The profile lock pins another version of the theme.
+    LockVersionMismatch {
+        /// The pinned version.
+        pinned: semver::Version,
+    },
+    /// The installed release has another digest than the lock pins.
+    DigestMismatch {
+        /// The pinned digest.
+        pinned: Sha256Digest,
+        /// The installed digest.
+        found: Sha256Digest,
+    },
+    /// The installed release comes from another origin than the lock pins.
+    OriginMismatch {
+        /// The pinned origin.
+        pinned: PackageOrigin,
+        /// The installed origin.
+        found: PackageOrigin,
+    },
 }
 
 impl Unavailable {
-    /// Stable kebab-case reason: `missing` or `corrupt`.
+    /// Stable kebab-case reason: `missing`, `corrupt`, `unlocked`,
+    /// `lock-version-mismatch`, `digest-mismatch` or `origin-mismatch`.
     pub fn as_str(&self) -> &'static str {
         match self {
             Unavailable::Missing => "missing",
             Unavailable::Corrupt { .. } => "corrupt",
+            Unavailable::Unlocked => "unlocked",
+            Unavailable::LockVersionMismatch { .. } => "lock-version-mismatch",
+            Unavailable::DigestMismatch { .. } => "digest-mismatch",
+            Unavailable::OriginMismatch { .. } => "origin-mismatch",
         }
     }
 }
@@ -108,6 +136,16 @@ impl fmt::Display for Unavailable {
         match self {
             Unavailable::Missing => f.write_str("not installed"),
             Unavailable::Corrupt { detail } => write!(f, "corrupt: {detail}"),
+            Unavailable::Unlocked => f.write_str("not pinned by the profile lock"),
+            Unavailable::LockVersionMismatch { pinned } => {
+                write!(f, "the profile lock pins version {pinned}")
+            }
+            Unavailable::DigestMismatch { pinned, found } => {
+                write!(f, "installed digest {found} is not the pinned {pinned}")
+            }
+            Unavailable::OriginMismatch { pinned, found } => {
+                write!(f, "installed origin {found} is not the pinned {pinned}")
+            }
         }
     }
 }

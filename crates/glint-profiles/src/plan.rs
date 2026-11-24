@@ -100,6 +100,26 @@ pub struct MonitorOverride {
     pub layer: Layer,
 }
 
+/// A surface that could not come from the layer the profile asked for and
+/// fell back to a lower one (PRF-002). Always reported as a
+/// `GLINT_RESOLVE_FALLBACK_TO_*` diagnostic too.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct Fallback {
+    /// The layer the profile asked for: `SurfaceOverride` or `BaseTheme`.
+    pub requested: Layer,
+    /// The theme that layer named, `id@version`.
+    pub theme: String,
+    /// Why it could not be used: an [`crate::Unavailable::as_str`] reason,
+    /// `mismatch` (provider returned another release), `not-provided` (the
+    /// theme does not declare the surface) or `invalid` (its definition
+    /// fails validation).
+    pub reason: String,
+    /// The layer that supplied the surface instead: `BaseTheme` or
+    /// `Default`.
+    pub to: Layer,
+}
+
 /// One surface of the plan.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
@@ -118,6 +138,8 @@ pub struct ResolvedSurface {
     pub monitors: BTreeMap<String, MonitorOverride>,
     /// Host restriction outcome.
     pub status: SurfaceStatus,
+    /// Set when the surface fell back from the layer the profile asked for.
+    pub fallback: Option<Fallback>,
 }
 
 /// Where the wallpaper comes from.
@@ -237,6 +259,14 @@ impl ResolvedPlan {
                         "capability": capability,
                     }),
                 };
+                if let Some(fallback) = &surface.fallback {
+                    entry["fallback"] = json!({
+                        "requested": fallback.requested.as_str(),
+                        "theme": fallback.theme,
+                        "reason": fallback.reason,
+                        "to": fallback.to.as_str(),
+                    });
+                }
                 (id.clone(), entry)
             })
             .collect();

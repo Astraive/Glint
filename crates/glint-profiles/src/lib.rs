@@ -1,4 +1,5 @@
-//! The **proposed** profile composition resolver (PRF-001).
+//! The **proposed** profile composition resolver (PRF-001) and profile
+//! locks with per-surface fallback (PRF-002).
 //!
 //! A profile ([`glint_schema::Profile`]) mixes themes: a base theme, other
 //! themes for single surfaces, token overrides, a wallpaper and per-monitor
@@ -29,6 +30,18 @@
 //! An unavailable layer (missing or corrupt theme, undeclared or invalid
 //! surface, invalid override) contributes nothing and is reported; the next
 //! lower layer applies.
+//!
+//! # Locks and fallback (PRF-002)
+//!
+//! [`generate_lock`] pins every referenced theme to the exact installed
+//! release (written deterministically by
+//! [`glint_schema::ProfileLock::to_json_string`]); [`check_lock`] reports
+//! drift between profile, lock and installed releases with stable
+//! `GLINT_LOCK_*` codes ([`LockCode`]). Resolving through [`LockedThemes`]
+//! only hands out pinned releases. When a referenced theme is missing,
+//! corrupt or not the pinned release, each affected surface falls back to
+//! the base theme, then the bundled default, and records a [`Fallback`]
+//! with a `GLINT_RESOLVE_FALLBACK_TO_*` diagnostic: never silently.
 //!
 //! # Usage
 //!
@@ -64,6 +77,7 @@
 
 mod diagnostic;
 mod input;
+mod lock;
 mod plan;
 mod resolve;
 
@@ -71,9 +85,10 @@ pub use diagnostic::{Diagnostic, ResolveCode, Severity};
 pub use input::{
     HostEnvironment, ThemeInput, ThemeInputError, ThemeLookup, ThemeProvider, ThemeSet, Unavailable,
 };
+pub use lock::{LockCode, LockIssue, LockReport, LockedThemes, check_lock, generate_lock};
 pub use plan::{
-    Layer, MonitorOverride, ResolvedPlan, ResolvedSurface, ResolvedToken, ResolvedWallpaper,
-    SurfaceStatus, WallpaperSource,
+    Fallback, Layer, MonitorOverride, ResolvedPlan, ResolvedSurface, ResolvedToken,
+    ResolvedWallpaper, SurfaceStatus, WallpaperSource,
 };
 pub use resolve::{REDUCED_MOTION_DURATION, WALLPAPER_ASSET, resolve};
 

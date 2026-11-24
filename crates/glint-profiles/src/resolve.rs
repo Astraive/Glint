@@ -12,8 +12,8 @@ use serde_json::{Map, Value};
 use crate::diagnostic::{Diagnostic, ResolveCode, child_pointer};
 use crate::input::{HostEnvironment, ThemeInput, ThemeLookup, ThemeProvider};
 use crate::plan::{
-    Layer, MonitorOverride, ResolvedPlan, ResolvedSurface, ResolvedToken, ResolvedWallpaper,
-    SurfaceStatus, WallpaperSource,
+    Fallback, Layer, MonitorOverride, ResolvedPlan, ResolvedSurface, ResolvedToken,
+    ResolvedWallpaper, SurfaceStatus, WallpaperSource,
 };
 
 /// The asset name a theme uses for its wallpaper.
@@ -44,20 +44,41 @@ pub fn resolve<P: ThemeProvider + ?Sized>(
     let mut diagnostics = Vec::new();
     let mut restrictions = Vec::new();
 
-    let base = profile
-        .base_theme
-        .as_ref()
-        .and_then(|theme| lookup(themes, theme, "/baseTheme", None, &mut diagnostics));
+    let mut base_failure = None;
+    let base = match &profile.base_theme {
+        None => None,
+        Some(theme) => match lookup(themes, theme, "/baseTheme", None, &mut diagnostics) {
+            Ok(input) => Some(input),
+            Err(reason) => {
+                base_failure = Some((label(theme), reason));
+                None
+            }
+        },
+    };
 
+    let requested_base = RequestedBase {
+        theme: base,
+        failure: base_failure,
+    };
     let (mut surfaces, raw) = resolve_surfaces(
         profile,
         themes,
-        base,
+        &requested_base,
         default_theme,
         host,
         &mut diagnostics,
         &mut restrictions,
     );
+    if let Some((theme, reason)) = &requested_base.failure {
+        diagnostics.push(Diagnostic::new(
+            ResolveCode::FallbackToDefault,
+            "/baseTheme",
+            None,
+            format!(
+                "{theme} is unusable ({reason}): tokens and wallpaper come from the default theme"
+            ),
+        ));
+    }
     let (color_scheme, tokens) = resolve_tokens(
         profile,
         base,
@@ -80,20 +101,25 @@ pub fn resolve<P: ThemeProvider + ?Sized>(
     }
 }
 
-/// Look a reference up, reporting why it cannot be used.
+fn label(theme: &ThemeRef) -> String {
+    format!("{}@{}", theme.key.id(), theme.version)
+}
+
+/// Look a reference up, reporting why it cannot be used. The error is the
+/// stable fallback reason.
 fn lookup<'a, P: ThemeProvider + ?Sized>(
     themes: &'a P,
     theme: &ThemeRef,
     pointer: &str,
     surface: Option<&str>,
     diagnostics: &mut Vec<Diagnostic>,
-) -> Option<&'a ThemeInput> {
-    let label = format!("{}@{}", theme.key.id(), theme.version);
+) -> Result<&'a ThemeInput, String> {
+    let label = label(theme);
     match themes.lookup(theme) {
         ThemeLookup::Available(input)
             if input.release.key == theme.key && input.release.version == theme.version =>
         {
-            Some(input)
+            Ok(input)
         }
         ThemeLookup::Available(input) => {
             diagnostics.push(Diagnostic::new(
@@ -102,7 +128,7 @@ fn lookup<'a, P: ThemeProvider + ?Sized>(
                 surface,
                 format!("asked for {label} but was given {}", input.label()),
             ));
-            None
+            Err("mismatch".to_owned())
         }
         ThemeLookup::Unavailable(reason) => {
             diagnostics.push(Diagnostic::new(
@@ -111,22 +137,31 @@ fn lookup<'a, P: ThemeProvider + ?Sized>(
                 surface,
                 format!("{label} is unavailable ({reason}); its layer is skipped"),
             ));
-            None
+            Err(reason.as_str().to_owned())
         }
     }
 }
 
 type RawSurfaces<'a> = BTreeMap<String, &'a Surface>;
 
+/// The base theme as requested: the usable release, or why it is not.
+struct RequestedBase<'a> {
+    theme: Option<&'a ThemeInput>,
+    /// `(id@version, reason)` when the profile names a base theme that
+    /// cannot be used.
+    failure: Option<(String, String)>,
+}
+
 fn resolve_surfaces<'a, P: ThemeProvider + ?Sized>(
     profile: &Profile,
     themes: &'a P,
-    base: Option<&'a ThemeInput>,
+    requested_base: &RequestedBase<'a>,
     default_theme: &'a ThemeInput,
     host: &HostEnvironment,
     diagnostics: &mut Vec<Diagnostic>,
     restrictions: &mut Vec<Diagnostic>,
 ) -> (BTreeMap<String, ResolvedSurface>, RawSurfaces<'a>) {
+    let base = requested_base.theme;
     let mut ids: BTreeSet<&str> = default_theme
         .manifest
         .surfaces
@@ -146,9 +181,20 @@ fn resolve_surfaces<'a, P: ThemeProvider + ?Sized>(
             .surfaces
             .get(id)
             .map(|theme| lookup(themes, theme, &override_pointer, Some(id), diagnostics));
+        // The first layer the profile asked for that could not be used:
+        // (layer, theme, reason, pointer).
+        let mut failure: Option<(Layer, String, String, String)> = None;
+        if let (Some(Err(reason)), Some(theme)) = (&overridden, profile.surfaces.get(id)) {
+            failure = Some((
+                Layer::SurfaceOverride,
+                label(theme),
+                reason.clone(),
+                override_pointer.clone(),
+            ));
+        }
         let mut candidates: Vec<(Layer, &ThemeInput, &str)> = Vec::with_capacity(3);
-        if let Some(Some(theme)) = overridden {
-            candidates.push((Layer::SurfaceOverride, theme, &override_pointer));
+        if let Some(Ok(theme)) = &overridden {
+            candidates.push((Layer::SurfaceOverride, *theme, &override_pointer));
         }
         if let Some(base) = base {
             candidates.push((Layer::BaseTheme, base, "/baseTheme"));
@@ -157,8 +203,27 @@ fn resolve_surfaces<'a, P: ThemeProvider + ?Sized>(
 
         let mut winner = None;
         for (layer, theme, pointer) in candidates {
+            if layer == Layer::Default
+                && failure.is_none()
+                && let Some((base_label, reason)) = &requested_base.failure
+            {
+                failure = Some((
+                    Layer::BaseTheme,
+                    base_label.clone(),
+                    reason.clone(),
+                    "/baseTheme".to_owned(),
+                ));
+            }
             let Some(surface) = theme.manifest.surfaces.get(id) else {
                 if layer == Layer::SurfaceOverride {
+                    failure.get_or_insert_with(|| {
+                        (
+                            layer,
+                            theme.label(),
+                            "not-provided".to_owned(),
+                            pointer.to_owned(),
+                        )
+                    });
                     diagnostics.push(Diagnostic::new(
                         ResolveCode::SurfaceNotProvided,
                         pointer,
@@ -173,18 +238,28 @@ fn resolve_surfaces<'a, P: ThemeProvider + ?Sized>(
                     winner = Some((layer, theme, surface, definition));
                     break;
                 }
-                Err(err) => diagnostics.push(Diagnostic::new(
-                    ResolveCode::SurfaceInvalid,
-                    pointer,
-                    Some(id),
-                    format!(
-                        "{} declares an invalid {id} surface: {} {} (at {})",
-                        theme.label(),
-                        err.code().as_str(),
-                        err.message(),
-                        err.pointer()
-                    ),
-                )),
+                Err(err) => {
+                    failure.get_or_insert_with(|| {
+                        (
+                            layer,
+                            theme.label(),
+                            "invalid".to_owned(),
+                            pointer.to_owned(),
+                        )
+                    });
+                    diagnostics.push(Diagnostic::new(
+                        ResolveCode::SurfaceInvalid,
+                        pointer,
+                        Some(id),
+                        format!(
+                            "{} declares an invalid {id} surface: {} {} (at {})",
+                            theme.label(),
+                            err.code().as_str(),
+                            err.message(),
+                            err.pointer()
+                        ),
+                    ));
+                }
             }
         }
         let Some((layer, theme, surface, definition)) = winner else {
@@ -198,6 +273,31 @@ fn resolve_surfaces<'a, P: ThemeProvider + ?Sized>(
             }
             continue;
         };
+        let fallback = failure.filter(|(requested, ..)| layer < *requested).map(
+            |(requested, theme_label, reason, pointer)| {
+                let code = if layer == Layer::BaseTheme {
+                    ResolveCode::FallbackToBase
+                } else {
+                    ResolveCode::FallbackToDefault
+                };
+                diagnostics.push(Diagnostic::new(
+                    code,
+                    pointer,
+                    Some(id),
+                    format!(
+                        "the {id} surface comes from {} ({layer}) because {theme_label} is \
+                         unusable ({reason})",
+                        theme.label()
+                    ),
+                ));
+                Fallback {
+                    requested,
+                    theme: theme_label,
+                    reason,
+                    to: layer,
+                }
+            },
+        );
         let status = match definition
             .capabilities
             .required
@@ -235,6 +335,7 @@ fn resolve_surfaces<'a, P: ThemeProvider + ?Sized>(
                 definition,
                 monitors: BTreeMap::new(),
                 status,
+                fallback,
             },
         );
     }
