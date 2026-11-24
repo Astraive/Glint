@@ -49,7 +49,7 @@ Every row without hardware is **pending** and stays `not-run` until someone runs
 | Python | 3.12 on CI (repository checks); 3.12+ locally | `python-version` in [repository-checks.yml](../../.github/workflows/repository-checks.yml); [development guide](../development.md) |
 | PowerShell | 7+ (`pwsh`) | [development guide](../development.md) |
 
-`Node >=24` is a floor, not an exact version: record the exact `node --version` with any evidence. Manager UI dependencies are pinned per [ADR 0003](../adr/0003-ui-sdk-for-glint-manager-ui.md).
+`Node >=24` is a floor, not an exact version: record the exact `node --version` with any evidence. Manager UI dependencies are pinned exactly per [ADR 0011](../adr/0011-manager-ui-stack-tauri-react-ui-sdk.md) (supersedes ADR 0003).
 
 ## Recording environment evidence for spikes
 

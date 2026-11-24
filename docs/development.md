@@ -64,6 +64,19 @@ The plan proposes a Rust workspace with separate crates for core, daemon, shell,
 3. Run scoped format, lint and test commands for the touched components, plus manual native host verification on Windows 11 where desktop integration is affected.
 4. Keep a recovery path (safe mode / CLI) reachable when testing debug desktop hosts, so a faulty surface never strands the desktop.
 
+## Running the manager (Windows)
+
+The manager (`apps/desktop`, MGR-001, [ADR 0011](adr/0011-manager-ui-stack-tauri-react-ui-sdk.md)) is a Tauri 2 window around a React + UI SDK UI. It reads the core over local IPC and never starts the core itself. It is only built for Windows; elsewhere `glint-desktop` exits with "unsupported".
+
+```powershell
+corepack pnpm@10.18.0 install --frozen-lockfile
+corepack pnpm@10.18.0 --filter @glint/desktop build      # writes apps/desktop/dist, embedded by the binary
+cargo run -p glint-daemon-app                             # terminal 1: the core (type `shutdown` to stop)
+cargo run -p glint-desktop                                # terminal 2: the manager window
+```
+
+Set the same absolute `GLINT_HOME` in both terminals to use a throwaway data root. Build the UI before the Rust crate: without `apps/desktop/dist` the crate still compiles (CI does this on Linux and macOS, where Tauri is not a dependency), but the Windows binary only prints how to build the UI. For a release-style build add `--release --features custom-protocol` (not yet exercised; installers are REL-003's). UI checks: `corepack pnpm@10.18.0 --filter @glint/desktop typecheck`, `... test` and `pnpm lint`.
+
 ## Contributor safety and workflow rules
 
 - Never place `../.issues/` files, `issue.json` records, `publication-ledger.json`, `publication-ledger.lock`, derived backlog reports, personal media, proprietary fonts, or unredacted host paths inside either repository.
