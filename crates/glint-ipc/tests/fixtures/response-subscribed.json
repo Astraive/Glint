@@ -1,0 +1,56 @@
+{
+  "kind": "response",
+  "request_id": "r3",
+  "api_version": 1,
+  "result": {
+    "ok": {
+      "type": "subscribed",
+      "payload": {
+        "sequence": 17,
+        "snapshot": {
+          "lifecycle": "ready",
+          "daemon": "serving",
+          "pid": 4242,
+          "state": {
+            "schema_version": 4,
+            "installed_packages": 1,
+            "database_recovered": false
+          },
+          "config": {
+            "user_config": "absent",
+            "diagnostics": 0,
+            "use_default_fallback": true
+          },
+          "capabilities": {
+            "adapter": "headless",
+            "generation": 1,
+            "advertised": 0,
+            "usable": 0,
+            "discovery_error": null
+          },
+          "theme": {
+            "theme_id": "official.default",
+            "version": "1.0.0",
+            "origin": "bundled-default",
+            "profile_id": null,
+            "revision": null,
+            "digest": null,
+            "fallback_reason": "no-active-theme",
+            "surfaces": [
+              "panel"
+            ],
+            "skipped": []
+          },
+          "warnings": [
+            {
+              "stage": "select-theme",
+              "code": "GLINT_CORE_WARN_THEME_FALLBACK",
+              "message": "no-active-theme: no profile is active"
+            }
+          ],
+          "shutdown_reason": null
+        }
+      }
+    }
+  }
+}

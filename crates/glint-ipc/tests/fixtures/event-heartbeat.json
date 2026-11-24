@@ -1,0 +1,7 @@
+{
+  "kind": "event",
+  "event": {
+    "type": "heartbeat",
+    "sequence": 19
+  }
+}

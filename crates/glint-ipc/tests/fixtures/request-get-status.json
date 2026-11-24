@@ -1,0 +1,8 @@
+{
+  "kind": "request",
+  "request_id": "r1",
+  "api_version": 1,
+  "request": {
+    "type": "get-status"
+  }
+}

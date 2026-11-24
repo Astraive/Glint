@@ -1,0 +1,11 @@
+{
+  "kind": "event",
+  "event": {
+    "type": "delta",
+    "sequence": 19,
+    "delta": {
+      "type": "shutdown-started",
+      "reason": "requested"
+    }
+  }
+}

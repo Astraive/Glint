@@ -1,0 +1,8 @@
+{
+  "kind": "event",
+  "event": {
+    "type": "closed",
+    "sequence": 19,
+    "reason": "stopped"
+  }
+}

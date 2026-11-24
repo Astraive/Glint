@@ -1,0 +1,16 @@
+{
+  "kind": "response",
+  "request_id": "r1",
+  "api_version": 1,
+  "result": {
+    "ok": {
+      "type": "status",
+      "payload": {
+        "lifecycle": "ready",
+        "daemon": "serving",
+        "pid": 4242,
+        "sequence": 17
+      }
+    }
+  }
+}

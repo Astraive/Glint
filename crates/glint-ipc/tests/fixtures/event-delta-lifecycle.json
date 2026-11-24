@@ -1,0 +1,11 @@
+{
+  "kind": "event",
+  "event": {
+    "type": "delta",
+    "sequence": 18,
+    "delta": {
+      "type": "lifecycle",
+      "state": "stopping"
+    }
+  }
+}

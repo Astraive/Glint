@@ -1,0 +1,12 @@
+{
+  "kind": "response",
+  "request_id": null,
+  "api_version": 1,
+  "result": {
+    "error": {
+      "code": "GLINT_IPC_VERSION_UNSUPPORTED",
+      "category": "unsupported",
+      "message": "client speaks API 2..=3, server speaks 1..=1"
+    }
+  }
+}

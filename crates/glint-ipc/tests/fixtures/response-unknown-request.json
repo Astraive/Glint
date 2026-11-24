@@ -1,0 +1,12 @@
+{
+  "kind": "response",
+  "request_id": "r2",
+  "api_version": 1,
+  "result": {
+    "error": {
+      "code": "GLINT_IPC_UNKNOWN_REQUEST",
+      "category": "unsupported",
+      "message": "unknown request type \"run-command\""
+    }
+  }
+}
