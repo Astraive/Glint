@@ -286,6 +286,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "glint-profiles"
+version = "0.0.0"
+dependencies = [
+ "glint-schema",
+ "glint-surfaces",
+ "semver",
+ "serde_json",
+]
+
+[[package]]
 name = "glint-schema"
 version = "0.0.0"
 dependencies = [

@@ -1,0 +1,22 @@
+[package]
+name = "glint-profiles"
+description = "Pure profile composition resolver: precedence, provenance and typed diagnostics (proposed)."
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+# Pure and OS-free: no I/O, no storage, no installer. The daemon (the only
+# writer of profile state) loads themes and hands them in.
+[dependencies]
+# Profile, manifest, identity and token types.
+glint-schema = { path = "../glint-schema" }
+# Surface definitions and placement validation for per-monitor overrides.
+glint-surfaces = { path = "../glint-surfaces" }
+semver = "1"
+serde_json = "1"
+
+[lints]
+workspace = true

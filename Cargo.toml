@@ -12,6 +12,7 @@ members = [
     "crates/glint-ipc",
     "crates/glint-package",
     "crates/glint-platform",
+    "crates/glint-profiles",
     "crates/glint-schema",
     "crates/glint-shell",
     "crates/glint-sources",
