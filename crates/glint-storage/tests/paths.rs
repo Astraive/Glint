@@ -175,6 +175,8 @@ fn every_derived_location_is_inside_the_roots() {
         paths.installer_lock_file(),
         paths.instance_lock_file(),
         paths.instance_owner_file(),
+        paths.ipc_endpoint_file(),
+        paths.ipc_socket_file(),
     ] {
         assert!(paths.contains(&derived), "{}", derived.display());
         paths.check_within(&derived).unwrap();

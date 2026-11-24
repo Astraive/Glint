@@ -294,6 +294,21 @@ impl GlintPaths {
         self.data_dir.join("instance.owner")
     }
 
+    /// The record naming the running core's local IPC endpoint (COR-003),
+    /// written by the IPC server after it binds and removed when it stops.
+    /// Clients read it to find the endpoint; it lives in the per-user data
+    /// root, so only this user can read or replace it.
+    pub fn ipc_endpoint_file(&self) -> PathBuf {
+        self.data_dir.join("ipc.endpoint")
+    }
+
+    /// The Unix domain socket of the local IPC endpoint (COR-003), inside
+    /// the `0700` data root. Unused on Windows, where the endpoint is a
+    /// named pipe.
+    pub fn ipc_socket_file(&self) -> PathBuf {
+        self.data_dir.join("ipc.sock")
+    }
+
     /// The three roots.
     pub fn roots(&self) -> [&Path; 3] {
         [&self.config_dir, &self.data_dir, &self.cache_dir]
