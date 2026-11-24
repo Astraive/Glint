@@ -1,6 +1,6 @@
 # `glint` CLI reference
 
-Status: **proposed** (CLI-001). Command and flag names follow
+Status: **proposed** (CLI-001, CLI-002). Command and flag names follow
 [CLI and developer experience](../plan/06-engineering/cli-and-developer-experience.md#user-cli-proposed)
 and stay proposed until this page marks them stable. The exit codes and the
 JSON envelope below are the contract scripts may rely on; they only ever
@@ -33,18 +33,18 @@ success. `details.plannedIn` names the owning ticket.
 | `glint version` | implemented | - |
 | `glint doctor` | not implemented | CLI-003 |
 | `glint status` | not implemented | CLI-003 |
-| `glint safe-mode` | not implemented | CLI-002 |
-| `glint theme` | interactive chooser, terminal only; not implemented | CLI-002 |
+| `glint safe-mode` | implemented | - |
+| `glint theme` | interactive chooser, terminal only; not implemented | not scheduled |
 | `glint theme browse` | not implemented | CLI-005 |
 | `glint theme search QUERY` | not implemented | CLI-005 |
 | `glint theme info ID` | not implemented | CLI-004 |
 | `glint theme install SOURCE` | not implemented | CLI-005 |
-| `glint theme import PATH` | not implemented | CLI-002 |
-| `glint theme use ID` | not implemented | CLI-002 |
-| `glint theme list` | not implemented | CLI-002 |
+| `glint theme import PATH` | implemented | - |
+| `glint theme use ID` | implemented (`ID` may be `default`) | - |
+| `glint theme list` | implemented | - |
 | `glint theme update ID` | not implemented | CLI-005 |
-| `glint theme export [-o PATH] ID` | not implemented | CLI-002 |
-| `glint theme remove ID` | not implemented | CLI-002 |
+| `glint theme export [-o PATH] ID` | implemented | - |
+| `glint theme remove ID` | implemented | - |
 | `glint theme revert` | not implemented | CLI-004 |
 | `glint theme create [--template TEMPLATE] NAME` | not implemented | CRT-001 |
 | `glint theme dev [PATH]` | not implemented | CRT-005 |
@@ -64,6 +64,57 @@ Only the bare `glint theme` command is interactive, and only when both stdin
 and stdout are terminals and `--json` is absent. Otherwise it is a usage
 error (exit 2, `GLINT_CLI_MISSING_SUBCOMMAND`), so scripts never block on a
 prompt. On a terminal the chooser is recognised but not built yet (exit 3).
+
+### Theme state commands (CLI-002)
+
+`theme import`, `list`, `export`, `remove`, `use` and `safe-mode` work
+offline on Glint's own state through `glint-installer`: the
+content-addressed store, the state database and the active-theme record
+under the Glint home (`GLINT_HOME` when set, otherwise the OS directories;
+see `glint-storage`). They never change a native OS setting and never run a
+package script. Every invocation opens the installer, which takes the
+exclusive installer lock (another running installer is
+`GLINT_INSTALL_BUSY`, exit 1) and first recovers interrupted operations and
+a corrupt database.
+
+**Theme IDs.** `ID` is a package ID (`dev.example.midnight`), `ID@VERSION`,
+a digest (64 hex digits, optionally `sha256:`-prefixed) or `default` for the
+bundled default theme (`official.default`). An ID with several installed
+versions is `GLINT_INSTALL_AMBIGUOUS` (exit 2) with `details.candidates`; an
+unknown one is `GLINT_INSTALL_NOT_INSTALLED` (exit 7).
+
+**Bundled default theme.** The binary embeds `themes/default` as a `.glint`
+archive packed at build time by `apps/cli/build.rs` with the deterministic
+`glint-package` writer (a unit test checks the embedded bytes equal a fresh
+pack). `theme use default` and `safe-mode` install it from those bytes when
+it is missing and repair its store entry when it is damaged, so they work on
+an empty store, a damaged entry and a recovered database. Its ID is
+reserved: importing another package named `official.default` is
+`GLINT_INSTALL_RESERVED_ID` (exit 1); re-importing the exported default
+theme is a no-op.
+
+| Command | Does | `data` shape (`$defs/data/...`) |
+|---|---|---|
+| `glint theme import PATH` | Stages a `.glint` (or a theme directory, packed deterministically) through the strict reader and installs it **without activating**. A rejected package changes nothing: the inventory and the active theme are kept and staging is cleaned. Importing an installed digest is a no-op (`alreadyInstalled: true`) | `themeImport` |
+| `glint theme list` | Every installed release (sorted by ID, version, digest) and the active profile | `themeList` |
+| `glint theme export [-o PATH] ID` | Writes the release to `PATH` (default `./<id>-<version>.glint`) without local data (PKG-005): only the package's own files, re-packed deterministically; no provenance, paths, timestamps, profiles or grants. `canonical: true` means byte-identical to the installed archive, so re-importing it yields the same digest | `themeExport` |
+| `glint theme remove ID` | Removes a release no profile uses; one in use is `GLINT_INSTALL_IN_USE` (exit 1) with `details.profiles` | `themeRemove` |
+| `glint theme use ID` | Makes the release the base theme of the active profile, or of the `default` profile when none is active or safe mode is on | `themeActivation` |
+| `glint safe-mode` | Activates the bundled default theme in the separate `safe-mode` profile; other profiles keep their themes | `themeActivation` |
+
+`themePackage` (in `themeImport`, `themeList` and `themeActivation`) has
+`id`, `version`, `digest`, `origin` (ADR 0006: `local`, ...), `source.kind`
+and `source.locator` (the bundled theme's locator is
+`bundled:official.default`), `size`, `installedAt` (Unix seconds),
+`bundled` and `active`. `active` and `previous` are `{profile, digest,
+revision}` or `null`.
+
+Installer failures report the installer code in `details.installCode` and
+the most specific code in `error.code` (`GLINT_IDENTITY_*` for identity
+conflicts, `GLINT_PACKAGE_*` for export failures, `GLINT_STORAGE_*` for the
+database). Exit codes: not installed 7, ambiguous ID or unusable `-o` path
+2, permission denied 5, everything else 1. Package verdicts from `import`
+use the same codes as `theme validate`.
 
 ### `glint theme validate [PATH]`
 
@@ -121,14 +172,14 @@ for success and failure alike:
 {
   "schemaVersion": 1,
   "glintVersion": "0.0.0",
-  "command": "theme list",
+  "command": "doctor",
   "ok": false,
   "exitCode": 3,
   "error": {
     "kind": "unsupported",
     "code": "GLINT_CLI_NOT_IMPLEMENTED",
-    "message": "`glint theme list` is not implemented yet (planned in CLI-002); nothing was changed",
-    "details": { "plannedIn": "CLI-002" }
+    "message": "`glint doctor` is not implemented yet (planned in CLI-003); nothing was changed",
+    "details": { "plannedIn": "CLI-003" }
   }
 }
 ```
@@ -149,11 +200,21 @@ Keys may appear in any order. Match on `exitCode`, `error.kind` and
 CLI-level codes: `GLINT_CLI_USAGE`, `GLINT_CLI_UNKNOWN_COMMAND`,
 `GLINT_CLI_MISSING_SUBCOMMAND`, `GLINT_CLI_NOT_IMPLEMENTED`, `GLINT_CLI_IO`.
 
+The schema also defines the documented per-command `data` shapes under
+`$defs/data` (`themeImport`, `themeList`, `themeExport`, `themeRemove`,
+`themeActivation`); the envelope's `data` stays a plain object, and tests
+validate each command's `data` against its shape.
+
 ## Tests
 
 - `cargo test -p glint-cli --test exit_codes` runs the binary for every
   reachable failure class and validates each `--json` document against the
   schema.
 - Unit tests in `apps/cli/src` cover the parser, the interactive-mode rule
-  and the mapping of typed source errors (including `permission-denied`) to
-  exit codes.
+  and the mapping of typed source and installer errors (including
+  `permission-denied`) to exit codes.
+- `cargo test -p glint-cli --test cli_roundtrip` runs import, list, export,
+  re-import, remove, `theme use` and `safe-mode` with a temporary
+  `GLINT_HOME` (including an invalid archive that must leave the active
+  theme unchanged, a damaged store entry and a corrupt database) and
+  validates every `--json` document and its `data` shape.
