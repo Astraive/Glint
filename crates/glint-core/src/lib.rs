@@ -32,7 +32,10 @@
 //! Once ready, the host can serve the runtime's state over local IPC
 //! ([`CoreIpc`], COR-003): typed reads answered from a published snapshot,
 //! subscriptions with ordered deltas, and a `shutdown` request that fires
-//! the same [`ShutdownSignal`] as the control channel.
+//! the same [`ShutdownSignal`] as the control channel. With
+//! [`CoreIpc::serve_with_operations`] and [`Runtime::run_serving`] it also
+//! performs the typed theme operations clients send (CLI-006) on the
+//! runtime's thread, through the daemon: the single writer.
 //!
 //! Degraded outcomes (recovered database, rejected config, fallback theme,
 //! skipped surface) are reported as [`LifecycleEvent::Warning`]s with stable
@@ -63,11 +66,12 @@ mod error;
 mod instance;
 mod ipc;
 mod lifecycle;
+mod operations;
 mod runtime;
 mod signal;
 
 pub use error::{CoreError, ErrorCode};
-pub use glint_daemon::{Daemon, DaemonService};
+pub use glint_daemon::{Daemon, DaemonService, ThemeOperation, ThemeOutcome};
 pub use glint_ipc::{IpcError, ServerHandle as IpcServer, StatusReply as IpcStatus};
 pub use glint_shell::{HeadlessBackend, Shell, ShellService};
 pub use glint_storage::GlintPaths;
@@ -75,6 +79,9 @@ pub use instance::{InstanceError, InstanceLock, InstanceOwner, InstanceProbe, pr
 pub use ipc::{CoreIpc, probe_ipc};
 pub use lifecycle::{
     BootStage, LifecycleEvent, LifecycleState, ShutdownReason, ShutdownStage, warnings,
+};
+pub use operations::{
+    OperationError, OperationInbox, OperationReport, OperationSender, operation_channel,
 };
 pub use runtime::{ReadyReport, Runtime, RuntimeOptions, ShutdownReport};
 pub use signal::ShutdownSignal;

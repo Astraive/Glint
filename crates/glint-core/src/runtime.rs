@@ -2,10 +2,11 @@
 //! the lifecycle state and shuts both down cleanly.
 
 use std::fmt;
+use std::time::Duration;
 
 use glint_daemon::{
-    CapabilityReport, ConfigReport, DaemonService, FlushReport, StateReport, ThemeOrigin,
-    ThemeSelection, UserConfig,
+    CapabilityReport, ConfigReport, DaemonService, FlushReport, StateReport, ThemeOperation,
+    ThemeOrigin, ThemeOutcome, ThemeSelection, UserConfig,
 };
 use glint_shell::{CloseReport, PresentReport, PresentRequest, ShellError, ShellService};
 use glint_storage::GlintPaths;
@@ -15,7 +16,12 @@ use crate::instance::InstanceLock;
 use crate::lifecycle::{
     BootStage, LifecycleEvent, LifecycleState, ShutdownReason, ShutdownStage, warnings,
 };
+use crate::operations::{OperationError, OperationInbox, OperationReport};
 use crate::signal::ShutdownSignal;
+
+/// How often [`Runtime::run_serving`] checks the shutdown signal while no
+/// operation is queued.
+const SERVE_POLL: Duration = Duration::from_millis(25);
 
 /// How the runtime finds its paths.
 #[derive(Debug, Clone)]
@@ -458,6 +464,185 @@ impl<D: DaemonService, S: ShellService> Runtime<D, S> {
         }
         let reason = signal.wait();
         self.shutdown(reason)
+    }
+
+    /// Like [`run_until`](Self::run_until), but also perform the theme
+    /// operations IPC clients queue in `inbox` (CLI-006), one at a time on
+    /// this thread, until `signal` fires. Operations still queued then are
+    /// refused with [`ErrorCode::InvalidState`](crate::ErrorCode::InvalidState).
+    ///
+    /// # Errors
+    ///
+    /// [`ErrorCode::InvalidState`](crate::ErrorCode::InvalidState) unless the
+    /// runtime is [`LifecycleState::Ready`].
+    pub fn run_serving(
+        &mut self,
+        signal: &ShutdownSignal,
+        inbox: &OperationInbox,
+    ) -> Result<ShutdownReport, CoreError> {
+        if self.state != LifecycleState::Ready {
+            return Err(CoreError::invalid_state(format!(
+                "run_serving called while {}",
+                self.state
+            )));
+        }
+        let reason = loop {
+            if let Some(reason) = signal.reason() {
+                break reason;
+            }
+            if let Some(job) = inbox.next(SERVE_POLL) {
+                let result = self.perform(job.operation);
+                // The client may have given up (deadline); the operation
+                // still ran and its state change is published.
+                let _ = job.reply.send(result);
+            }
+        };
+        inbox.refuse_pending(&CoreError::invalid_state(
+            "the core is shutting down; nothing was changed",
+        ));
+        self.shutdown(reason)
+    }
+
+    /// Perform one theme operation on the daemon (CLI-006). After an
+    /// operation that changes state the theme is selected again and, when
+    /// the selection changed, the shell re-presents it; problems with that
+    /// are [`LifecycleEvent::Warning`]s, not failures of the operation,
+    /// which has already been committed.
+    ///
+    /// # Errors
+    ///
+    /// [`OperationError::Core`] unless the runtime is ready;
+    /// [`OperationError::Daemon`] when the daemon refused or failed it
+    /// (nothing was changed).
+    pub fn perform(
+        &mut self,
+        operation: ThemeOperation,
+    ) -> Result<OperationReport, OperationError> {
+        if self.state != LifecycleState::Ready {
+            return Err(OperationError::Core(CoreError::invalid_state(format!(
+                "{} requested while {}",
+                operation.name(),
+                self.state
+            ))));
+        }
+        let name = operation.name();
+        let changes_state = operation.changes_state();
+        let outcome = self
+            .daemon
+            .theme_operation(operation)
+            .map_err(OperationError::Daemon)?;
+        if !changes_state {
+            self.emit(LifecycleEvent::OperationCompleted {
+                operation: name,
+                summary: "read only".to_owned(),
+            });
+            return Ok(OperationReport {
+                outcome,
+                installed_packages: None,
+                theme: None,
+            });
+        }
+        let installed_packages = match self.daemon.theme_operation(ThemeOperation::List) {
+            Ok(ThemeOutcome::Listed { packages, .. }) => Some(packages.len()),
+            _ => None,
+        };
+        if let (Some(count), Some(ready)) = (installed_packages, self.ready.as_mut()) {
+            ready.state.installed_packages = count;
+        }
+        let theme = self.reselect_theme();
+        let summary = match &theme {
+            Some(selection) => format!(
+                "presenting {} {}, {} package(s) installed",
+                selection.theme_id,
+                selection.version,
+                installed_packages.map_or_else(|| "?".to_owned(), |n| n.to_string())
+            ),
+            None => format!(
+                "selection unchanged, {} package(s) installed",
+                installed_packages.map_or_else(|| "?".to_owned(), |n| n.to_string())
+            ),
+        };
+        self.emit(LifecycleEvent::OperationCompleted {
+            operation: name,
+            summary,
+        });
+        Ok(OperationReport {
+            outcome,
+            installed_packages,
+            theme,
+        })
+    }
+
+    /// Select the theme again and re-present it if the selection changed.
+    /// Returns the new selection when it changed.
+    fn reselect_theme(&mut self) -> Option<ThemeSelection> {
+        let selection = match self.daemon.select_theme() {
+            Ok(selection) => selection,
+            Err(error) => {
+                self.warn(
+                    BootStage::SelectTheme,
+                    warnings::RESELECT_FAILED,
+                    format!(
+                        "{}: the previous theme stays presented",
+                        CoreError::daemon(None, &error)
+                    ),
+                );
+                return None;
+            }
+        };
+        if self
+            .ready
+            .as_ref()
+            .is_some_and(|ready| ready.theme == selection)
+        {
+            return None;
+        }
+        if let ThemeOrigin::BundledDefault { reason } = &selection.origin {
+            self.warn(
+                BootStage::SelectTheme,
+                warnings::THEME_FALLBACK,
+                format!("{}: {reason}", reason.as_str()),
+            );
+        }
+        if let Err(error) = self.shell.close_all() {
+            self.warn(
+                BootStage::StartShell,
+                warnings::SURFACE_FAILED,
+                format!("closing the previous surfaces: {error}"),
+            );
+        }
+        let request = PresentRequest::new(
+            selection.theme_id.clone(),
+            selection.version.clone(),
+            selection.surfaces.clone(),
+        );
+        let shell = match self.shell.present(request) {
+            Ok(report) => {
+                for failure in &report.failed {
+                    self.warn(
+                        BootStage::StartShell,
+                        warnings::SURFACE_FAILED,
+                        format!("{}: {}", failure.id, failure.error),
+                    );
+                }
+                Some(report)
+            }
+            Err(error) => {
+                self.warn(
+                    BootStage::StartShell,
+                    warnings::SURFACE_FAILED,
+                    format!("presenting {}: {error}", selection.theme_id),
+                );
+                None
+            }
+        };
+        if let Some(ready) = self.ready.as_mut() {
+            ready.theme = selection.clone();
+            if let Some(shell) = shell {
+                ready.shell = shell;
+            }
+        }
+        Some(selection)
     }
 
     /// Shut down: close the shell (releasing every surface and work-area

@@ -1150,6 +1150,7 @@ dependencies = [
  "glint-platform",
  "glint-shell",
  "glint-storage",
+ "serde_json",
  "tempfile",
 ]
 

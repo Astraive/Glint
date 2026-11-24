@@ -197,6 +197,13 @@ pub enum LifecycleEvent {
         /// A one-line summary (not stable).
         summary: String,
     },
+    /// A theme operation an IPC client asked for finished (CLI-006).
+    OperationCompleted {
+        /// The operation (`theme-use`, `safe-mode`, ...).
+        operation: &'static str,
+        /// A one-line summary (not stable).
+        summary: String,
+    },
 }
 
 impl fmt::Display for LifecycleEvent {
@@ -214,6 +221,9 @@ impl fmt::Display for LifecycleEvent {
             LifecycleEvent::ShutdownStarted { reason } => write!(f, "shutdown {reason}"),
             LifecycleEvent::ShutdownStepCompleted { stage, summary } => {
                 write!(f, "shutdown-step {stage}: {summary}")
+            }
+            LifecycleEvent::OperationCompleted { operation, summary } => {
+                write!(f, "operation {operation}: {summary}")
             }
         }
     }
@@ -238,6 +248,9 @@ pub mod warnings {
     pub const THEME_FALLBACK: &str = "GLINT_CORE_WARN_THEME_FALLBACK";
     /// A declared surface is hidden because its capability is unusable.
     pub const SURFACE_SKIPPED: &str = "GLINT_CORE_WARN_SURFACE_SKIPPED";
+    /// After a theme operation (CLI-006) the theme could not be selected
+    /// again; the previously selected theme stays presented.
+    pub const RESELECT_FAILED: &str = "GLINT_CORE_WARN_RESELECT_FAILED";
     /// The surface backend failed to open a surface.
     pub const SURFACE_FAILED: &str = "GLINT_CORE_WARN_SURFACE_FAILED";
 }
