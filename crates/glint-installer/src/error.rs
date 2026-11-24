@@ -54,6 +54,15 @@ pub enum ErrorCode {
     /// The export destination is not a file path (a directory, or no file
     /// name).
     ExportDestinationInvalid,
+    /// The bundled default theme archive embedded in the binary failed the
+    /// reader (a build defect); see [`InstallError::source_error`].
+    BundledInvalid,
+    /// The package uses the reserved ID of the bundled default theme but
+    /// is not the bundled release; nothing may shadow the fallback theme.
+    ReservedId,
+    /// A theme lookup matched several installed releases; name a version or
+    /// digest.
+    Ambiguous,
 }
 
 impl ErrorCode {
@@ -74,6 +83,9 @@ impl ErrorCode {
         ErrorCode::StoreCorrupt,
         ErrorCode::ExportFailed,
         ErrorCode::ExportDestinationInvalid,
+        ErrorCode::BundledInvalid,
+        ErrorCode::ReservedId,
+        ErrorCode::Ambiguous,
     ];
 
     /// The stable string form, e.g. `GLINT_INSTALL_IN_USE`.
@@ -94,6 +106,9 @@ impl ErrorCode {
             ErrorCode::StoreCorrupt => "GLINT_INSTALL_STORE_CORRUPT",
             ErrorCode::ExportFailed => "GLINT_INSTALL_EXPORT_FAILED",
             ErrorCode::ExportDestinationInvalid => "GLINT_INSTALL_EXPORT_DESTINATION_INVALID",
+            ErrorCode::BundledInvalid => "GLINT_INSTALL_BUNDLED_INVALID",
+            ErrorCode::ReservedId => "GLINT_INSTALL_RESERVED_ID",
+            ErrorCode::Ambiguous => "GLINT_INSTALL_AMBIGUOUS",
         }
     }
 }
@@ -161,6 +176,17 @@ pub enum InstallError {
     Export(glint_package::PackageError),
     /// The export destination is unusable.
     ExportDestinationInvalid(PathBuf),
+    /// The embedded default theme archive could not be staged.
+    Bundled(glint_sources::SourceError),
+    /// A package claims the reserved default theme ID.
+    ReservedId(String),
+    /// A lookup matched several releases.
+    Ambiguous {
+        /// What was looked up.
+        query: String,
+        /// The matching releases as `id@version`.
+        candidates: Vec<String>,
+    },
 }
 
 impl InstallError {
@@ -184,6 +210,9 @@ impl InstallError {
             InstallError::StoreCorrupt { .. } => ErrorCode::StoreCorrupt,
             InstallError::Export(_) => ErrorCode::ExportFailed,
             InstallError::ExportDestinationInvalid(_) => ErrorCode::ExportDestinationInvalid,
+            InstallError::Bundled(_) => ErrorCode::BundledInvalid,
+            InstallError::ReservedId(_) => ErrorCode::ReservedId,
+            InstallError::Ambiguous { .. } => ErrorCode::Ambiguous,
         }
     }
 
@@ -224,6 +253,14 @@ impl InstallError {
     pub fn package_error(&self) -> Option<&glint_package::PackageError> {
         match self {
             InstallError::Export(error) => Some(error),
+            _ => None,
+        }
+    }
+
+    /// The source error behind [`ErrorCode::BundledInvalid`].
+    pub fn source_error(&self) -> Option<&glint_sources::SourceError> {
+        match self {
+            InstallError::Bundled(error) => Some(error),
             _ => None,
         }
     }
@@ -326,6 +363,18 @@ impl fmt::Display for InstallError {
                 "export destination {} is not a file path",
                 path.display()
             ),
+            InstallError::Bundled(error) => {
+                write!(f, "the bundled default theme is unusable: {error}")
+            }
+            InstallError::ReservedId(id) => write!(
+                f,
+                "{id} is reserved for the bundled default theme; this package is not it"
+            ),
+            InstallError::Ambiguous { query, candidates } => write!(
+                f,
+                "{query} matches several installed releases ({}); name one as ID@VERSION",
+                candidates.join(", ")
+            ),
         }
     }
 }
@@ -336,6 +385,7 @@ impl std::error::Error for InstallError {
             InstallError::Storage(error) => Some(error),
             InstallError::Io { source, .. } => Some(source),
             InstallError::Export(error) => Some(error),
+            InstallError::Bundled(error) => Some(error),
             _ => None,
         }
     }

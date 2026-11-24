@@ -15,6 +15,12 @@
 //! [`Installer::export`] (PKG-005) writes an installed release back out as a
 //! canonical `.glint` without any locally added data.
 //!
+//! For front ends (CLI-002), [`Installer::import`], [`Installer::find`],
+//! [`Installer::use_theme`], [`Installer::ensure_bundled`] and
+//! [`Installer::safe_mode`] add local import with the reserved default
+//! theme ID, theme lookup by ID, version or digest, activation and a safe
+//! mode that always reaches the bundled default theme ([`BundledTheme`]).
+//!
 //! [`Installer::apply`] activates a profile together with native preference
 //! changes under an apply journal with per-adapter snapshots
 //! ([`RestoreSemantics`]); failures and crashes roll back to the previous
@@ -44,6 +50,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod bundled;
 mod error;
 mod export;
 mod fault;
@@ -54,6 +61,10 @@ mod record;
 mod recover;
 mod rollback;
 
+pub use bundled::{
+    Activated, BUNDLED_LOCATOR, BundledTheme, DEFAULT_ALIAS, DEFAULT_PROFILE, DEFAULT_THEME_ID,
+    Imported, SAFE_MODE_PROFILE, is_bundled,
+};
 pub use error::{ErrorCode, InstallError};
 pub use export::ExportedPackage;
 pub use fault::{FaultInjector, FaultPoint};
