@@ -63,19 +63,21 @@ Apache-2.0 section 4 requires that a redistribution include a copy of the licens
 
 ### UI SDK
 
-Glint's manager and settings UI uses UI SDK per [ADR 0003](../adr/0003-ui-sdk-for-glint-manager-ui.md): `@ui-sdk/react` and `@ui-sdk/core`, licensed Apache-2.0, pinned exactly to `0.1.0-beta.13`.
+Glint's manager UI (`apps/desktop`, MGR-001) uses UI SDK per [ADR 0011](../adr/0011-manager-ui-stack-tauri-react-ui-sdk.md), which supersedes [ADR 0003](../adr/0003-ui-sdk-for-glint-manager-ui.md): `@ui-sdk/react` and `@ui-sdk/core`, licensed Apache-2.0, pinned exactly to `0.1.0-beta.13`.
 
 | Package | Version | License | Status |
 |---|---|---|---|
-| `@ui-sdk/react` | 0.1.0-beta.13 | Apache-2.0 | **Planned.** Not a dependency yet; the manager app (MGR epic) has not been created. |
-| `@ui-sdk/core` | 0.1.0-beta.13 | Apache-2.0 | **Planned.** Not a dependency yet. |
+| `@ui-sdk/react` | 0.1.0-beta.13 (exact) | Apache-2.0 | **Production dependency** of `@glint/desktop`; bundled into the `glint-desktop` binary |
+| `@ui-sdk/core` | 0.1.0-beta.13 (exact) | Apache-2.0 | **Production dependency** of `@glint/desktop` |
 
-Because they are not installed, they appear only in the "planned" section of the [third-party inventory](third-party-inventory.md) and are not covered by the automated checks yet. When the manager app adds them:
+Both are in the generated [third-party inventory](third-party-inventory.md) with scope `production` and are covered by `pnpm licenses:check`. Obligations:
 
-1. Add them to the workspace with the exact pin; the npm license check and the generated inventory then include them automatically.
-2. Ship UI SDK's `LICENSE` text and its `NOTICE` file, if the package has one, in the release's third-party notices (the planned `THIRD_PARTY_NOTICES.md`, owned by the release epic REL-009 for the release bundle).
-3. Do not modify or strip copyright headers from UI SDK code. If any UI SDK file is ever modified, mark it as changed as section 4(b) requires.
-4. Do not use UI SDK's name or marks to imply endorsement of Glint (section 6).
+1. Keep the exact pin; upgrades follow the beta upgrade policy in ADR 0011 (REL-009 owns the release-wide policy).
+2. Ship the license text and notices with every redistribution of the manager. UI SDK ships **no `NOTICE` file** (checked for `0.1.0-beta.13`); its Apache-2.0 text is reproduced in [`apps/desktop/licenses/ui-sdk-LICENSE.txt`](../../apps/desktop/licenses/ui-sdk-LICENSE.txt) and its copyright notice (`Copyright 2026 Vercel, Inc.`) in [`apps/desktop/NOTICE`](../../apps/desktop/NOTICE). The release bundle (`THIRD_PARTY_NOTICES.md`, REL-009) must include both. Re-check for a `NOTICE` file on every upgrade.
+3. Do not modify or strip copyright headers from UI SDK code. If any UI SDK file is ever modified, mark it as changed as section 4(b) requires. Glint uses it unmodified from npm.
+4. Do not use UI SDK's name or marks to imply endorsement of Glint (section 6); `apps/desktop/NOTICE` says so.
+
+The manager's other bundled npm packages are MIT (`react`, `react-dom`, `scheduler`) or `Apache-2.0 OR MIT` (`@tauri-apps/api`, used under MIT). Its Tauri host adds Rust crates under the existing allow-list (MIT, Apache-2.0, BSD, ISC, Zlib, Unicode-3.0, MPL-2.0); no new exception was needed.
 
 ## What is checked automatically
 
@@ -92,4 +94,5 @@ To refresh the inventory after a dependency change, run `pnpm install --frozen-l
 - The inventory records declared package metadata. It does not read license files, so a package that declares the wrong license is not caught.
 - It is not an SBOM in SPDX or CycloneDX format. Producing one for a release is planned work under REL-009.
 - Advisory data comes from the live RustSec database, so the "Dependency policy" job can start failing without any change in this repository; it also runs on a weekly schedule for that reason.
-- Only dependencies that exist are checked. Dependencies of the future manager app, SDK and library are not covered until added.
+- Only dependencies that exist are checked. Dependencies of the future SDK and library are not covered until added.
+- npm per-OS native binary packages (Biome, Rolldown, Lightning CSS) are inventoried as one `<platform>` row per family from the host's install; the check verifies the host's package license only.

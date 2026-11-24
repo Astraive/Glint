@@ -40,7 +40,7 @@ ${table(
 
 ## npm packages (${npmAll.length})
 
-Source: \`pnpm licenses list --json\`. "Scope" is \`production\` for packages reachable from a production dependency and \`development\` otherwise. Glint has no production npm dependencies yet; everything below is build, lint or test tooling that does not ship. Biome's per-OS binary packages are collapsed into one row so the file is identical on every OS.
+Source: \`pnpm licenses list --json\`. "Scope" is \`production\` for packages reachable from a production dependency and \`development\` otherwise. \`production\` packages are the manager UI's runtime dependencies (\`@glint/desktop\`, bundled into the \`glint-desktop\` binary, [ADR 0011](../adr/0011-manager-ui-stack-tauri-react-ui-sdk.md)); everything else is build, lint or test tooling that does not ship. Per-OS native binary packages (Biome, Rolldown, Lightning CSS) are collapsed into one row per family and the macOS-only optional \`fsevents\` is left out, so the file is identical on every OS.
 
 ${table(
   ["Package", "Version", "License (declared)", "Scope"],
@@ -52,19 +52,7 @@ ${table(
   ]),
 )}
 
-## Planned dependencies (not installed yet)
-
-These are accepted or expected in the plan but are not dependencies today, so they are not in the generated tables above. Move them into the tables by adding the dependency; the check then covers them.
-
-${table(
-  ["Package", "Version", "License (declared by ADR 0003)", "Planned use"],
-  [
-    ["@ui-sdk/react", "0.1.0-beta.13 (exact pin)", "Apache-2.0", "Glint manager and settings UI (MGR epic)"],
-    ["@ui-sdk/core", "0.1.0-beta.13 (exact pin)", "Apache-2.0", "Peer of @ui-sdk/react for the manager UI"],
-  ],
-)}
-
-Apache-2.0 requires shipping the license text and any upstream NOTICE file with a redistribution. The release bundle must therefore include UI SDK's \`LICENSE\` and \`NOTICE\` (if it has one) once the manager app depends on it; see [license-policy.md](license-policy.md#apache-20-notice-and-attribution).
+Apache-2.0 requires shipping the license text and any upstream NOTICE file with a redistribution. UI SDK (\`@ui-sdk/react\`, \`@ui-sdk/core\`) ships no NOTICE file; its license and copyright notice are reproduced in [apps/desktop/NOTICE](../../apps/desktop/NOTICE) and [apps/desktop/licenses/ui-sdk-LICENSE.txt](../../apps/desktop/licenses/ui-sdk-LICENSE.txt). See [license-policy.md](license-policy.md#apache-20-notice-and-attribution).
 `;
 
 if (check) {

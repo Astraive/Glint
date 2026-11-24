@@ -6,89 +6,418 @@ This file lists every third-party dependency recorded in `Cargo.lock` and the in
 
 It is an inventory of declared package metadata, not legal advice and not a release notice bundle. Where a package declares an `OR` expression, the license column shows the whole expression; the policy accepts a package when at least one alternative is on the allow-list. No Glint release exists yet, so no release-time NOTICE file has been produced (planned under REL-009).
 
-## Rust crates (94)
+## Rust crates (438)
 
 Source: `cargo metadata --locked`, which covers every target platform in `Cargo.lock`, excluding Glint's own workspace crates. Enforced by `deny.toml`.
 
 | Crate | Version | License (declared) |
 |---|---|---|
+| adler2 | 2.0.1 | 0BSD OR MIT OR Apache-2.0 |
+| aho-corasick | 1.1.5 | Unlicense OR MIT |
+| android_system_properties | 0.1.6 | MIT OR Apache-2.0 |
+| anyhow | 1.0.105 | MIT OR Apache-2.0 |
+| atk | 0.18.2 | MIT |
+| atk-sys | 0.18.2 | MIT |
+| atomic-waker | 1.1.2 | Apache-2.0 OR MIT |
+| autocfg | 1.5.1 | Apache-2.0 OR MIT |
+| base64 | 0.21.7 | MIT OR Apache-2.0 |
+| base64 | 0.23.1 | MIT OR Apache-2.0 |
+| bit-set | 0.11.1 | Apache-2.0 OR MIT |
+| bit-set | 0.8.0 | Apache-2.0 OR MIT |
+| bit-vec | 0.10.2 | Apache-2.0 OR MIT |
+| bit-vec | 0.8.0 | Apache-2.0 OR MIT |
+| bitflags | 1.3.2 | MIT/Apache-2.0 |
 | bitflags | 2.13.2 | MIT OR Apache-2.0 |
+| block-buffer | 0.10.4 | MIT OR Apache-2.0 |
 | block-buffer | 0.12.1 | MIT OR Apache-2.0 |
+| block2 | 0.6.2 | MIT |
+| bs58 | 0.5.1 | MIT/Apache-2.0 |
 | bumpalo | 3.20.4 | MIT OR Apache-2.0 |
+| bytemuck | 1.25.2 | Zlib OR Apache-2.0 OR MIT |
+| byteorder | 1.5.0 | Unlicense OR MIT |
+| bytes | 1.12.2 | MIT |
+| cairo-rs | 0.18.5 | MIT |
+| cairo-sys-rs | 0.18.2 | MIT |
+| camino | 1.2.6 | MIT OR Apache-2.0 |
+| cargo_metadata | 0.19.2 | MIT |
+| cargo_toml | 1.0.1 | Apache-2.0 OR MIT |
+| cargo-platform | 0.1.9 | MIT OR Apache-2.0 |
 | cc | 1.11.3 | MIT OR Apache-2.0 |
+| cesu8 | 1.1.0 | Apache-2.0/MIT |
+| cfb | 0.14.0 | MIT |
 | cfg_aliases | 0.2.2 | MIT |
+| cfg-expr | 0.15.8 | MIT OR Apache-2.0 |
 | cfg-if | 1.0.5 | MIT OR Apache-2.0 |
+| chrono | 0.4.45 | MIT OR Apache-2.0 |
+| combine | 4.6.9 | MIT |
 | const-oid | 0.10.3 | Apache-2.0 OR MIT |
 | constant_time_eq | 0.6.1 | CC0-1.0 OR MIT-0 OR Apache-2.0 |
+| cookie | 0.18.3 | MIT OR Apache-2.0 |
+| core-foundation | 0.10.1 | MIT OR Apache-2.0 |
+| core-foundation-sys | 0.8.7 | MIT OR Apache-2.0 |
+| core-graphics | 0.25.0 | MIT OR Apache-2.0 |
+| core-graphics-types | 0.2.0 | MIT OR Apache-2.0 |
+| cpufeatures | 0.2.17 | MIT OR Apache-2.0 |
 | cpufeatures | 0.3.1 | MIT OR Apache-2.0 |
 | crc32fast | 1.5.5 | MIT OR Apache-2.0 |
+| crossbeam-channel | 0.5.17 | MIT OR Apache-2.0 |
+| crossbeam-utils | 0.8.23 | MIT OR Apache-2.0 |
+| crypto-common | 0.1.7 | MIT OR Apache-2.0 |
 | crypto-common | 0.2.2 | MIT OR Apache-2.0 |
+| cssparser | 0.37.0 | MPL-2.0 |
+| cssparser | 0.38.0 | MPL-2.0 |
+| cssparser-macros | 0.7.1 | MPL-2.0 |
+| ctor | 1.0.14 | Apache-2.0 OR MIT |
+| darling | 0.24.1 | MIT |
+| darling_core | 0.24.1 | MIT |
+| darling_macro | 0.24.1 | MIT |
+| deranged | 0.5.9 | MIT OR Apache-2.0 |
+| derive_more | 2.1.1 | MIT |
+| derive_more-impl | 2.1.1 | MIT |
+| digest | 0.10.7 | MIT OR Apache-2.0 |
 | digest | 0.11.3 | MIT OR Apache-2.0 |
 | dirs | 7.0.0 | MIT OR Apache-2.0 |
 | dirs-sys | 0.5.0 | MIT OR Apache-2.0 |
+| dispatch2 | 0.3.1 | Zlib OR Apache-2.0 OR MIT |
+| displaydoc | 0.2.7 | MIT OR Apache-2.0 |
+| dlopen2 | 0.8.2 | MIT |
+| dlopen2_derive | 0.4.3 | MIT |
 | doctest-file | 1.1.1 | 0BSD |
+| dom_query | 0.28.0 | MIT |
+| dom_query | 0.29.0 | MIT |
+| dpi | 0.1.2 | Apache-2.0 AND MIT |
+| dtoa | 1.0.11 | MIT OR Apache-2.0 |
+| dtoa-short | 0.3.5 | MPL-2.0 |
+| dunce | 1.0.5 | CC0-1.0 OR MIT-0 OR Apache-2.0 |
+| dyn-clone | 1.0.20 | MIT OR Apache-2.0 |
+| embed_plist | 1.2.2 | MIT OR Apache-2.0 |
+| embed-resource | 3.0.12 | MIT |
 | equivalent | 1.0.3 | Apache-2.0 OR MIT |
+| erased-serde | 0.4.11 | MIT OR Apache-2.0 |
 | errno | 0.3.15 | MIT OR Apache-2.0 |
 | fallible-iterator | 0.3.0 | MIT/Apache-2.0 |
 | fallible-streaming-iterator | 0.1.9 | MIT/Apache-2.0 |
 | fastrand | 2.5.0 | Apache-2.0 OR MIT |
+| fdeflate | 0.3.7 | MIT OR Apache-2.0 |
+| field-offset | 0.3.6 | MIT OR Apache-2.0 |
 | find-msvc-tools | 0.1.15 | MIT OR Apache-2.0 |
 | flate2 | 1.1.11 | MIT OR Apache-2.0 |
+| fnv | 1.0.7 | Apache-2.0 / MIT |
+| foldhash | 0.2.0 | Zlib |
+| foreign-types | 0.5.0 | MIT/Apache-2.0 |
+| foreign-types-macros | 0.2.4 | MIT/Apache-2.0 |
+| foreign-types-shared | 0.3.1 | MIT/Apache-2.0 |
+| form_urlencoded | 1.2.3 | MIT OR Apache-2.0 |
+| futures-channel | 0.3.34 | MIT OR Apache-2.0 |
+| futures-core | 0.3.34 | MIT OR Apache-2.0 |
+| futures-executor | 0.3.34 | MIT OR Apache-2.0 |
+| futures-io | 0.3.34 | MIT OR Apache-2.0 |
+| futures-macro | 0.3.34 | MIT OR Apache-2.0 |
+| futures-sink | 0.3.34 | MIT OR Apache-2.0 |
+| futures-task | 0.3.34 | MIT OR Apache-2.0 |
+| futures-util | 0.3.34 | MIT OR Apache-2.0 |
+| gdk | 0.18.2 | MIT |
+| gdk-pixbuf | 0.18.5 | MIT |
+| gdk-pixbuf-sys | 0.18.0 | MIT |
+| gdk-sys | 0.18.2 | MIT |
+| gdkwayland-sys | 0.18.2 | MIT |
+| generic-array | 0.14.7 | MIT |
+| getrandom | 0.3.4 | MIT OR Apache-2.0 |
 | getrandom | 0.4.3 | MIT OR Apache-2.0 |
+| gio | 0.18.4 | MIT |
+| gio-sys | 0.18.1 | MIT |
+| glib | 0.18.5 | MIT |
+| glib-macros | 0.18.5 | MIT |
+| glib-sys | 0.18.1 | MIT |
+| glob | 0.3.4 | MIT OR Apache-2.0 |
+| gobject-sys | 0.18.0 | MIT |
+| gtk | 0.18.2 | MIT |
+| gtk-sys | 0.18.2 | MIT |
+| gtk3-macros | 0.18.2 | MIT |
+| hashbrown | 0.12.3 | MIT OR Apache-2.0 |
 | hashbrown | 0.17.2 | MIT OR Apache-2.0 |
+| heck | 0.4.1 | MIT OR Apache-2.0 |
+| heck | 0.5.0 | MIT OR Apache-2.0 |
+| hex | 0.4.3 | MIT OR Apache-2.0 |
+| html5ever | 0.39.0 | MIT OR Apache-2.0 |
+| html5ever | 0.40.1 | MIT OR Apache-2.0 |
+| http | 1.5.0 | MIT OR Apache-2.0 |
+| http-body | 1.1.0 | MIT |
+| http-body-util | 0.1.5 | MIT |
+| httparse | 1.10.1 | MIT OR Apache-2.0 |
 | hybrid-array | 0.4.15 | MIT OR Apache-2.0 |
+| hyper | 1.13.0 | MIT |
+| hyper-util | 0.1.21 | MIT |
+| iana-time-zone | 0.1.65 | MIT OR Apache-2.0 |
+| iana-time-zone-haiku | 0.1.2 | MIT OR Apache-2.0 |
+| ico | 0.6.0 | MIT |
+| icu_collections | 2.4.0 | Unicode-3.0 |
+| icu_locale_core | 2.4.0 | Unicode-3.0 |
+| icu_normalizer | 2.4.0 | Unicode-3.0 |
+| icu_normalizer_data | 2.4.0 | Unicode-3.0 |
+| icu_properties | 2.4.0 | Unicode-3.0 |
+| icu_properties_data | 2.4.0 | Unicode-3.0 |
+| icu_provider | 2.4.0 | Unicode-3.0 |
+| ident_case | 1.0.1 | MIT/Apache-2.0 |
+| idna | 1.1.0 | MIT OR Apache-2.0 |
+| idna_adapter | 1.2.2 | Apache-2.0 OR MIT |
+| indexmap | 1.9.3 | Apache-2.0 OR MIT |
 | indexmap | 2.14.2 | Apache-2.0 OR MIT |
+| infer | 0.22.0 | MIT |
 | interprocess | 2.4.9 | 0BSD OR Apache-2.0 |
+| ipnet | 2.12.2 | MIT OR Apache-2.0 |
 | itoa | 1.0.19 | MIT OR Apache-2.0 |
+| javascriptcore-rs | 1.1.2 | MIT |
+| javascriptcore-rs-sys | 1.1.1 | MIT |
+| jiff | 0.2.46 | Unlicense OR MIT |
+| jiff | 1.0.3 | Unlicense OR MIT |
+| jiff-core | 0.1.8 | Unlicense OR MIT |
+| jiff-core | 1.0.2 | Unlicense OR MIT |
+| jiff-static | 0.2.46 | Unlicense OR MIT |
+| jiff-static | 1.0.3 | Unlicense OR MIT |
+| jiff-tzdb | 0.1.10 | Unlicense OR MIT |
+| jiff-tzdb | 1.0.0 | Unlicense OR MIT |
+| jiff-tzdb-platform | 0.1.3 | Unlicense OR MIT |
+| jiff-tzdb-platform | 1.0.0 | Unlicense OR MIT |
+| jni | 0.21.1 | MIT/Apache-2.0 |
+| jni-sys | 0.3.1 | MIT OR Apache-2.0 |
+| jni-sys | 0.4.1 | MIT OR Apache-2.0 |
+| jni-sys-macros | 0.4.1 | MIT OR Apache-2.0 |
 | js-sys | 0.3.107 | MIT OR Apache-2.0 |
+| json-patch | 4.2.0 | MIT/Apache-2.0 |
+| jsonptr | 0.7.1 | MIT OR Apache-2.0 |
+| keyboard-types | 0.8.3 | MIT OR Apache-2.0 |
 | libc | 0.2.191 | MIT OR Apache-2.0 |
 | libredox | 0.1.25 | MIT |
 | libsqlite3-sys | 0.40.0 | MIT |
+| link-section | 0.19.4 | Apache-2.0 OR MIT |
 | linux-raw-sys | 0.12.1 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT |
+| litemap | 0.8.3 | Unicode-3.0 |
+| lock_api | 0.4.14 | MIT OR Apache-2.0 |
+| log | 0.4.35 | MIT OR Apache-2.0 |
+| markup5ever | 0.39.0 | MIT OR Apache-2.0 |
+| markup5ever | 0.40.0 | MIT OR Apache-2.0 |
 | memchr | 2.8.3 | Unlicense OR MIT |
+| memoffset | 0.9.1 | MIT |
+| mime | 0.3.18 | MIT OR Apache-2.0 |
+| miniz_oxide | 0.8.9 | MIT OR Zlib OR Apache-2.0 |
+| miniz_oxide | 0.9.1 | MIT OR Zlib OR Apache-2.0 |
+| mio | 1.2.5 | MIT |
+| muda | 0.20.0 | Apache-2.0 OR MIT |
+| ndk | 0.9.0 | MIT OR Apache-2.0 |
+| ndk-context | 0.1.1 | MIT OR Apache-2.0 |
+| ndk-sys | 0.6.0+11769913 | MIT OR Apache-2.0 |
+| new_debug_unreachable | 1.0.6 | MIT |
 | nix | 0.32.0 | MIT |
+| num_enum | 0.7.6 | BSD-3-Clause OR MIT OR Apache-2.0 |
+| num_enum_derive | 0.7.6 | BSD-3-Clause OR MIT OR Apache-2.0 |
+| num-conv | 0.2.2 | MIT OR Apache-2.0 |
+| num-traits | 0.2.19 | MIT OR Apache-2.0 |
+| objc2 | 0.6.5 | MIT |
+| objc2-app-kit | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-cloud-kit | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-core-data | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-core-foundation | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-core-graphics | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-core-image | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-core-location | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-core-text | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-encode | 4.1.0 | MIT |
+| objc2-exception-helper | 0.1.1 | Zlib OR Apache-2.0 OR MIT |
+| objc2-foundation | 0.3.2 | MIT |
+| objc2-io-surface | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-quartz-core | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-ui-kit | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-user-notifications | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
+| objc2-web-kit | 0.3.2 | Zlib OR Apache-2.0 OR MIT |
 | once_cell | 1.21.4 | MIT OR Apache-2.0 |
 | option-ext | 0.2.0 | MPL-2.0 |
+| pango | 0.18.3 | MIT |
+| pango-sys | 0.18.0 | MIT |
+| parking_lot | 0.12.5 | MIT OR Apache-2.0 |
+| parking_lot_core | 0.9.12 | MIT OR Apache-2.0 |
+| percent-encoding | 2.3.2 | MIT OR Apache-2.0 |
+| phf | 0.13.1 | MIT |
+| phf | 0.14.0 | MIT |
+| phf_codegen | 0.13.1 | MIT |
+| phf_codegen | 0.14.0 | MIT |
+| phf_generator | 0.13.1 | MIT |
+| phf_generator | 0.14.0 | MIT |
+| phf_macros | 0.13.1 | MIT |
+| phf_macros | 0.14.0 | MIT |
+| phf_shared | 0.13.1 | MIT |
+| phf_shared | 0.14.0 | MIT |
+| pin-project-lite | 0.2.18 | Apache-2.0 OR MIT |
 | pkg-config | 0.3.34 | MIT OR Apache-2.0 |
+| plist | 1.10.4 | MIT |
+| png | 0.18.1 | MIT OR Apache-2.0 |
+| portable-atomic | 1.15.0 | Apache-2.0 OR MIT |
+| portable-atomic-util | 0.2.8 | Apache-2.0 OR MIT |
+| potential_utf | 0.1.6 | Unicode-3.0 |
+| powerfmt | 0.2.1 | MIT OR Apache-2.0 |
+| precomputed-hash | 0.1.1 | MIT |
+| proc-macro-crate | 1.3.1 | MIT OR Apache-2.0 |
+| proc-macro-crate | 2.0.2 | MIT OR Apache-2.0 |
+| proc-macro-crate | 3.5.0 | MIT OR Apache-2.0 |
+| proc-macro-error | 1.0.4 | MIT OR Apache-2.0 |
+| proc-macro-error-attr | 1.0.4 | MIT OR Apache-2.0 |
 | proc-macro2 | 1.0.107 | MIT OR Apache-2.0 |
+| quick-xml | 0.42.0 | MIT |
 | quote | 1.0.47 | MIT OR Apache-2.0 |
+| r-efi | 5.3.0 | MIT OR Apache-2.0 OR LGPL-2.1-or-later |
 | r-efi | 6.0.0 | MIT OR Apache-2.0 OR LGPL-2.1-or-later |
+| raw-window-handle | 0.6.2 | MIT OR Apache-2.0 OR Zlib |
 | recvmsg | 1.0.0 | 0BSD |
+| redox_syscall | 0.5.18 | MIT |
 | redox_users | 0.5.3 | MIT |
+| ref-cast | 1.0.27 | MIT OR Apache-2.0 |
+| ref-cast-impl | 1.0.27 | MIT OR Apache-2.0 |
+| regex | 1.13.2 | MIT OR Apache-2.0 |
+| regex-automata | 0.4.19 | MIT OR Apache-2.0 |
+| regex-syntax | 0.8.12 | MIT OR Apache-2.0 |
+| reqwest | 0.13.5 | MIT OR Apache-2.0 |
 | rusqlite | 0.43.0 | MIT |
+| rustc_version | 0.4.1 | MIT OR Apache-2.0 |
+| rustc-hash | 2.1.3 | Apache-2.0 OR MIT |
 | rustix | 1.1.6 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT |
 | rustversion | 1.0.23 | MIT OR Apache-2.0 |
+| same-file | 1.0.6 | Unlicense/MIT |
+| schemars | 0.8.22 | MIT |
+| schemars | 0.9.0 | MIT |
+| schemars | 1.2.3 | MIT |
+| schemars_derive | 0.8.22 | MIT |
+| scopeguard | 1.2.0 | MIT OR Apache-2.0 |
+| selectors | 0.38.0 | MPL-2.0 |
+| selectors | 0.41.0 | MPL-2.0 |
 | semver | 1.0.28 | MIT OR Apache-2.0 |
 | serde | 1.0.229 | MIT OR Apache-2.0 |
 | serde_core | 1.0.229 | MIT OR Apache-2.0 |
 | serde_derive | 1.0.229 | MIT OR Apache-2.0 |
+| serde_derive_internals | 0.29.1 | MIT OR Apache-2.0 |
 | serde_json | 1.0.154 | MIT OR Apache-2.0 |
+| serde_repr | 0.1.21 | MIT OR Apache-2.0 |
+| serde_spanned | 0.6.9 | MIT OR Apache-2.0 |
 | serde_spanned | 1.1.3 | MIT OR Apache-2.0 |
+| serde_with | 3.25.0 | MIT OR Apache-2.0 |
+| serde_with_macros | 3.25.0 | MIT OR Apache-2.0 |
+| serde-untagged | 0.1.9 | MIT OR Apache-2.0 |
+| serialize-to-javascript | 0.1.2 | MIT OR Apache-2.0 |
+| serialize-to-javascript-impl | 0.1.2 | MIT OR Apache-2.0 |
+| servo_arc | 0.4.3 | MIT OR Apache-2.0 |
+| servo_arc | 0.5.0 | MIT OR Apache-2.0 |
+| sha2 | 0.10.9 | MIT OR Apache-2.0 |
 | sha2 | 0.11.1 | MIT OR Apache-2.0 |
 | shlex | 2.0.1 | MIT OR Apache-2.0 |
+| simd-adler32 | 0.3.10 | MIT |
+| siphasher | 1.0.4 | MIT OR Apache-2.0 |
+| slab | 0.4.12 | MIT |
 | smallvec | 1.16.6 | MIT OR Apache-2.0 |
+| socket2 | 0.6.5 | MIT OR Apache-2.0 |
+| softbuffer | 0.4.8 | MIT OR Apache-2.0 |
+| soup3 | 0.5.0 | MIT |
+| soup3-sys | 0.5.0 | MIT |
+| stable_deref_trait | 1.2.1 | MIT OR Apache-2.0 |
+| static_vcruntime | 3.0.0 | MIT OR Apache-2.0 OR Zlib |
+| string_cache | 0.11.0 | MIT OR Apache-2.0 |
+| string_cache | 0.9.0 | MIT OR Apache-2.0 |
+| string_cache_codegen | 0.11.2 | MIT OR Apache-2.0 |
+| string_cache_codegen | 0.6.1 | MIT OR Apache-2.0 |
+| strsim | 0.11.1 | MIT |
+| swift-rs | 1.0.9 | MIT OR Apache-2.0 |
+| syn | 1.0.109 | MIT OR Apache-2.0 |
 | syn | 2.0.119 | MIT OR Apache-2.0 |
 | syn | 3.0.10 | MIT OR Apache-2.0 |
+| sync_wrapper | 1.0.2 | Apache-2.0 |
+| synstructure | 0.14.0 | MIT |
+| system-deps | 6.2.2 | MIT OR Apache-2.0 |
+| tao | 0.37.3 | Apache-2.0 |
+| tao-macros | 0.1.4 | MIT OR Apache-2.0 |
+| target-lexicon | 0.12.16 | Apache-2.0 WITH LLVM-exception |
+| tauri | 2.12.7 | Apache-2.0 OR MIT |
+| tauri-build | 2.7.6 | Apache-2.0 OR MIT |
+| tauri-codegen | 2.7.6 | Apache-2.0 OR MIT |
+| tauri-macros | 2.7.6 | Apache-2.0 OR MIT |
+| tauri-runtime | 2.12.4 | Apache-2.0 OR MIT |
+| tauri-runtime-wry | 2.12.5 | Apache-2.0 OR MIT |
+| tauri-utils | 2.10.4 | Apache-2.0 OR MIT |
+| tauri-winres | 0.3.7 | MIT |
 | tempfile | 3.27.0 | MIT OR Apache-2.0 |
+| tendril | 0.5.1 | MIT OR Apache-2.0 |
+| thiserror | 1.0.69 | MIT OR Apache-2.0 |
 | thiserror | 2.0.21 | MIT OR Apache-2.0 |
+| thiserror-impl | 1.0.69 | MIT OR Apache-2.0 |
 | thiserror-impl | 2.0.21 | MIT OR Apache-2.0 |
+| time | 0.3.55 | MIT OR Apache-2.0 |
+| time-core | 0.1.9 | MIT OR Apache-2.0 |
+| time-macros | 0.2.32 | MIT OR Apache-2.0 |
+| tinystr | 0.8.5 | Unicode-3.0 |
+| tinyvec | 1.13.3 | Zlib OR Apache-2.0 OR MIT |
+| tokio | 1.54.1 | MIT |
+| tokio-util | 0.7.20 | MIT |
+| toml | 0.8.2 | MIT OR Apache-2.0 |
 | toml | 1.2.2+spec-1.1.0 | MIT OR Apache-2.0 |
+| toml_datetime | 0.6.3 | MIT OR Apache-2.0 |
 | toml_datetime | 1.1.3+spec-1.1.0 | MIT OR Apache-2.0 |
+| toml_edit | 0.19.15 | MIT OR Apache-2.0 |
+| toml_edit | 0.20.2 | MIT OR Apache-2.0 |
+| toml_edit | 0.25.20+spec-1.1.0 | MIT OR Apache-2.0 |
 | toml_parser | 1.1.6+spec-1.1.0 | MIT OR Apache-2.0 |
 | toml_writer | 1.2.0+spec-1.1.0 | MIT OR Apache-2.0 |
+| tower | 0.5.3 | MIT |
+| tower-http | 0.6.11 | MIT |
+| tower-layer | 0.3.3 | MIT |
+| tower-service | 0.3.3 | MIT |
+| tracing | 0.1.44 | MIT |
+| tracing-core | 0.1.36 | MIT |
+| try-lock | 0.2.5 | MIT |
 | typed-path | 0.13.0 | MIT OR Apache-2.0 |
+| typeid | 1.0.3 | MIT OR Apache-2.0 |
 | typenum | 1.20.1 | MIT OR Apache-2.0 |
 | unicode-ident | 1.0.27 | (MIT OR Apache-2.0) AND Unicode-3.0 |
+| unicode-segmentation | 1.13.3 | MIT OR Apache-2.0 |
+| url | 2.5.9 | MIT OR Apache-2.0 |
+| urlpattern | 0.6.0 | MIT |
+| utf_types | 1.0.0 | Apache-2.0 OR MIT |
+| utf8_iter | 1.1.0 | Apache-2.0 OR MIT |
+| uuid | 1.29.3 | Apache-2.0 OR MIT |
 | vcpkg | 0.2.15 | MIT/Apache-2.0 |
+| version_check | 0.9.5 | MIT/Apache-2.0 |
+| version-compare | 0.2.1 | MIT |
+| vswhom | 0.1.0 | MIT |
+| vswhom-sys | 0.1.3 | MIT |
+| walkdir | 2.5.1 | Unlicense/MIT |
+| want | 0.3.2 | MIT |
+| wasi | 0.11.1+wasi-snapshot-preview1 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT |
+| wasip2 | 1.0.4+wasi-0.2.12 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT |
 | wasm-bindgen | 0.2.130 | MIT OR Apache-2.0 |
+| wasm-bindgen-futures | 0.4.80 | MIT OR Apache-2.0 |
 | wasm-bindgen-macro | 0.2.130 | MIT OR Apache-2.0 |
 | wasm-bindgen-macro-support | 0.2.130 | MIT OR Apache-2.0 |
 | wasm-bindgen-shared | 0.2.130 | MIT OR Apache-2.0 |
+| wasm-streams | 0.5.0 | MIT OR Apache-2.0 |
+| web_atoms | 0.2.6 | MIT OR Apache-2.0 |
+| web_atoms | 0.3.0 | MIT OR Apache-2.0 |
+| web-sys | 0.3.107 | MIT OR Apache-2.0 |
+| web-time | 1.1.0 | MIT OR Apache-2.0 |
+| webkit2gtk | 2.0.2 | MIT |
+| webkit2gtk-sys | 2.0.2 | MIT |
 | webview2-com | 0.39.1 | MIT |
 | webview2-com-macros | 0.8.1 | MIT |
 | webview2-com-sys | 0.39.1 | MIT |
 | widestring | 1.2.1 | MIT OR Apache-2.0 |
+| winapi | 0.3.9 | MIT/Apache-2.0 |
+| winapi-i686-pc-windows-gnu | 0.4.0 | MIT/Apache-2.0 |
+| winapi-util | 0.1.11 | Unlicense OR MIT |
+| winapi-x86_64-pc-windows-gnu | 0.4.0 | MIT/Apache-2.0 |
+| window-vibrancy | 0.8.1 | Apache-2.0 OR MIT |
 | windows | 0.62.2 | MIT OR Apache-2.0 |
+| windows_aarch64_gnullvm | 0.42.2 | MIT OR Apache-2.0 |
+| windows_aarch64_msvc | 0.42.2 | MIT OR Apache-2.0 |
+| windows_i686_gnu | 0.42.2 | MIT OR Apache-2.0 |
+| windows_i686_msvc | 0.42.2 | MIT OR Apache-2.0 |
+| windows_x86_64_gnu | 0.42.2 | MIT OR Apache-2.0 |
+| windows_x86_64_gnullvm | 0.42.2 | MIT OR Apache-2.0 |
+| windows_x86_64_msvc | 0.42.2 | MIT OR Apache-2.0 |
 | windows-collections | 0.3.2 | MIT OR Apache-2.0 |
 | windows-core | 0.62.2 | MIT OR Apache-2.0 |
 | windows-future | 0.3.2 | MIT OR Apache-2.0 |
@@ -98,49 +427,97 @@ Source: `cargo metadata --locked`, which covers every target platform in `Cargo.
 | windows-numerics | 0.3.1 | MIT OR Apache-2.0 |
 | windows-result | 0.4.1 | MIT OR Apache-2.0 |
 | windows-strings | 0.5.1 | MIT OR Apache-2.0 |
+| windows-sys | 0.45.0 | MIT OR Apache-2.0 |
 | windows-sys | 0.61.2 | MIT OR Apache-2.0 |
+| windows-targets | 0.42.2 | MIT OR Apache-2.0 |
 | windows-threading | 0.2.1 | MIT OR Apache-2.0 |
+| windows-version | 0.1.7 | MIT OR Apache-2.0 |
+| winnow | 0.5.40 | MIT |
 | winnow | 1.0.5 | MIT |
+| winreg | 0.56.0 | MIT |
+| wit-bindgen | 0.57.1 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT |
+| writeable | 0.6.4 | Unicode-3.0 |
+| wry | 0.57.3 | Apache-2.0 OR MIT |
+| yoke | 0.8.4 | Unicode-3.0 |
+| yoke-derive | 0.8.4 | Unicode-3.0 |
+| zerofrom | 0.1.8 | Unicode-3.0 |
+| zerofrom-derive | 0.1.8 | Unicode-3.0 |
 | zeroize | 1.9.2 | Apache-2.0 OR MIT |
 | zeroize_derive | 1.5.0 | Apache-2.0 OR MIT |
+| zerotrie | 0.2.5 | Unicode-3.0 |
+| zerovec | 0.11.9 | Unicode-3.0 |
+| zerovec-derive | 0.11.7 | Unicode-3.0 |
 | zip | 9.8.1 | MIT |
 | zlib-rs | 0.6.8 | Zlib |
 | zmij | 1.0.23 | MIT |
 
-## npm packages (20)
+## npm packages (62)
 
-Source: `pnpm licenses list --json`. "Scope" is `production` for packages reachable from a production dependency and `development` otherwise. Glint has no production npm dependencies yet; everything below is build, lint or test tooling that does not ship. Biome's per-OS binary packages are collapsed into one row so the file is identical on every OS.
+Source: `pnpm licenses list --json`. "Scope" is `production` for packages reachable from a production dependency and `development` otherwise. `production` packages are the manager UI's runtime dependencies (`@glint/desktop`, bundled into the `glint-desktop` binary, [ADR 0011](../adr/0011-manager-ui-stack-tauri-react-ui-sdk.md)); everything else is build, lint or test tooling that does not ship. Per-OS native binary packages (Biome, Rolldown, Lightning CSS) are collapsed into one row per family and the macOS-only optional `fsevents` is left out, so the file is identical on every OS.
 
 | Package | Version | License (declared) | Scope |
 |---|---|---|---|
 | @apidevtools/json-schema-ref-parser | 11.9.3 | MIT | development |
 | @biomejs/biome | 2.6.8 | MIT OR Apache-2.0 | development |
 | @biomejs/cli-<platform> | 2.6.8 | MIT OR Apache-2.0 | development |
+| @jridgewell/resolve-uri | 3.1.3 | MIT | development |
+| @jridgewell/sourcemap-codec | 1.6.0 | MIT | development |
+| @jridgewell/trace-mapping | 0.3.31 | MIT | development |
 | @jsdevtools/ono | 7.1.3 | MIT | development |
+| @oxc-project/types | 0.156.0 | MIT | development |
+| @rolldown/binding-<platform> | 1.2.19 | MIT | development |
+| @rolldown/pluginutils | 1.1.1 | MIT | development |
+| @tauri-apps/api | 2.12.5 | Apache-2.0 OR MIT | production |
+| @types/chai | 5.2.3 | MIT | development |
+| @types/deep-eql | 4.0.2 | MIT | development |
+| @types/estree | 1.0.10 | MIT | development |
 | @types/json-schema | 7.0.15 | MIT | development |
 | @types/lodash | 4.17.27 | MIT | development |
 | @types/node | 24.19.2 | MIT | development |
+| @types/react | 19.3.0 | MIT | production |
+| @types/react-dom | 19.3.0 | MIT | development |
+| @ui-sdk/core | 0.1.0-beta.13 | Apache-2.0 | production |
+| @ui-sdk/react | 0.1.0-beta.13 | Apache-2.0 | production |
+| @vitejs/plugin-react | 6.3.0 | MIT | development |
+| @vitest/mocker | 5.1.1 | MIT | development |
+| @vitest/spy | 5.1.1 | MIT | development |
 | argparse | 2.0.1 | Python-2.0 | development |
+| assertion-error | 2.0.1 | MIT | development |
+| chai | 6.3.0 | MIT | development |
+| csstype | 3.2.4 | MIT | production |
+| detect-libc | 2.1.2 | Apache-2.0 | development |
+| es-module-lexer | 2.3.2 | MIT | development |
+| estree-walker | 3.0.3 | MIT | development |
+| expect-type | 1.4.0 | Apache-2.0 | development |
 | fdir | 6.5.0 | MIT | development |
 | is-extglob | 2.1.1 | MIT | development |
 | is-glob | 4.0.3 | MIT | development |
 | js-yaml | 4.3.2 | MIT | development |
 | json-schema-to-typescript | 15.0.4 | MIT | development |
+| lightningcss | 1.33.0 | MPL-2.0 | development |
+| lightningcss-<platform> | 1.33.0 | MPL-2.0 | development |
 | lodash | 4.18.1 | MIT | development |
+| magic-string | 1.4.5 | MIT | development |
 | minimist | 1.2.8 | MIT | development |
+| nanoid | 3.3.20 | MIT | development |
+| obug | 3.0.0 | MIT | development |
+| picocolors | 1.1.1 | ISC | development |
 | picomatch | 4.0.7 | MIT | development |
+| postcss | 8.5.33 | MIT | development |
 | prettier | 3.10.1 | MIT | development |
+| react | 19.3.1 | MIT | production |
+| react-dom | 19.3.1 | MIT | production |
+| rolldown | 1.2.19 | MIT | development |
+| scheduler | 0.28.0 | MIT | production |
+| source-map-js | 1.2.4 | BSD-3-Clause | development |
+| std-env | 4.3.0 | MIT | development |
+| tinybench | 6.2.5 | MIT | development |
+| tinyexec | 1.3.1 | MIT | development |
 | tinyglobby | 0.2.17 | MIT | development |
 | typescript | 5.9.3 | Apache-2.0 | development |
 | undici-types | 7.24.6 | MIT | development |
+| vite | 8.3.8 | MIT | development |
+| vitest | 5.1.1 | MIT | development |
+| why-is-node-running | 3.2.1 | MIT | development |
 
-## Planned dependencies (not installed yet)
-
-These are accepted or expected in the plan but are not dependencies today, so they are not in the generated tables above. Move them into the tables by adding the dependency; the check then covers them.
-
-| Package | Version | License (declared by ADR 0003) | Planned use |
-|---|---|---|---|
-| @ui-sdk/react | 0.1.0-beta.13 (exact pin) | Apache-2.0 | Glint manager and settings UI (MGR epic) |
-| @ui-sdk/core | 0.1.0-beta.13 (exact pin) | Apache-2.0 | Peer of @ui-sdk/react for the manager UI |
-
-Apache-2.0 requires shipping the license text and any upstream NOTICE file with a redistribution. The release bundle must therefore include UI SDK's `LICENSE` and `NOTICE` (if it has one) once the manager app depends on it; see [license-policy.md](license-policy.md#apache-20-notice-and-attribution).
+Apache-2.0 requires shipping the license text and any upstream NOTICE file with a redistribution. UI SDK (`@ui-sdk/react`, `@ui-sdk/core`) ships no NOTICE file; its license and copyright notice are reproduced in [apps/desktop/NOTICE](../../apps/desktop/NOTICE) and [apps/desktop/licenses/ui-sdk-LICENSE.txt](../../apps/desktop/licenses/ui-sdk-LICENSE.txt). See [license-policy.md](license-policy.md#apache-20-notice-and-attribution).

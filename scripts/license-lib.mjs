@@ -125,23 +125,29 @@ export function listNpmPackages({ prodOnly }) {
   );
 }
 
-// Biome ships one optional binary package per OS and pnpm installs only the
-// host's. Collapse them so the inventory is identical on every OS.
+// Some tools ship one optional native binary package per OS, CPU and libc
+// (Biome, and Rolldown and Lightning CSS under Vite) and pnpm installs only
+// the host's. Collapse each family into one `<base>-<platform>` row so the
+// inventory is identical on every OS. `fsevents` (an optional, macOS-only
+// file watcher) is left out for the same reason.
+const PLATFORM_PACKAGE =
+  /^(@biomejs\/cli|@rolldown\/binding|lightningcss)-(?:win32|linux|darwin|android|freebsd|openharmony|wasm32)(?:-.+)?$/;
+
 function collapsePlatformBinaries(rows) {
   const out = [];
-  let biome;
+  const families = new Map();
   for (const row of rows) {
-    if (row.name.startsWith("@biomejs/cli-")) {
-      biome ??= {
-        name: "@biomejs/cli-<platform>",
-        version: row.version,
-        license: row.license,
-      };
+    if (row.name === "fsevents") continue;
+    const match = PLATFORM_PACKAGE.exec(row.name);
+    if (match) {
+      const name = `${match[1]}-<platform>`;
+      const key = `${name}@${row.version}`;
+      if (!families.has(key)) families.set(key, { name, version: row.version, license: row.license });
     } else {
       out.push(row);
     }
   }
-  if (biome) out.push(biome);
+  out.push(...families.values());
   return out;
 }
 
