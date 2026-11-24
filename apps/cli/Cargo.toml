@@ -13,10 +13,19 @@ name = "glint"
 path = "src/main.rs"
 
 [dependencies]
+# Install, list, export, remove, activate and safe mode (CLI-002).
+glint-installer = { path = "../../crates/glint-installer" }
 glint-package = { path = "../../crates/glint-package" }
 glint-schema = { path = "../../crates/glint-schema" }
 glint-sources = { path = "../../crates/glint-sources" }
+# GLINT_HOME-aware path resolution and the active theme record (CLI-002).
+glint-storage = { path = "../../crates/glint-storage" }
 serde_json = "1"
+
+[build-dependencies]
+# build.rs packs themes/default with the deterministic writer, so the
+# embedded fallback archive is byte-identical to `pack_directory` (CLI-002).
+glint-package = { path = "../../crates/glint-package" }
 
 [dev-dependencies]
 tempfile = "3.27.0"

@@ -105,7 +105,6 @@ const OUTPUT: Opt = Opt {
     value: "PATH",
 };
 
-const CLI_002: Status = Status::Planned(Some("CLI-002"));
 const CLI_003: Status = Status::Planned(Some("CLI-003"));
 const CLI_004: Status = Status::Planned(Some("CLI-004"));
 const CLI_005: Status = Status::Planned(Some("CLI-005"));
@@ -135,17 +134,17 @@ pub const COMMANDS: &[Command] = &[
     },
     Command {
         path: &["safe-mode"],
-        summary: "Switch to the bundled default theme only",
+        summary: "Activate the bundled default theme in the safe-mode profile",
         args: &[],
         options: &[],
-        status: CLI_002,
+        status: Status::Implemented,
     },
     Command {
         path: &["theme"],
         summary: "Choose a theme interactively (terminal only)",
         args: &[],
         options: &[],
-        status: CLI_002,
+        status: Status::Planned(None),
     },
     Command {
         path: &["theme", "browse"],
@@ -189,21 +188,21 @@ pub const COMMANDS: &[Command] = &[
             required: true,
         }],
         options: &[],
-        status: CLI_002,
+        status: Status::Implemented,
     },
     Command {
         path: &["theme", "use"],
-        summary: "Activate an installed theme",
+        summary: "Activate an installed theme (`default`: the bundled theme)",
         args: &[ID],
         options: &[],
-        status: CLI_002,
+        status: Status::Implemented,
     },
     Command {
         path: &["theme", "list"],
         summary: "List installed themes",
         args: &[],
         options: &[],
-        status: CLI_002,
+        status: Status::Implemented,
     },
     Command {
         path: &["theme", "update"],
@@ -217,14 +216,14 @@ pub const COMMANDS: &[Command] = &[
         summary: "Export an installed theme as a .glint package",
         args: &[ID],
         options: &[OUTPUT],
-        status: CLI_002,
+        status: Status::Implemented,
     },
     Command {
         path: &["theme", "remove"],
         summary: "Remove an installed theme",
         args: &[ID],
         options: &[],
-        status: CLI_002,
+        status: Status::Implemented,
     },
     Command {
         path: &["theme", "revert"],
@@ -352,13 +351,6 @@ pub struct Invocation {
 
 impl Invocation {
     /// The value of option `long`, if given.
-    #[cfg_attr(
-        not(test),
-        expect(
-            dead_code,
-            reason = "no implemented command takes an option yet (CLI-002 export -o)"
-        )
-    )]
     pub fn option(&self, long: &str) -> Option<&str> {
         self.options
             .iter()

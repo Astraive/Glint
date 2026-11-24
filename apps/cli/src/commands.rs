@@ -1,5 +1,7 @@
 //! Command handlers. Each is thin wiring onto the library crates.
 
+mod theme;
+
 use std::fs;
 use std::io;
 use std::path::Path;
@@ -37,6 +39,12 @@ fn run(invocation: &Invocation, json: bool, terminal: Terminal) -> Result<Succes
             let path = invocation.args.first().map_or(".", String::as_str);
             theme_validate(Path::new(path))
         }
+        ["theme", "import"] => theme::import(Path::new(&invocation.args[0])),
+        ["theme", "list"] => theme::list(),
+        ["theme", "export"] => theme::export(&invocation.args[0], invocation.option("output")),
+        ["theme", "remove"] => theme::remove(&invocation.args[0]),
+        ["theme", "use"] => theme::use_theme(&invocation.args[0]),
+        ["safe-mode"] => theme::safe_mode(),
         // The bare `theme` command is the interactive chooser: terminals
         // only, never in JSON mode.
         ["theme"] if json || !terminal.interactive => Err(CliError::new(
@@ -422,7 +430,7 @@ mod tests {
             (error.kind, error.code.as_str()),
             (ErrorKind::Unsupported, codes::NOT_IMPLEMENTED)
         );
-        assert_eq!(error.details["plannedIn"], "CLI-002");
+        assert_eq!(error.details["plannedIn"], serde_json::Value::Null);
     }
 
     #[test]

@@ -1,4 +1,4 @@
-//! `glint` CLI entry point (CLI-001).
+//! `glint` CLI entry point (CLI-001, CLI-002).
 //!
 //! Thin by design: argument parsing, output rendering and the exit code
 //! contract live here; the work is done by the library crates. Commands in
@@ -8,6 +8,7 @@
 
 mod cli;
 mod commands;
+mod default_theme;
 mod error;
 mod output;
 

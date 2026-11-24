@@ -185,9 +185,11 @@ dependencies = [
 name = "glint-cli"
 version = "0.0.0"
 dependencies = [
+ "glint-installer",
  "glint-package",
  "glint-schema",
  "glint-sources",
+ "glint-storage",
  "serde_json",
  "tempfile",
 ]
