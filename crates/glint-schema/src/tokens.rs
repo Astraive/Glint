@@ -774,6 +774,35 @@ pub fn parse_tokens(text: &str) -> Result<TokenFile> {
     })
 }
 
+/// Validate one value for one token of the contract, outside a `tokens.json`
+/// (for example a profile `tokenOverrides` entry), and return its normalised
+/// CSS text (colours lowercased, numbers in canonical form).
+///
+/// The same rules as [`parse_tokens`] apply: a brand-constant name is
+/// [`TokenErrorCode::BrandName`], a name outside [`TOKEN_REGISTRY`] is
+/// [`TokenErrorCode::UnknownToken`] and a value that does not match the
+/// token's [`TokenKind`] grammar is [`TokenErrorCode::InvalidValue`] (or
+/// [`TokenErrorCode::InvalidType`] for a JSON value of the wrong type).
+/// `pointer` is reported unchanged in the error. Contrast is not checked
+/// here: it depends on the other tokens of the scheme.
+///
+/// # Errors
+///
+/// A [`TokenError`] as described above.
+pub fn validate_token_value(name: &str, value: &Value, pointer: &str) -> Result<String> {
+    if let Some(err) = brand_error(name, pointer) {
+        return Err(err);
+    }
+    let Some(spec) = token_spec(name) else {
+        return Err(TokenError::new(
+            TokenErrorCode::UnknownToken,
+            pointer,
+            format!("{name:?} is not a token of the contract"),
+        ));
+    };
+    validate_value(spec, value, pointer)
+}
+
 fn brand_error(name: &str, pointer: &str) -> Option<TokenError> {
     is_brand_name(name).then(|| {
         TokenError::new(

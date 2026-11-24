@@ -9,7 +9,7 @@ use std::path::Path;
 use glint_schema::{
     BRAND_NAMES, CONTRAST_REQUIREMENTS, ColorScheme, Rgba, TOKEN_REGISTRY, TokenErrorCode,
     TokenKind, color_pointer, contrast_ratio, css_variable_name, is_brand_name, is_token_name,
-    parse_tokens, token_spec,
+    parse_tokens, token_spec, validate_token_value,
 };
 use serde_json::{Value, json};
 
@@ -704,4 +704,42 @@ fn css_maps_tokens_to_custom_properties_with_scheme_and_motion_rules() {
         assert!(!css.contains(forbidden), "{forbidden}");
     }
     assert_eq!(css.matches('{').count(), css.matches('}').count());
+}
+
+#[test]
+fn single_values_validate_like_the_file() {
+    let ok = |name: &str, value: Value| validate_token_value(name, &value, "/x").unwrap();
+    let err = |name: &str, value: Value| {
+        let e = validate_token_value(name, &value, "/x").unwrap_err();
+        assert_eq!(e.pointer(), "/x");
+        e.code()
+    };
+    assert_eq!(ok("background.default", json!("#0B0C0F")), "#0b0c0f");
+    assert_eq!(ok("space.md", json!(" 12px ")), "12px");
+    assert_eq!(ok("font.weight.strong", json!(600)), "600");
+    assert_eq!(ok("font.line-height.base", json!(1.5)), "1.5");
+    assert_eq!(
+        err("background.default", json!("red")),
+        TokenErrorCode::InvalidValue
+    );
+    assert_eq!(
+        err("background.default", json!(3)),
+        TokenErrorCode::InvalidType
+    );
+    assert_eq!(
+        err("font.weight.strong", json!(0)),
+        TokenErrorCode::InvalidValue
+    );
+    assert_eq!(
+        err("background.nope", json!("#000")),
+        TokenErrorCode::UnknownToken
+    );
+    assert_eq!(
+        err("surface.obsidian", json!("#000")),
+        TokenErrorCode::BrandName
+    );
+    assert_eq!(
+        err("motion.duration.fast", json!("url(x)")),
+        TokenErrorCode::InvalidValue
+    );
 }

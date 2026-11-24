@@ -152,6 +152,7 @@ pub use tokens::{
     MAX_TOKENS_BYTES, Rgba, SUPPORTED_TOKENS_SCHEMA_VERSION, TOKEN_REGISTRY, TokenError,
     TokenErrorCode, TokenFile, TokenKind, TokenSpec, color_pointer, contrast_ratio,
     css_variable_name, is_brand_name, is_token_name, parse_tokens, token_spec,
+    validate_token_value,
 };
 
 /// Stability label of the v1 manifest format. It stays `"proposed"` until the
