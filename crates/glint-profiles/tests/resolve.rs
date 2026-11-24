@@ -163,7 +163,10 @@ fn an_override_theme_without_the_surface_falls_through_with_a_diagnostic() {
     let plan = resolve(&p, &all_themes(), &default_theme(), &plain());
     assert_eq!(
         codes(&plan),
-        [(ResolveCode::SurfaceNotProvided, "/surfaces/dock".to_owned())]
+        [
+            (ResolveCode::SurfaceNotProvided, "/surfaces/dock".to_owned()),
+            (ResolveCode::FallbackToBase, "/surfaces/dock".to_owned()),
+        ]
     );
     assert_eq!(plan.diagnostics[0].surface.as_deref(), Some("dock"));
     assert_eq!(plan.diagnostics[0].severity, Severity::Error);
@@ -179,7 +182,10 @@ fn a_missing_or_corrupt_override_theme_is_skipped_and_reported() {
     let plan = resolve(&p, &missing, &default_theme(), &plain());
     assert_eq!(
         codes(&plan),
-        [(ResolveCode::ThemeUnavailable, "/surfaces/dock".to_owned())]
+        [
+            (ResolveCode::ThemeUnavailable, "/surfaces/dock".to_owned()),
+            (ResolveCode::FallbackToBase, "/surfaces/dock".to_owned()),
+        ]
     );
     assert!(plan.diagnostics[0].message.contains("not installed"));
     assert_eq!(plan.surfaces["dock"].layer, Layer::BaseTheme);
@@ -206,7 +212,11 @@ fn a_missing_base_theme_leaves_the_default_theme() {
     let plan = resolve(&p, &ThemeSet::new(), &default_theme(), &plain());
     assert_eq!(
         codes(&plan),
-        [(ResolveCode::ThemeUnavailable, "/baseTheme".to_owned())]
+        [
+            (ResolveCode::ThemeUnavailable, "/baseTheme".to_owned()),
+            (ResolveCode::FallbackToDefault, "/baseTheme".to_owned()),
+            (ResolveCode::FallbackToDefault, "/baseTheme".to_owned()),
+        ]
     );
     assert_eq!(plan.surfaces.keys().collect::<Vec<_>>(), ["panel"]);
     assert_eq!(plan.surfaces["panel"].layer, Layer::Default);
@@ -274,9 +284,11 @@ fn a_provider_returning_another_release_is_not_trusted() {
         &default_theme(),
         &plain(),
     );
+    assert_eq!(plan.diagnostics[0].code, ResolveCode::ThemeMismatch);
+    assert_eq!(plan.diagnostics[0].pointer, "/baseTheme");
     assert_eq!(
-        codes(&plan),
-        [(ResolveCode::ThemeMismatch, "/baseTheme".to_owned())]
+        plan.surfaces["panel"].fallback.as_ref().unwrap().reason,
+        "mismatch"
     );
     assert!(plan.tokens.values().all(|t| t.layer == Layer::Default));
 }
