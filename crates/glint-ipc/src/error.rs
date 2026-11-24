@@ -5,6 +5,8 @@ use std::io;
 
 use serde::{Deserialize, Serialize};
 
+use crate::operations::{OperationErrorKind, OperationFailure};
+
 /// Stable, machine-readable IPC error codes.
 ///
 /// The string form ([`ErrorCode::as_str`], `GLINT_IPC_*`) is the wire
@@ -75,6 +77,14 @@ pub enum ErrorCode {
     /// the response size limit).
     #[serde(rename = "GLINT_IPC_INTERNAL")]
     Internal,
+    /// A theme operation (CLI-006) failed; [`IpcError::operation`] carries
+    /// the component's own code and the failure kind.
+    #[serde(rename = "GLINT_IPC_OPERATION_FAILED")]
+    OperationFailed,
+    /// The server knows the operation but its host does not perform
+    /// state-changing operations.
+    #[serde(rename = "GLINT_IPC_OPERATION_UNSUPPORTED")]
+    OperationUnsupported,
 }
 
 impl ErrorCode {
@@ -97,6 +107,8 @@ impl ErrorCode {
         ErrorCode::EndpointInvalid,
         ErrorCode::Io,
         ErrorCode::Internal,
+        ErrorCode::OperationFailed,
+        ErrorCode::OperationUnsupported,
     ];
 
     /// The stable string form, e.g. `GLINT_IPC_UNKNOWN_REQUEST`.
@@ -119,13 +131,17 @@ impl ErrorCode {
             ErrorCode::EndpointInvalid => "GLINT_IPC_ENDPOINT_INVALID",
             ErrorCode::Io => "GLINT_IPC_IO",
             ErrorCode::Internal => "GLINT_IPC_INTERNAL",
+            ErrorCode::OperationFailed => "GLINT_IPC_OPERATION_FAILED",
+            ErrorCode::OperationUnsupported => "GLINT_IPC_OPERATION_UNSUPPORTED",
         }
     }
 
     /// The category this code always carries.
     pub const fn category(self) -> ErrorCategory {
         match self {
-            ErrorCode::VersionUnsupported | ErrorCode::UnknownRequest => ErrorCategory::Unsupported,
+            ErrorCode::VersionUnsupported
+            | ErrorCode::UnknownRequest
+            | ErrorCode::OperationUnsupported => ErrorCategory::Unsupported,
             ErrorCode::PermissionDenied => ErrorCategory::PermissionDenied,
             ErrorCode::Unavailable
             | ErrorCode::Busy
@@ -140,7 +156,8 @@ impl ErrorCode {
             | ErrorCode::SequenceGap
             | ErrorCode::EndpointInvalid
             | ErrorCode::Io
-            | ErrorCode::Internal => ErrorCategory::Failure,
+            | ErrorCode::Internal
+            | ErrorCode::OperationFailed => ErrorCategory::Failure,
         }
     }
 }
@@ -195,11 +212,17 @@ impl fmt::Display for ErrorCategory {
 pub struct IpcError {
     /// The stable code.
     pub code: ErrorCode,
-    /// The category (always [`ErrorCode::category`] for errors this crate
-    /// creates).
+    /// The category: [`ErrorCode::category`] for errors this crate
+    /// creates, except [`IpcError::operation_failed`], which takes it from
+    /// the failure kind.
     pub category: ErrorCategory,
     /// Human-readable detail (not stable).
     pub message: String,
+    /// For `GLINT_IPC_OPERATION_FAILED`: the component's code and the
+    /// failure kind. Absent otherwise (and omitted on the wire, so older
+    /// clients see the same error shape).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub operation: Option<OperationFailure>,
 }
 
 impl IpcError {
@@ -209,7 +232,31 @@ impl IpcError {
             code,
             category: code.category(),
             message: message.into(),
+            operation: None,
         }
+    }
+
+    /// A failed theme operation: `GLINT_IPC_OPERATION_FAILED`, with the
+    /// category that matches the failure kind (permission-denied and
+    /// unsupported keep their own categories; everything else is a
+    /// failure).
+    pub fn operation_failed(failure: OperationFailure, message: impl Into<String>) -> Self {
+        let category = match failure.kind {
+            OperationErrorKind::PermissionDenied => ErrorCategory::PermissionDenied,
+            OperationErrorKind::Unsupported => ErrorCategory::Unsupported,
+            _ => ErrorCategory::Failure,
+        };
+        Self {
+            code: ErrorCode::OperationFailed,
+            category,
+            message: message.into(),
+            operation: Some(failure),
+        }
+    }
+
+    /// The failed operation's details, for `GLINT_IPC_OPERATION_FAILED`.
+    pub fn operation(&self) -> Option<&OperationFailure> {
+        self.operation.as_ref()
     }
 
     /// Map a transport error: refused access, a missing endpoint and a

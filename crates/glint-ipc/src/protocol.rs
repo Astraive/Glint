@@ -16,6 +16,9 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::IpcError;
+use crate::operations::{
+    ThemeActivationReply, ThemeExportReply, ThemeImportReply, ThemeListReply, ThemeRemoveReply,
+};
 use crate::snapshot::{
     CapabilitySummary, ConfigSummary, CoreSnapshot, Delta, StateSummary, ThemeSummary,
 };
@@ -115,9 +118,13 @@ impl RequestEnvelope {
 }
 
 /// The typed requests of API version 1: reads of what each daemon stage
-/// reported, the subscription and shutdown. There is deliberately no
-/// generic command, path-taking execution or shell request (threat model
-/// B7.3); a new operation is a new variant and a protocol change.
+/// reported, the subscription, shutdown and the typed theme operations
+/// (CLI-006, added to version 1 as new request types, which ADR 0010
+/// allows). There is deliberately no generic command, path-taking
+/// execution or shell request (threat model B7.3); a new operation is a new
+/// variant and a protocol change. The two path-carrying operations take
+/// absolute paths only and never execute anything: `theme-import` reads a
+/// package through the strict reader, `theme-export` writes an archive.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "payload", rename_all = "kebab-case")]
 #[non_exhaustive]
@@ -141,6 +148,35 @@ pub enum GlintRequest {
     /// Ask the core to shut down cleanly (the same path as a `shutdown`
     /// line on its control channel).
     Shutdown,
+    /// Every installed release and the active profile (read from the
+    /// daemon's store).
+    ThemeList,
+    /// Stage a local `.glint` or theme directory through the strict reader
+    /// and install it without activating.
+    ThemeImport {
+        /// Absolute path of the archive or directory.
+        path: String,
+    },
+    /// Activate an installed release (`default`: the bundled theme,
+    /// installed or repaired first).
+    ThemeUse {
+        /// `ID`, `ID@VERSION`, a digest or `default`.
+        theme: String,
+    },
+    /// Remove a release no profile uses.
+    ThemeRemove {
+        /// `ID`, `ID@VERSION` or a digest.
+        theme: String,
+    },
+    /// Export an installed release as a `.glint` without local data.
+    ThemeExport {
+        /// `ID`, `ID@VERSION` or a digest.
+        theme: String,
+        /// Absolute path of the archive to write (replaced if it exists).
+        destination: String,
+    },
+    /// Activate the bundled default theme in the `safe-mode` profile.
+    SafeMode,
 }
 
 impl GlintRequest {
@@ -156,6 +192,12 @@ impl GlintRequest {
         "get-theme",
         "subscribe",
         "shutdown",
+        "theme-list",
+        "theme-import",
+        "theme-use",
+        "theme-remove",
+        "theme-export",
+        "safe-mode",
     ];
 
     /// The stable `type` name.
@@ -170,7 +212,39 @@ impl GlintRequest {
             GlintRequest::GetTheme => "get-theme",
             GlintRequest::Subscribe => "subscribe",
             GlintRequest::Shutdown => "shutdown",
+            GlintRequest::ThemeList => "theme-list",
+            GlintRequest::ThemeImport { .. } => "theme-import",
+            GlintRequest::ThemeUse { .. } => "theme-use",
+            GlintRequest::ThemeRemove { .. } => "theme-remove",
+            GlintRequest::ThemeExport { .. } => "theme-export",
+            GlintRequest::SafeMode => "safe-mode",
         }
+    }
+
+    /// True for the theme operations the server hands to
+    /// [`Control::operate`](crate::Control::operate).
+    pub const fn is_operation(&self) -> bool {
+        matches!(
+            self,
+            GlintRequest::ThemeList
+                | GlintRequest::ThemeImport { .. }
+                | GlintRequest::ThemeUse { .. }
+                | GlintRequest::ThemeRemove { .. }
+                | GlintRequest::ThemeExport { .. }
+                | GlintRequest::SafeMode
+        )
+    }
+
+    /// True for the operations that change state (everything but
+    /// `theme-list` and `theme-export`).
+    pub const fn changes_state(&self) -> bool {
+        matches!(
+            self,
+            GlintRequest::ThemeImport { .. }
+                | GlintRequest::ThemeUse { .. }
+                | GlintRequest::ThemeRemove { .. }
+                | GlintRequest::SafeMode
+        )
     }
 }
 
@@ -287,6 +361,16 @@ pub enum ResponseBody {
     Subscribed(Box<SnapshotReply>),
     /// For [`GlintRequest::Shutdown`].
     ShutdownAccepted(ShutdownReply),
+    /// For [`GlintRequest::ThemeList`].
+    ThemeList(ThemeListReply),
+    /// For [`GlintRequest::ThemeImport`].
+    ThemeImported(Box<ThemeImportReply>),
+    /// For [`GlintRequest::ThemeUse`] and [`GlintRequest::SafeMode`].
+    ThemeActivated(Box<ThemeActivationReply>),
+    /// For [`GlintRequest::ThemeRemove`].
+    ThemeRemoved(ThemeRemoveReply),
+    /// For [`GlintRequest::ThemeExport`].
+    ThemeExported(ThemeExportReply),
 }
 
 /// The core's status.

@@ -2,8 +2,9 @@
 //! requests from the [`Hub`]'s snapshot and streams subscriptions.
 //!
 //! Reads never reach the daemon: they are answered from the published
-//! snapshot, so the daemon stays the only holder of state. The only action
-//! is [`GlintRequest::Shutdown`], handed to the host's [`Control`].
+//! snapshot, so the daemon stays the only holder of state. Actions are
+//! handed to the host's [`Control`]: [`GlintRequest::Shutdown`] and the
+//! typed theme operations (CLI-006), which the host runs on the daemon.
 //!
 //! Bounds: request frames up to [`MAX_REQUEST_BYTES`], response frames up
 //! to [`MAX_RESPONSE_BYTES`] (a larger response becomes
@@ -41,6 +42,28 @@ pub trait Control: Send + Sync + 'static {
     ///
     /// An [`IpcError`] when the host refuses.
     fn shutdown(&self) -> Result<bool, IpcError>;
+
+    /// Perform a theme operation ([`GlintRequest::is_operation`]) on the
+    /// state authority and return its typed reply. The host publishes any
+    /// state change to the hub before returning, so a client reading after
+    /// the reply sees it.
+    ///
+    /// The default refuses with `GLINT_IPC_OPERATION_UNSUPPORTED`: a host
+    /// that does not own state never mutates it.
+    ///
+    /// # Errors
+    ///
+    /// `GLINT_IPC_OPERATION_FAILED` with the component's code, or the
+    /// host's unavailable / timeout error.
+    fn operate(&self, request: &GlintRequest) -> Result<ResponseBody, IpcError> {
+        Err(IpcError::new(
+            ErrorCode::OperationUnsupported,
+            format!(
+                "this server does not perform `{}` operations",
+                request.type_name()
+            ),
+        ))
+    }
 }
 
 /// Server tuning.
@@ -465,6 +488,19 @@ impl<'a, S: Read + Write> Connection<'a, S> {
             GlintRequest::Subscribe => Err(IpcError::new(
                 ErrorCode::Internal,
                 "subscribe is handled by the stream",
+            )),
+            operation if operation.is_operation() => {
+                if snapshot.shutdown_reason.is_some() {
+                    return Err(IpcError::new(
+                        ErrorCode::ShuttingDown,
+                        "the core is shutting down; nothing was changed",
+                    ));
+                }
+                self.shared.control.operate(operation)
+            }
+            other => Err(IpcError::new(
+                ErrorCode::UnknownRequest,
+                format!("unknown request type {:?}", other.type_name()),
             )),
         }
     }

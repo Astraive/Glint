@@ -23,9 +23,10 @@
 //!    current snapshot.
 //!
 //! The server ([`serve`]) answers reads from the [`Hub`]'s published
-//! snapshot and never touches the daemon's state; the only action, shutdown,
-//! goes through the host's [`Control`]. [`Client`] is the minimal blocking
-//! client with per-request timeouts.
+//! snapshot and never touches the daemon's state; shutdown and the typed
+//! theme operations ([`operations`], CLI-006) go through the host's
+//! [`Control`], which runs them on the daemon, the single writer.
+//! [`Client`] is the minimal blocking client with per-request timeouts.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
@@ -35,6 +36,7 @@ pub mod codec;
 pub mod endpoint;
 mod error;
 mod hub;
+pub mod operations;
 pub mod protocol;
 mod server;
 mod snapshot;
@@ -45,6 +47,10 @@ pub use client::{Client, ClientOptions, Subscription, SubscriptionState, Update}
 pub use endpoint::{Endpoint, PIPE_SDDL, Transport};
 pub use error::{ErrorCategory, ErrorCode, IpcError};
 pub use hub::{DEFAULT_QUEUE_CAPACITY, Hub, Next, Subscriber};
+pub use operations::{
+    ActiveInfo, OperationErrorKind, OperationFailure, PackageInfo, ThemeActivationReply,
+    ThemeExportReply, ThemeImportReply, ThemeListReply, ThemeRemoveReply,
+};
 pub use protocol::{
     API_VERSION, ClientFrame, GlintRequest, Hello, Outcome, RequestEnvelope, ResponseBody,
     ResponseEnvelope, SUPPORTED_VERSIONS, ServerFrame, ShutdownReply, SnapshotReply, StatusReply,

@@ -81,6 +81,8 @@ impl CoreSnapshot {
             }
             Delta::ShutdownStarted { reason } => self.shutdown_reason = Some(reason.clone()),
             Delta::ShutdownStep { .. } => {}
+            Delta::State { state } => self.state = Some(state.clone()),
+            Delta::Theme { theme } => self.theme = Some(ThemeSummary::clone(theme)),
         }
     }
 }
@@ -128,6 +130,17 @@ pub enum Delta {
         stage: String,
         /// A one-line summary (not stable).
         summary: String,
+    },
+    /// A theme operation changed the store (CLI-006): the new state
+    /// summary.
+    State {
+        /// What the store holds now.
+        state: StateSummary,
+    },
+    /// A theme operation changed the selected theme (CLI-006).
+    Theme {
+        /// The newly selected theme.
+        theme: Box<ThemeSummary>,
     },
 }
 
