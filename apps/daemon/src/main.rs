@@ -1,4 +1,4 @@
-//! `glint-daemon`: the Glint core process (COR-001).
+//! `glint-daemon`: the Glint core process (COR-001, COR-002).
 //!
 //! Thin wiring only: argument parsing, the stdin control channel and exit
 //! codes. The lifecycle lives in `glint-core`. In the MVP the daemon and
@@ -8,14 +8,27 @@
 //!
 //! Every lifecycle event is printed to stdout as one line,
 //! `glint-daemon: <event>`. The process runs until it reads `shutdown` on
-//! stdin or stdin closes, then shuts down cleanly.
+//! stdin or stdin closes, then shuts down cleanly (COR-002): surfaces
+//! closed, state flushed, the single-instance lock released.
+//!
+//! Only one core runs per user (per data root). A second launch stops
+//! before opening the database, prints `glint-daemon: already-running
+//! pid=<pid>` and exits with code 9. Handing the request to the running
+//! instance needs the IPC transport (COR-003).
+//!
+//! Console Ctrl+C, a closed console window, `WM_ENDSESSION` and SIGTERM
+//! terminate the process without this clean path until the native host
+//! crates forward them to the `ShutdownSignal`; the OS still releases both
+//! locks, and every state write is an already-committed transaction.
 
 #![forbid(unsafe_code)]
 
 use std::io::{self, BufRead, Write};
 use std::process::ExitCode;
 
-use glint_core::{CoreError, RuntimeOptions, ShutdownReason, headless_runtime};
+use glint_core::{
+    CoreError, ErrorCode, RuntimeOptions, ShutdownReason, ShutdownSignal, headless_runtime,
+};
 
 /// Clean shutdown.
 const EXIT_OK: u8 = 0;
@@ -23,10 +36,13 @@ const EXIT_OK: u8 = 0;
 const EXIT_FAILURE: u8 = 1;
 /// Bad arguments.
 const EXIT_USAGE: u8 = 2;
+/// Another Glint core already runs for this user; nothing was opened.
+const EXIT_ALREADY_RUNNING: u8 = 9;
 
 const USAGE: &str = "usage: glint-daemon [--once]\n\n\
   Runs the Glint core (daemon and shell services in one process, headless).\n\
-  Reads `shutdown` from stdin, or stops when stdin closes.\n\n\
+  Reads `shutdown` from stdin, or stops when stdin closes.\n\
+  Exit codes: 0 clean shutdown, 1 failure, 2 usage, 9 already running.\n\n\
   --once   shut down right after boot (smoke test)\n";
 
 struct Args {
@@ -56,16 +72,21 @@ fn report_error(error: &CoreError) {
     say(format_args!("error {error}"));
 }
 
-/// Block until the controlling stdin asks for shutdown or closes.
-fn wait_for_shutdown() -> ShutdownReason {
-    for line in io::stdin().lock().lines() {
-        match line {
-            Ok(line) if line.trim() == "shutdown" => return ShutdownReason::Requested,
-            Ok(_) => {}
-            Err(_) => break,
+/// Fire `signal` when the controlling stdin asks for shutdown or closes.
+fn watch_stdin(signal: ShutdownSignal) {
+    std::thread::spawn(move || {
+        for line in io::stdin().lock().lines() {
+            match line {
+                Ok(line) if line.trim() == "shutdown" => {
+                    signal.trigger(ShutdownReason::Requested);
+                    return;
+                }
+                Ok(_) => {}
+                Err(_) => break,
+            }
         }
-    }
-    ShutdownReason::ControlChannelClosed
+        signal.trigger(ShutdownReason::ControlChannelClosed);
+    });
 }
 
 fn main() -> ExitCode {
@@ -83,16 +104,24 @@ fn main() -> ExitCode {
 
     let mut runtime = headless_runtime(RuntimeOptions::resolve()).with_observer(|event| say(event));
     if let Err(error) = runtime.start() {
+        if error.code() == ErrorCode::AlreadyRunning {
+            match error.owner() {
+                Some(owner) => say(format_args!("already-running pid={}", owner.pid)),
+                None => say("already-running pid=unknown"),
+            }
+            return ExitCode::from(EXIT_ALREADY_RUNNING);
+        }
         report_error(&error);
         return ExitCode::from(EXIT_FAILURE);
     }
 
-    let reason = if args.once {
-        ShutdownReason::Requested
+    let signal = ShutdownSignal::new();
+    if args.once {
+        signal.trigger(ShutdownReason::Requested);
     } else {
-        wait_for_shutdown()
-    };
-    match runtime.shutdown(reason) {
+        watch_stdin(signal.clone());
+    }
+    match runtime.run_until(&signal) {
         Ok(report) if report.is_clean() => ExitCode::from(EXIT_OK),
         Ok(report) => {
             report.errors.iter().for_each(report_error);

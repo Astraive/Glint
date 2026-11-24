@@ -1,7 +1,63 @@
 //! The real `glint-daemon` binary, spawned with a temporary `GLINT_HOME`
-//! (COR-001).
+//! (COR-001, COR-002).
 
 mod support;
+
+#[test]
+fn a_second_launch_names_the_running_instance_and_leaves_it_alone() {
+    let home = glint_home();
+    let mut first = Daemon::spawn(home.path());
+    first.wait_ready();
+
+    let second = run_once(home.path(), &["--once"]);
+    let stdout = String::from_utf8_lossy(&second.stdout);
+    assert_eq!(second.status.code(), Some(9), "{stdout}");
+    assert!(
+        stdout.contains(&format!(
+            "glint-daemon: already-running pid={}",
+            first.pid()
+        )),
+        "{stdout}"
+    );
+    // It stopped before opening the database.
+    assert!(!stdout.contains("starting:open-state"), "{stdout}");
+
+    // The first instance still runs and shuts down cleanly.
+    first.stdin().write_all(b"shutdown\n").unwrap();
+    let (code, out) = first.finish();
+    assert_eq!(code, Some(0), "{out}");
+    assert!(out.contains("shutdown-step release-instance: instance lock released"));
+
+    // Shutdown released the lock: the next launch boots, and the database
+    // the first instance used is healthy (no recovery needed).
+    let third = run_once(home.path(), &["--once"]);
+    let stdout = String::from_utf8_lossy(&third.stdout);
+    assert_eq!(third.status.code(), Some(0), "{stdout}");
+    assert!(
+        !stdout.contains("GLINT_CORE_WARN_DATABASE_RECOVERED"),
+        "{stdout}"
+    );
+}
+
+#[test]
+fn a_killed_instance_leaves_no_stale_lock_and_a_healthy_database() {
+    let home = glint_home();
+    let mut first = Daemon::spawn(home.path());
+    first.wait_ready();
+    first.kill();
+    // No clean shutdown ran: the owner record is stale, but the OS released
+    // both locks.
+    assert!(home.path().join("data").join("instance.owner").is_file());
+
+    let next = run_once(home.path(), &["--once"]);
+    let stdout = String::from_utf8_lossy(&next.stdout);
+    assert_eq!(next.status.code(), Some(0), "{stdout}");
+    assert!(
+        !stdout.contains("GLINT_CORE_WARN_DATABASE_RECOVERED"),
+        "{stdout}"
+    );
+    assert!(!home.path().join("data").join("instance.owner").exists());
+}
 
 use std::io::Write;
 
