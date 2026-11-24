@@ -1,0 +1,11 @@
+{
+  "kind": "request",
+  "request_id": "r4",
+  "api_version": 1,
+  "request": {
+    "type": "theme-use",
+    "payload": {
+      "theme": "dev.example.midnight"
+    }
+  }
+}

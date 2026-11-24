@@ -1,0 +1,21 @@
+{
+  "kind": "event",
+  "event": {
+    "type": "delta",
+    "sequence": 20,
+    "delta": {
+      "type": "theme",
+      "theme": {
+        "theme_id": "official.default",
+        "version": "1.0.0",
+        "origin": "bundled-default",
+        "profile_id": null,
+        "revision": null,
+        "digest": null,
+        "fallback_reason": "no-active-theme",
+        "surfaces": [],
+        "skipped": []
+      }
+    }
+  }
+}

@@ -382,3 +382,86 @@ fn stopping_removes_the_endpoint_record() {
     let error = Client::connect(&fx.paths).unwrap_err();
     assert_eq!(error.code(), ErrorCode::Unavailable);
 }
+
+/// A host that does not own state refuses every theme operation with a
+/// typed `unsupported` error; nothing reaches a writer.
+#[test]
+fn operations_are_refused_by_a_host_without_state() {
+    let fixture = Fixture::new();
+    let mut client = fixture.client();
+    for request in [
+        GlintRequest::ThemeList,
+        GlintRequest::ThemeUse {
+            theme: "default".into(),
+        },
+        GlintRequest::SafeMode,
+    ] {
+        let error = client.request(request).unwrap_err();
+        assert_eq!(error.code(), ErrorCode::OperationUnsupported);
+        assert_eq!(error.category(), glint_ipc::ErrorCategory::Unsupported);
+    }
+    // The connection stays usable after a refused operation.
+    client.ping().unwrap();
+}
+
+struct Operator;
+
+impl Control for Operator {
+    fn shutdown(&self) -> Result<bool, IpcError> {
+        Ok(true)
+    }
+
+    fn operate(&self, request: &GlintRequest) -> Result<ResponseBody, IpcError> {
+        match request {
+            GlintRequest::ThemeList => Ok(ResponseBody::ThemeList(glint_ipc::ThemeListReply::new(
+                Vec::new(),
+                None,
+            ))),
+            other => Err(IpcError::operation_failed(
+                glint_ipc::OperationFailure::new(
+                    "GLINT_INSTALL_NOT_INSTALLED",
+                    glint_ipc::OperationErrorKind::NotFound,
+                ),
+                format!("{} found nothing", other.type_name()),
+            )),
+        }
+    }
+}
+
+/// Operations reach the host's `Control::operate`; its typed failure comes
+/// back intact, and a core that is shutting down refuses them.
+#[test]
+fn operations_reach_the_host_and_failures_keep_their_codes() {
+    let tmp = tempfile::tempdir().unwrap();
+    let paths = GlintPaths::under_root(tmp.path()).unwrap();
+    paths.ensure_dirs().unwrap();
+    let hub = Arc::new(Hub::new(CoreSnapshot::new(std::process::id())));
+    let server = serve(
+        &paths,
+        Arc::clone(&hub),
+        Arc::new(Operator),
+        ServerOptions::named("glint-test/0"),
+    )
+    .unwrap();
+    let mut client = Client::connect(&paths).unwrap();
+    assert!(matches!(
+        client.request(GlintRequest::ThemeList).unwrap(),
+        ResponseBody::ThemeList(_)
+    ));
+    let error = client
+        .request(GlintRequest::ThemeRemove { theme: "x".into() })
+        .unwrap_err();
+    assert_eq!(error.code(), ErrorCode::OperationFailed);
+    let failure = error.operation().unwrap();
+    assert_eq!(failure.code, "GLINT_INSTALL_NOT_INSTALLED");
+    assert_eq!(failure.kind, glint_ipc::OperationErrorKind::NotFound);
+
+    hub.publish(Delta::ShutdownStarted {
+        reason: "requested".into(),
+    });
+    let error = client.request(GlintRequest::SafeMode).unwrap_err();
+    assert_eq!(error.code(), ErrorCode::ShuttingDown);
+    drop(client);
+    hub.close("stopped");
+    server.stop();
+}

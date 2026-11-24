@@ -5,9 +5,11 @@ use std::path::Path;
 
 use glint_ipc::codec::{decode_client_frame, decode_server_frame};
 use glint_ipc::{
-    CapabilitySummary, ClientFrame, ConfigSummary, CoreSnapshot, Delta, ErrorCode, GlintRequest,
-    Hello, IpcError, RequestEnvelope, ResponseBody, ResponseEnvelope, ServerFrame, SnapshotReply,
-    StateSummary, StatusReply, StreamEvent, ThemeSummary, VersionRange, WarningInfo, Welcome,
+    ActiveInfo, CapabilitySummary, ClientFrame, ConfigSummary, CoreSnapshot, Delta, ErrorCode,
+    GlintRequest, Hello, IpcError, OperationErrorKind, OperationFailure, PackageInfo,
+    RequestEnvelope, ResponseBody, ResponseEnvelope, ServerFrame, SnapshotReply, StateSummary,
+    StatusReply, StreamEvent, ThemeActivationReply, ThemeSummary, VersionRange, WarningInfo,
+    Welcome,
 };
 use serde_json::Value;
 
@@ -70,6 +72,95 @@ fn client_frames_match_their_fixtures() {
         &ClientFrame::Request(RequestEnvelope::new("r1", 1, GlintRequest::GetStatus)),
     );
     client("goodbye", &ClientFrame::Goodbye);
+    client(
+        "request-theme-use",
+        &ClientFrame::Request(RequestEnvelope::new(
+            "r4",
+            1,
+            GlintRequest::ThemeUse {
+                theme: "dev.example.midnight".into(),
+            },
+        )),
+    );
+}
+
+const DIGEST: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+const PREVIOUS: &str = "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210";
+
+#[test]
+fn theme_operation_frames_match_their_fixtures() {
+    let package = PackageInfo::new(
+        "dev.example.midnight",
+        "1.2.0",
+        DIGEST,
+        "local",
+        "local-archive",
+        "/fixtures/midnight.glint",
+        2048,
+        1_790_000_000,
+        false,
+    );
+    server(
+        "response-theme-activated",
+        &ServerFrame::Response(ResponseEnvelope::ok(
+            "r4",
+            1,
+            ResponseBody::ThemeActivated(Box::new(ThemeActivationReply::new(
+                package,
+                ActiveInfo::new("default", DIGEST, 3),
+                Some(ActiveInfo::new("default", PREVIOUS, 2)),
+                false,
+            ))),
+        )),
+    );
+    server(
+        "response-operation-failed",
+        &ServerFrame::Response(ResponseEnvelope::error(
+            Some("r5".into()),
+            1,
+            IpcError::operation_failed(
+                OperationFailure::new("GLINT_INSTALL_NOT_INSTALLED", OperationErrorKind::NotFound)
+                    .with_detail("installCode", "GLINT_INSTALL_NOT_INSTALLED"),
+                "no installed theme matches \"dev.example.missing\"",
+            ),
+        )),
+    );
+    server(
+        "event-delta-theme",
+        &ServerFrame::Event {
+            event: StreamEvent::Delta {
+                sequence: 20,
+                delta: Delta::Theme {
+                    theme: Box::new(ThemeSummary::bundled(
+                        "official.default",
+                        "1.0.0",
+                        "no-active-theme",
+                    )),
+                },
+            },
+        },
+    );
+}
+
+#[test]
+fn operation_failures_keep_permission_and_unsupported_categories() {
+    let denied = IpcError::operation_failed(
+        OperationFailure::new("GLINT_INSTALL_IO", OperationErrorKind::PermissionDenied),
+        "denied",
+    );
+    assert_eq!(denied.code(), ErrorCode::OperationFailed);
+    assert_eq!(
+        denied.category(),
+        glint_ipc::ErrorCategory::PermissionDenied
+    );
+    let missing = IpcError::operation_failed(
+        OperationFailure::new("GLINT_INSTALL_NOT_INSTALLED", OperationErrorKind::NotFound),
+        "missing",
+    );
+    assert_eq!(missing.category(), glint_ipc::ErrorCategory::Failure);
+    // Errors without an operation omit the field on the wire.
+    let plain = serde_json::to_value(IpcError::new(ErrorCode::Timeout, "slow")).unwrap();
+    assert!(plain.get("operation").is_none());
 }
 
 #[test]
@@ -178,6 +269,21 @@ fn every_request_type_is_listed_and_round_trips() {
         GlintRequest::GetTheme,
         GlintRequest::Subscribe,
         GlintRequest::Shutdown,
+        GlintRequest::ThemeList,
+        GlintRequest::ThemeImport {
+            path: "/fixtures/midnight.glint".into(),
+        },
+        GlintRequest::ThemeUse {
+            theme: "default".into(),
+        },
+        GlintRequest::ThemeRemove {
+            theme: "dev.example.midnight".into(),
+        },
+        GlintRequest::ThemeExport {
+            theme: "dev.example.midnight".into(),
+            destination: "/fixtures/out.glint".into(),
+        },
+        GlintRequest::SafeMode,
     ];
     assert_eq!(all.len(), GlintRequest::TYPES.len());
     for request in all {
@@ -186,5 +292,11 @@ fn every_request_type_is_listed_and_round_trips() {
         assert!(GlintRequest::TYPES.contains(&request.type_name()));
         let back: GlintRequest = serde_json::from_value(value).unwrap();
         assert_eq!(back, request);
+        assert_eq!(
+            request.is_operation(),
+            request.type_name().starts_with("theme-") || request.type_name() == "safe-mode",
+            "{}",
+            request.type_name()
+        );
     }
 }

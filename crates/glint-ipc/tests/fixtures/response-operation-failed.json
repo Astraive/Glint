@@ -1,0 +1,19 @@
+{
+  "kind": "response",
+  "request_id": "r5",
+  "api_version": 1,
+  "result": {
+    "error": {
+      "code": "GLINT_IPC_OPERATION_FAILED",
+      "category": "failure",
+      "message": "no installed theme matches \"dev.example.missing\"",
+      "operation": {
+        "code": "GLINT_INSTALL_NOT_INSTALLED",
+        "kind": "not-found",
+        "details": {
+          "installCode": "GLINT_INSTALL_NOT_INSTALLED"
+        }
+      }
+    }
+  }
+}
