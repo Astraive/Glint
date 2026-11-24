@@ -96,6 +96,96 @@ is not pinned), `..._VERSION_MISMATCH` and `..._UNUSED` (a stale pin). Whether
 each pinned release is installed with that origin and digest is the
 installer's check (INS).
 
+## Composition and precedence
+
+Status: **proposed** (PRF-001). `crates/glint-profiles` resolves a parsed
+profile into a deterministic plan with `resolve(profile, themes,
+default_theme, host)`. It is pure and OS-free: the caller (the daemon, the
+only writer of profile state) loads each referenced release (`ThemeInput`:
+`PackageRelease`, validated manifest, parsed `tokens.json`) and hands it in
+through a `ThemeProvider` such as `ThemeSet`. The ticket proposed
+`crates/glint-theme/src/resolve.rs`; the resolver lives in its own crate
+because it consumes `glint-schema` and `glint-surfaces` and nothing else.
+
+Layers, lowest first. A later layer wins; each plan value records the layer
+that won (`Layer`: `default`, `base-theme`, `surface-override`, `user`,
+`monitor`, `host-restriction`):
+
+| # | Layer | Contributes |
+|---|---|---|
+| 1 | Default | The bundled default theme (`official.default`): tokens, its surfaces, its `wallpaper` asset |
+| 2 | Base theme | Its tokens (the whole palette, registry-complete), its surfaces and its `wallpaper` asset |
+| 3 | Surface override | Only the named surface's definition, from the named release. Never its tokens, wallpaper or other surfaces |
+| 4 | User | `tokenOverrides` (validated with `glint_schema::validate_token_value` against the closed registry) and the `wallpaper` choice |
+| 5 | Monitor | Per monitor and surface: `visible` (boolean) and placement keys laid over the theme's own `placement`, then validated by `glint-surfaces` with the theme's `behavior` |
+| 6 | Host restriction | Reduced motion (`motion.duration.*` = `0ms`), contrast safety and capability enforcement. Always wins |
+
+Rules where the plan is silent:
+
+- **Surfaces in the plan** are the union of the default theme's, the base
+  theme's and the profile's `surfaces` keys. For each, the highest usable
+  layer wins: an override theme that is unavailable, does not declare the
+  surface or declares an invalid one is reported and the base theme, then the
+  default theme, applies.
+- **No import.** A surface's entrypoint is always a path inside the release
+  that declares it. Naming a theme in an override never pulls code, tokens,
+  assets or other surfaces from it; this is not a cascade over native apps.
+- **Tokens are profile-wide.** Override themes supply implementations, not
+  palettes, so one coherent palette keeps its contrast guarantees. A base
+  theme without a `tokens` file keeps the default palette. Per-surface token
+  scopes (the plan's "surfaces that opt into those tokens") do not exist in
+  v1.
+- **Colour scheme.** The host's preference if the token source defines it,
+  otherwise the source's default (dark when defined), reported as
+  `GLINT_RESOLVE_SCHEME_UNAVAILABLE`. A colour override applies to the
+  resolved scheme.
+- **Contrast safety.** After user overrides, every `CONTRAST_REQUIREMENTS`
+  pair is re-checked; overrides in a failing (or translucent) pair are
+  reverted to the theme value with `GLINT_RESOLVE_TOKEN_LOW_CONTRAST` until
+  every pair passes. Theme values passed `parse_tokens`, so the result always
+  meets the contrast contract.
+- **Capability enforcement.** A surface whose required capability is in
+  `HostEnvironment::unusable_capabilities` is `blocked`; no user or monitor
+  override can show it.
+- **Wallpaper.** User file, then the chosen base-theme asset, then the base
+  theme's `wallpaper` asset, then the default theme's.
+- **Determinism.** Every map is ordered; diagnostics come in a fixed order
+  (base theme, surfaces, tokens, wallpaper, monitors, host restrictions).
+  `ResolvedPlan::to_json` is the stable JSON shape used by the golden
+  fixtures in `crates/glint-profiles/tests/fixtures/`.
+
+The resolver never fails: whatever it cannot honour is a `Diagnostic` with a
+stable code, a severity (`error`: something asked for is not applied;
+`warning`: part of the profile ignored or replaced; `info`: a restriction
+working as intended), a JSON Pointer into `profile.json` (`""` when the
+default theme itself is at fault) and the surface concerned.
+
+| Code | Severity | Meaning |
+|---|---|---|
+| `GLINT_RESOLVE_THEME_UNAVAILABLE` | error | A referenced release is missing or corrupt; its layer is skipped |
+| `GLINT_RESOLVE_THEME_MISMATCH` | error | The provider returned another id or version; treated as unavailable |
+| `GLINT_RESOLVE_SURFACE_NOT_PROVIDED` | error | The override theme does not declare the surface |
+| `GLINT_RESOLVE_SURFACE_INVALID` | error | A theme's surface fails `glint-surfaces` validation |
+| `GLINT_RESOLVE_SURFACE_UNRESOLVED` | error | No layer provides a surface the profile names |
+| `GLINT_RESOLVE_TOKENS_UNAVAILABLE` | error | Neither the base nor the default theme has tokens |
+| `GLINT_RESOLVE_SURFACE_BLOCKED` | warning | A required capability is unusable on this host |
+| `GLINT_RESOLVE_TOKEN_UNKNOWN` | warning | Override names a token outside the registry |
+| `GLINT_RESOLVE_TOKEN_BRAND_NAME` | warning | Override uses a brand constant as a name |
+| `GLINT_RESOLVE_TOKEN_INVALID_VALUE` | warning | Override value does not match the token grammar |
+| `GLINT_RESOLVE_TOKEN_LOW_CONTRAST` | warning | Override reverted to keep a contrast requirement |
+| `GLINT_RESOLVE_MONITOR_SURFACE_UNKNOWN` | warning | Monitor override for a surface not in the plan |
+| `GLINT_RESOLVE_MONITOR_OVERRIDE_INVALID` | warning | Malformed `visible` or an invalid resulting placement |
+| `GLINT_RESOLVE_WALLPAPER_ASSET_MISSING` | warning | The chosen asset is not in the base theme |
+| `GLINT_RESOLVE_SCHEME_UNAVAILABLE` | info | The host's colour scheme is not offered |
+| `GLINT_RESOLVE_OVERRIDE_RESTRICTED` | info | A user override was superseded by a host restriction |
+
+Not yet wired: the daemon still selects one active release at boot
+(`select_theme`); calling the resolver there, mapping installed releases to
+`ThemeInput`s and the capability snapshot to `HostEnvironment`, is a
+follow-up (COR). Safe areas, real monitor discovery and unknown monitor keys
+are the surface host's (SRF-003); widget instances and layouts are not in
+the v1 profile.
+
 ## Error codes
 
 All `GLINT_PROFILE_*` codes are listed by `ProfileErrorCode::ALL`. They share

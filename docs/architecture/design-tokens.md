@@ -129,7 +129,7 @@ Every error carries an RFC 6901 JSON Pointer; the parser stops at the first prob
 ## Gaps
 
 - No status colours (success, warning, danger, info) and no data-visualisation palette; adding them is a minor, additive change once surfaces need them.
-- `tokenOverrides` in `profile.json` still accept any dotted name; validating them against `TOKEN_REGISTRY` (and brand names) belongs to the profile owner.
+- `tokenOverrides` in `profile.json` still parse with any dotted name; the profile resolver (`glint-profiles`, PRF-001) validates each one with `validate_token_value` against `TOKEN_REGISTRY` and brand names, ignores invalid ones with a `GLINT_RESOLVE_TOKEN_*` diagnostic and reverts any that would break a contrast requirement ([profile format](profile-format.md#composition-and-precedence)).
 - `glint theme validate` and `glint-package` do not yet run `parse_tokens` on the `tokens` file; wiring is a PKG follow-up.
 - No TypeScript types for tokens yet (the SDK work in THM-002 will generate them from the schema, following the `@glint/theme-schema` drift-check pattern).
 - Per-surface token scopes and theme-defined extension tokens are not in v1 (the registry is closed on purpose).
