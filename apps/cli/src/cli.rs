@@ -37,6 +37,13 @@ pub struct Opt {
     pub value: &'static str,
 }
 
+/// One boolean flag, e.g. `--include-sensitive`.
+#[derive(Debug)]
+pub struct Flag {
+    /// Long name without dashes.
+    pub long: &'static str,
+}
+
 /// One command (a leaf of the tree).
 #[derive(Debug)]
 pub struct Command {
@@ -48,6 +55,8 @@ pub struct Command {
     pub args: &'static [Arg],
     /// Options that take a value.
     pub options: &'static [Opt],
+    /// Boolean flags.
+    pub flags: &'static [Flag],
     /// Implementation status.
     pub status: Status,
 }
@@ -67,6 +76,9 @@ impl Command {
                 None => format!("--{}", opt.long),
             };
             out.push_str(&format!(" [{flag} {}]", opt.value));
+        }
+        for flag in self.flags {
+            out.push_str(&format!(" [--{}]", flag.long));
         }
         for arg in self.args {
             if arg.required {
@@ -105,7 +117,13 @@ const OUTPUT: Opt = Opt {
     value: "PATH",
 };
 
-const CLI_003: Status = Status::Planned(Some("CLI-003"));
+/// `--include-sensitive` and its confirmation `--yes` (CLI-003).
+const SENSITIVE_FLAGS: &[Flag] = &[
+    Flag {
+        long: "include-sensitive",
+    },
+    Flag { long: "yes" },
+];
 const CLI_004: Status = Status::Planned(Some("CLI-004"));
 const CLI_005: Status = Status::Planned(Some("CLI-005"));
 
@@ -116,27 +134,31 @@ pub const COMMANDS: &[Command] = &[
         summary: "Print the Glint version",
         args: &[],
         options: &[],
+        flags: &[],
         status: Status::Implemented,
     },
     Command {
         path: &["doctor"],
         summary: "Diagnose the installation (redacted by default)",
         args: &[],
-        options: &[],
-        status: CLI_003,
+        options: &[OUTPUT],
+        flags: SENSITIVE_FLAGS,
+        status: Status::Implemented,
     },
     Command {
         path: &["status"],
         summary: "Show daemon, shell and active theme state",
         args: &[],
         options: &[],
-        status: CLI_003,
+        flags: SENSITIVE_FLAGS,
+        status: Status::Implemented,
     },
     Command {
         path: &["safe-mode"],
         summary: "Activate the bundled default theme in the safe-mode profile",
         args: &[],
         options: &[],
+        flags: &[],
         status: Status::Implemented,
     },
     Command {
@@ -144,6 +166,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Choose a theme interactively (terminal only)",
         args: &[],
         options: &[],
+        flags: &[],
         status: Status::Planned(None),
     },
     Command {
@@ -151,6 +174,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Browse registry catalogs",
         args: &[],
         options: &[],
+        flags: &[],
         status: CLI_005,
     },
     Command {
@@ -161,6 +185,7 @@ pub const COMMANDS: &[Command] = &[
             required: true,
         }],
         options: &[],
+        flags: &[],
         status: CLI_005,
     },
     Command {
@@ -168,6 +193,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Show a theme's metadata, permissions and support",
         args: &[ID],
         options: &[],
+        flags: &[],
         status: CLI_004,
     },
     Command {
@@ -178,6 +204,7 @@ pub const COMMANDS: &[Command] = &[
             required: true,
         }],
         options: &[],
+        flags: &[],
         status: CLI_005,
     },
     Command {
@@ -188,6 +215,7 @@ pub const COMMANDS: &[Command] = &[
             required: true,
         }],
         options: &[],
+        flags: &[],
         status: Status::Implemented,
     },
     Command {
@@ -195,6 +223,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Activate an installed theme (`default`: the bundled theme)",
         args: &[ID],
         options: &[],
+        flags: &[],
         status: Status::Implemented,
     },
     Command {
@@ -202,6 +231,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "List installed themes",
         args: &[],
         options: &[],
+        flags: &[],
         status: Status::Implemented,
     },
     Command {
@@ -209,6 +239,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Update an installed theme",
         args: &[ID],
         options: &[],
+        flags: &[],
         status: CLI_005,
     },
     Command {
@@ -216,6 +247,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Export an installed theme as a .glint package",
         args: &[ID],
         options: &[OUTPUT],
+        flags: &[],
         status: Status::Implemented,
     },
     Command {
@@ -223,6 +255,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Remove an installed theme",
         args: &[ID],
         options: &[],
+        flags: &[],
         status: Status::Implemented,
     },
     Command {
@@ -230,6 +263,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Return to the previously active theme",
         args: &[],
         options: &[],
+        flags: &[],
         status: CLI_004,
     },
     Command {
@@ -244,6 +278,7 @@ pub const COMMANDS: &[Command] = &[
             short: None,
             value: "TEMPLATE",
         }],
+        flags: &[],
         status: Status::Planned(Some("CRT-001")),
     },
     Command {
@@ -251,6 +286,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Run the theme preview server",
         args: &[OPTIONAL_PATH],
         options: &[],
+        flags: &[],
         status: Status::Planned(Some("CRT-005")),
     },
     Command {
@@ -258,6 +294,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Build per-surface entrypoints",
         args: &[OPTIONAL_PATH],
         options: &[],
+        flags: &[],
         status: Status::Planned(Some("CRT-002")),
     },
     Command {
@@ -265,6 +302,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Validate a theme directory or .glint package (default: .)",
         args: &[OPTIONAL_PATH],
         options: &[],
+        flags: &[],
         status: Status::Implemented,
     },
     Command {
@@ -272,6 +310,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Pack a theme directory into a .glint package",
         args: &[OPTIONAL_PATH],
         options: &[],
+        flags: &[],
         status: Status::Planned(Some("CRT-004")),
     },
     Command {
@@ -279,6 +318,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "List theme profiles",
         args: &[],
         options: &[],
+        flags: &[],
         status: Status::Planned(None),
     },
     Command {
@@ -286,6 +326,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Activate a theme profile",
         args: &[ID],
         options: &[],
+        flags: &[],
         status: Status::Planned(None),
     },
     Command {
@@ -293,6 +334,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "List configured registries",
         args: &[],
         options: &[],
+        flags: &[],
         status: CLI_005,
     },
     Command {
@@ -309,6 +351,7 @@ pub const COMMANDS: &[Command] = &[
             },
         ],
         options: &[],
+        flags: &[],
         status: CLI_005,
     },
     Command {
@@ -316,6 +359,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "Refresh registry indexes",
         args: &[],
         options: &[],
+        flags: &[],
         status: CLI_005,
     },
     Command {
@@ -323,6 +367,7 @@ pub const COMMANDS: &[Command] = &[
         summary: "List capability grants",
         args: &[],
         options: &[],
+        flags: &[],
         status: CLI_004,
     },
 ];
@@ -347,6 +392,8 @@ pub struct Invocation {
     pub args: Vec<String>,
     /// Option values by long name.
     pub options: Vec<(&'static str, String)>,
+    /// Boolean flags given, by long name.
+    pub flags: Vec<&'static str>,
 }
 
 impl Invocation {
@@ -356,6 +403,11 @@ impl Invocation {
             .iter()
             .find(|(name, _)| *name == long)
             .map(|(_, value)| value.as_str())
+    }
+
+    /// Whether flag `long` was given.
+    pub fn flag(&self, long: &str) -> bool {
+        self.flags.contains(&long)
     }
 }
 
@@ -520,6 +572,7 @@ fn resolve_help_topic(topic: &[String]) -> Result<Vec<String>, CliError> {
 fn parse_arguments(command: &'static Command, rest: &[&str]) -> Result<Invocation, CliError> {
     let mut args = Vec::new();
     let mut options: Vec<(&'static str, String)> = Vec::new();
+    let mut flags: Vec<&'static str> = Vec::new();
     let mut iter = rest.iter();
     let mut terminated = false;
     while let Some(&token) = iter.next() {
@@ -535,6 +588,26 @@ fn parse_arguments(command: &'static Command, rest: &[&str]) -> Result<Invocatio
             Some((flag, value)) if flag.starts_with("--") => (flag, Some(value)),
             _ => (token, None),
         };
+        if let Some(known) = command
+            .flags
+            .iter()
+            .find(|f| flag.strip_prefix("--") == Some(f.long))
+        {
+            if inline.is_some() {
+                return Err(CliError::usage(format!(
+                    "flag `--{}` takes no value",
+                    known.long
+                )));
+            }
+            if flags.contains(&known.long) {
+                return Err(CliError::usage(format!(
+                    "flag `--{}` given twice",
+                    known.long
+                )));
+            }
+            flags.push(known.long);
+            continue;
+        }
         let opt = command
             .options
             .iter()
@@ -586,6 +659,7 @@ fn parse_arguments(command: &'static Command, rest: &[&str]) -> Result<Invocatio
         command,
         args,
         options,
+        flags,
     })
 }
 
@@ -669,6 +743,24 @@ mod tests {
         assert_eq!(usage_code("theme export x -o a -o b"), codes::USAGE);
         assert_eq!(usage_code("theme list --version"), codes::USAGE);
         assert_eq!(usage_code("help frobnicate"), codes::UNKNOWN_COMMAND);
+        assert_eq!(usage_code("doctor --yes --yes"), codes::USAGE);
+        assert_eq!(usage_code("doctor --yes=1"), codes::USAGE);
+        assert_eq!(usage_code("theme list --yes"), codes::USAGE);
+    }
+
+    #[test]
+    fn flags_are_parsed_per_command() {
+        let invocation = run("doctor --include-sensitive --yes -o bundle.json");
+        assert!(invocation.flag("include-sensitive"));
+        assert!(invocation.flag("yes"));
+        assert_eq!(invocation.option("output"), Some("bundle.json"));
+        assert!(!run("status").flag("include-sensitive"));
+        assert!(
+            run("doctor")
+                .command
+                .usage()
+                .contains("[--include-sensitive]")
+        );
     }
 
     #[test]
