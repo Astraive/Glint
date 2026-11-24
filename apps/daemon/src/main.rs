@@ -11,10 +11,18 @@
 //! stdin or stdin closes, then shuts down cleanly (COR-002): surfaces
 //! closed, state flushed, the single-instance lock released.
 //!
+//! Once ready the core serves local IPC (COR-003, ADR 0010) on a per-user
+//! named pipe or Unix socket and prints `glint-daemon: ipc listening
+//! <endpoint>`. Clients read state, subscribe to a snapshot plus ordered
+//! deltas, or send `shutdown`, which takes the same clean path as the
+//! stdin `shutdown` line. If the endpoint cannot be served the core shuts
+//! down again and exits with code 1.
+//!
 //! Only one core runs per user (per data root). A second launch stops
-//! before opening the database, prints `glint-daemon: already-running
-//! pid=<pid>` and exits with code 9. Handing the request to the running
-//! instance needs the IPC transport (COR-003).
+//! before opening the database, asks the running instance for its status
+//! over IPC, prints `glint-daemon: already-running pid=<pid> ipc=<state>`
+//! (the running core's lifecycle state, or `unreachable`) and exits with
+//! code 9.
 //!
 //! Console Ctrl+C, a closed console window, `WM_ENDSESSION` and SIGTERM
 //! terminate the process without this clean path until the native host
@@ -27,7 +35,8 @@ use std::io::{self, BufRead, Write};
 use std::process::ExitCode;
 
 use glint_core::{
-    CoreError, ErrorCode, RuntimeOptions, ShutdownReason, ShutdownSignal, headless_runtime,
+    CoreError, CoreIpc, ErrorCode, GlintPaths, RuntimeOptions, ShutdownReason, ShutdownSignal,
+    headless_runtime, probe_ipc,
 };
 
 /// Clean shutdown.
@@ -41,7 +50,8 @@ const EXIT_ALREADY_RUNNING: u8 = 9;
 
 const USAGE: &str = "usage: glint-daemon [--once]\n\n\
   Runs the Glint core (daemon and shell services in one process, headless).\n\
-  Reads `shutdown` from stdin, or stops when stdin closes.\n\
+  Serves local IPC for this user. Reads `shutdown` from stdin (or takes an\n\
+  IPC `shutdown` request), or stops when stdin closes.\n\
   Exit codes: 0 clean shutdown, 1 failure, 2 usage, 9 already running.\n\n\
   --once   shut down right after boot (smoke test)\n";
 
@@ -102,26 +112,55 @@ fn main() -> ExitCode {
         }
     };
 
-    let mut runtime = headless_runtime(RuntimeOptions::resolve()).with_observer(|event| say(event));
-    if let Err(error) = runtime.start() {
-        if error.code() == ErrorCode::AlreadyRunning {
-            match error.owner() {
-                Some(owner) => say(format_args!("already-running pid={}", owner.pid)),
-                None => say("already-running pid=unknown"),
-            }
-            return ExitCode::from(EXIT_ALREADY_RUNNING);
+    let ipc = CoreIpc::new();
+    let observer = ipc.clone();
+    let mut runtime = headless_runtime(RuntimeOptions::resolve()).with_observer(move |event| {
+        say(event);
+        observer.observe(event);
+    });
+    let paths = match runtime.start() {
+        Ok(ready) => {
+            ipc.publish_ready(ready);
+            ready.paths.clone()
         }
-        report_error(&error);
-        return ExitCode::from(EXIT_FAILURE);
-    }
+        Err(error) => {
+            if error.code() == ErrorCode::AlreadyRunning {
+                let pid = error
+                    .owner()
+                    .map_or_else(|| "unknown".to_owned(), |owner| owner.pid.to_string());
+                say(format_args!(
+                    "already-running pid={pid} ipc={}",
+                    running_instance_state()
+                ));
+                return ExitCode::from(EXIT_ALREADY_RUNNING);
+            }
+            report_error(&error);
+            return ExitCode::from(EXIT_FAILURE);
+        }
+    };
 
     let signal = ShutdownSignal::new();
+    let server = match ipc.serve(&paths, &signal) {
+        Ok(server) => server,
+        Err(error) => {
+            // A core nobody can reach is not reported as running.
+            report_error(&error);
+            let _ = runtime.shutdown(ShutdownReason::Requested);
+            return ExitCode::from(EXIT_FAILURE);
+        }
+    };
+    say(format_args!("ipc listening {}", server.endpoint()));
+
     if args.once {
         signal.trigger(ShutdownReason::Requested);
     } else {
         watch_stdin(signal.clone());
     }
-    match runtime.run_until(&signal) {
+    let outcome = runtime.run_until(&signal);
+    // Subscribers receive every shutdown delta, then `closed`.
+    ipc.close("the core stopped");
+    server.stop();
+    match outcome {
         Ok(report) if report.is_clean() => ExitCode::from(EXIT_OK),
         Ok(report) => {
             report.errors.iter().for_each(report_error);
@@ -132,4 +171,12 @@ fn main() -> ExitCode {
             ExitCode::from(EXIT_FAILURE)
         }
     }
+}
+
+/// The running instance's lifecycle state over IPC, or `unreachable`.
+fn running_instance_state() -> String {
+    GlintPaths::resolve()
+        .ok()
+        .and_then(|paths| probe_ipc(&paths).ok())
+        .map_or_else(|| "unreachable".to_owned(), |status| status.lifecycle)
 }

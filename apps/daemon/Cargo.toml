@@ -16,6 +16,8 @@ path = "src/main.rs"
 glint-core = { path = "../../crates/glint-core" }
 
 [dev-dependencies]
+glint-ipc = { path = "../../crates/glint-ipc" }
+glint-storage = { path = "../../crates/glint-storage" }
 tempfile = "3.27.0"
 
 [lints]
