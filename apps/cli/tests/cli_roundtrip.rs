@@ -434,10 +434,21 @@ fn human_output_and_errors() {
     assert!(stderr.starts_with("error[not-found]:"), "{stderr}");
 }
 
-#[cfg_attr(windows, allow(clippy::permissions_set_readonly_false))]
 fn make_writable(path: &Path) {
     let mut permissions = fs::metadata(path).unwrap().permissions();
-    permissions.set_readonly(false);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        // Owner read/write (+ search for directories); never world-writable.
+        let mode = if path.is_dir() { 0o700 } else { 0o600 };
+        permissions.set_mode(mode);
+    }
+    #[cfg(not(unix))]
+    {
+        // On Windows `set_readonly(false)` only clears the read-only attribute.
+        #[allow(clippy::permissions_set_readonly_false)]
+        permissions.set_readonly(false);
+    }
     fs::set_permissions(path, permissions).unwrap();
     if path.is_dir() {
         for entry in fs::read_dir(path).unwrap() {
