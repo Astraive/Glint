@@ -90,6 +90,10 @@ pub mod codes {
     pub const NOT_IMPLEMENTED: &str = "GLINT_CLI_NOT_IMPLEMENTED";
     /// An I/O failure inside the CLI itself (not a package verdict).
     pub const IO: &str = "GLINT_CLI_IO";
+    /// A Glint core holds the single-instance lock but cannot be asked over
+    /// IPC (booting, not serving, or it started mid-command); nothing was
+    /// changed (CLI-006).
+    pub const DAEMON_UNAVAILABLE: &str = "GLINT_CLI_DAEMON_UNAVAILABLE";
 }
 
 /// A typed CLI failure.

@@ -20,6 +20,11 @@ glint-schema = { path = "../../crates/glint-schema" }
 glint-sources = { path = "../../crates/glint-sources" }
 # GLINT_HOME-aware path resolution and the active theme record (CLI-002).
 glint-storage = { path = "../../crates/glint-storage" }
+# Routing through a running core (CLI-006): the typed IPC client and the
+# single-instance probe that tells a stale endpoint record from a core that
+# runs but does not answer.
+glint-core = { path = "../../crates/glint-core" }
+glint-ipc = { path = "../../crates/glint-ipc" }
 serde_json = "1"
 
 [build-dependencies]

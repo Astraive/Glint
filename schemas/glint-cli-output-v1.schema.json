@@ -123,7 +123,7 @@
               ]
             },
             "code": {
-              "description": "Most specific stable code: GLINT_CLI_*, GLINT_SOURCE_*, GLINT_PACKAGE_*, GLINT_MANIFEST_*, GLINT_SURFACE_*, GLINT_INSTALL_*, GLINT_IDENTITY_* or GLINT_STORAGE_*.",
+              "description": "Most specific stable code: GLINT_CLI_*, GLINT_SOURCE_*, GLINT_PACKAGE_*, GLINT_MANIFEST_*, GLINT_SURFACE_*, GLINT_INSTALL_*, GLINT_IDENTITY_*, GLINT_STORAGE_*, GLINT_DAEMON_* or GLINT_IPC_*.",
               "type": "string",
               "pattern": "^GLINT_[A-Z0-9_]+$"
             },
@@ -133,7 +133,7 @@
               "minLength": 1
             },
             "details": {
-              "description": "Machine-readable context such as sourceCode, packageCode, manifestCode, installCode, identityCode, storageCode, candidates, profiles, pointer or plannedIn.",
+              "description": "Machine-readable context such as sourceCode, packageCode, manifestCode, installCode, identityCode, storageCode, ipcCode, ipcCategory, route, candidates, profiles, pointer or plannedIn.",
               "type": "object"
             }
           }
@@ -237,7 +237,8 @@
           "package",
           "alreadyInstalled",
           "activated",
-          "active"
+          "active",
+          "route"
         ],
         "properties": {
           "package": {
@@ -258,6 +259,9 @@
                 "$ref": "#/$defs/data/activeTheme"
               }
             ]
+          },
+          "route": {
+            "$ref": "#/$defs/data/route"
           }
         }
       },
@@ -267,7 +271,8 @@
         "additionalProperties": false,
         "required": [
           "packages",
-          "active"
+          "active",
+          "route"
         ],
         "properties": {
           "packages": {
@@ -285,6 +290,9 @@
                 "$ref": "#/$defs/data/activeTheme"
               }
             ]
+          },
+          "route": {
+            "$ref": "#/$defs/data/route"
           }
         }
       },
@@ -295,7 +303,8 @@
         "required": [
           "package",
           "archive",
-          "canonical"
+          "canonical",
+          "route"
         ],
         "properties": {
           "package": {
@@ -349,6 +358,9 @@
           },
           "canonical": {
             "type": "boolean"
+          },
+          "route": {
+            "$ref": "#/$defs/data/route"
           }
         }
       },
@@ -357,7 +369,8 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "removed"
+          "removed",
+          "route"
         ],
         "properties": {
           "removed": {
@@ -382,6 +395,9 @@
                 "minLength": 64
               }
             }
+          },
+          "route": {
+            "$ref": "#/$defs/data/route"
           }
         }
       },
@@ -393,7 +409,8 @@
           "package",
           "active",
           "previous",
-          "safeMode"
+          "safeMode",
+          "route"
         ],
         "properties": {
           "package": {
@@ -414,8 +431,18 @@
           },
           "safeMode": {
             "type": "boolean"
+          },
+          "route": {
+            "$ref": "#/$defs/data/route"
           }
         }
+      },
+      "route": {
+        "description": "Where a theme state command ran (CLI-006): `daemon` through the running core's typed IPC API, `offline` directly on the store because no core runs.",
+        "enum": [
+          "daemon",
+          "offline"
+        ]
       }
     }
   }

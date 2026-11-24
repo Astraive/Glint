@@ -1131,7 +1131,9 @@ dependencies = [
 name = "glint-cli"
 version = "0.0.0"
 dependencies = [
+ "glint-core",
  "glint-installer",
+ "glint-ipc",
  "glint-package",
  "glint-schema",
  "glint-sources",
