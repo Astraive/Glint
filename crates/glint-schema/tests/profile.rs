@@ -789,6 +789,66 @@ fn profile_schema_matches_the_parser() {
 }
 
 #[test]
+fn lock_writer_is_canonical_and_round_trips() {
+    let parsed = example_lock();
+    let lock = ProfileLock::new(&parsed.profile, parsed.packages.clone()).unwrap();
+    // Sorted by key, whatever the input order.
+    let mut reversed = parsed.packages.clone();
+    reversed.reverse();
+    assert_eq!(ProfileLock::new(&parsed.profile, reversed).unwrap(), lock);
+    let ids: Vec<_> = lock.packages.iter().map(|r| r.key.id()).collect();
+    assert_eq!(
+        ids,
+        ["community.glassdock", "me.minimal-notifs", "official.mono"]
+    );
+
+    let text = lock.to_json_string();
+    assert!(text.ends_with("}\n") && !text.contains('\r'));
+    assert!(
+        text.starts_with("{\n  \"schemaVersion\": 1,\n  \"profile\": \"profile.custom-mix\",\n")
+    );
+    let first = text.find("\"kind\"").unwrap();
+    let order: Vec<_> = [
+        "\"kind\"",
+        "\"id\"",
+        "\"version\"",
+        "\"origin\"",
+        "\"digest\"",
+    ]
+    .iter()
+    .map(|f| text[first..].find(f).unwrap())
+    .collect();
+    assert!(order.windows(2).all(|w| w[0] < w[1]), "{order:?}");
+    let reread = parse_profile_lock(&text).unwrap();
+    assert_eq!(reread, lock);
+    assert_eq!(reread.to_json_string(), text, "writing is a fixed point");
+    // Same content as the hand-written fixture.
+    assert!(verify_profile_lock(&example_profile(), &reread).is_empty());
+
+    let empty = ProfileLock::new("work-setup", Vec::new()).unwrap();
+    assert_eq!(
+        empty.to_json_string(),
+        "{\n  \"schemaVersion\": 1,\n  \"profile\": \"work-setup\",\n  \"packages\": []\n}\n"
+    );
+    assert_eq!(parse_profile_lock(&empty.to_json_string()).unwrap(), empty);
+}
+
+#[test]
+fn lock_constructor_refuses_bad_ids_and_duplicates() {
+    let release = example_lock().packages[0].clone();
+    assert_err(
+        &ProfileLock::new("Work Setup", vec![release.clone()]).unwrap_err(),
+        ProfileErrorCode::InvalidProfileId,
+        "/profile",
+    );
+    assert_err(
+        &ProfileLock::new("work-setup", vec![release.clone(), release]).unwrap_err(),
+        ProfileErrorCode::DuplicatePackage,
+        "/packages/1",
+    );
+}
+
+#[test]
 fn lock_schema_matches_the_parser() {
     let schema = read_schema("glint-profile-lock-v1.schema.json");
     assert_eq!(schema["x-glint-status"], json!("proposed"));

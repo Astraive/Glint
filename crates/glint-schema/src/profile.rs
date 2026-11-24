@@ -383,9 +383,87 @@ pub struct ProfileLock {
 }
 
 impl ProfileLock {
+    /// A lock for `profile` pinning `packages`, sorted by package key so the
+    /// same set of releases always gives the same lock.
+    ///
+    /// # Errors
+    ///
+    /// [`ProfileErrorCode::InvalidProfileId`] at `/profile` or
+    /// [`ProfileErrorCode::DuplicatePackage`] at `/packages/<n>` (index in
+    /// sorted order) when a key is pinned twice.
+    pub fn new(profile: &str, mut packages: Vec<PackageRelease>) -> Result<Self> {
+        if !is_valid_profile_id(profile) {
+            return Err(ProfileError::new(
+                ProfileErrorCode::InvalidProfileId,
+                "/profile",
+                format!("{profile:?} is not a profile id"),
+            ));
+        }
+        packages.sort_by(|a, b| a.key.cmp(&b.key));
+        if let Some(index) = packages.windows(2).position(|w| w[0].key == w[1].key) {
+            return Err(ProfileError::new(
+                ProfileErrorCode::DuplicatePackage,
+                format!("/packages/{}", index + 1),
+                format!("{} is pinned twice", packages[index].key),
+            ));
+        }
+        Ok(Self {
+            schema_version: SUPPORTED_PROFILE_SCHEMA_VERSION,
+            profile: profile.to_owned(),
+            packages,
+        })
+    }
+
     /// The pinned release for `key`, if any.
     pub fn find(&self, key: &PackageKey) -> Option<&PackageRelease> {
         self.packages.iter().find(|release| &release.key == key)
+    }
+
+    /// The canonical `profile.lock` text: two-space indentation, fields in
+    /// the documented order (`schemaVersion`, `profile`, `packages`; each
+    /// entry `kind`, `id`, `version`, `origin`, `digest`), packages in
+    /// stored order, LF line endings and a final newline. Writing is
+    /// deterministic and [`parse_profile_lock`] reads the output back to an
+    /// equal lock.
+    pub fn to_json_string(&self) -> String {
+        let quote = |text: &str| Value::String(text.to_owned()).to_string();
+        let mut out = String::new();
+        out.push_str("{\n");
+        out.push_str(&format!("  \"schemaVersion\": {},\n", self.schema_version));
+        out.push_str(&format!("  \"profile\": {},\n", quote(&self.profile)));
+        if self.packages.is_empty() {
+            out.push_str("  \"packages\": []\n");
+        } else {
+            out.push_str("  \"packages\": [\n");
+            for (index, release) in self.packages.iter().enumerate() {
+                out.push_str("    {\n");
+                out.push_str(&format!(
+                    "      \"kind\": {},\n",
+                    quote(release.key.kind().as_str())
+                ));
+                out.push_str(&format!("      \"id\": {},\n", quote(release.key.id())));
+                out.push_str(&format!(
+                    "      \"version\": {},\n",
+                    quote(&release.version.to_string())
+                ));
+                out.push_str(&format!(
+                    "      \"origin\": {},\n",
+                    quote(release.origin.as_str())
+                ));
+                out.push_str(&format!(
+                    "      \"digest\": {}\n",
+                    quote(release.digest.as_str())
+                ));
+                out.push_str(if index + 1 == self.packages.len() {
+                    "    }\n"
+                } else {
+                    "    },\n"
+                });
+            }
+            out.push_str("  ]\n");
+        }
+        out.push_str("}\n");
+        out
     }
 }
 
