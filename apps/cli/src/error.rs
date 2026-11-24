@@ -94,6 +94,9 @@ pub mod codes {
     /// IPC (booting, not serving, or it started mid-command); nothing was
     /// changed (CLI-006).
     pub const DAEMON_UNAVAILABLE: &str = "GLINT_CLI_DAEMON_UNAVAILABLE";
+    /// `--include-sensitive` was given without confirmation (`--yes`, or
+    /// an answer on a terminal) (CLI-003).
+    pub const CONFIRMATION_REQUIRED: &str = "GLINT_CLI_CONFIRMATION_REQUIRED";
 }
 
 /// A typed CLI failure.

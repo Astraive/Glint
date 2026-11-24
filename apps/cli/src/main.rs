@@ -1,4 +1,4 @@
-//! `glint` CLI entry point (CLI-001, CLI-002, CLI-006).
+//! `glint` CLI entry point (CLI-001, CLI-002, CLI-003, CLI-006).
 //!
 //! Thin by design: argument parsing, output rendering and the exit code
 //! contract live here; the work is done by the library crates. Commands in
@@ -12,6 +12,7 @@ mod default_theme;
 mod error;
 mod ipc;
 mod output;
+mod redact;
 
 use std::io::{self, IsTerminal, Write};
 use std::process::ExitCode;

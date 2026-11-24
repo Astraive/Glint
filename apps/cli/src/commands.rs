@@ -1,5 +1,6 @@
 //! Command handlers. Each is thin wiring onto the library crates.
 
+mod doctor;
 mod theme;
 
 use std::fs;
@@ -45,6 +46,8 @@ fn run(invocation: &Invocation, json: bool, terminal: Terminal) -> Result<Succes
         ["theme", "remove"] => theme::remove(&invocation.args[0]),
         ["theme", "use"] => theme::use_theme(&invocation.args[0]),
         ["safe-mode"] => theme::safe_mode(),
+        ["doctor"] => doctor::doctor(invocation, json, terminal),
+        ["status"] => doctor::status(invocation, json, terminal),
         // The bare `theme` command is the interactive chooser: terminals
         // only, never in JSON mode.
         ["theme"] if json || !terminal.interactive => Err(CliError::new(
