@@ -2,6 +2,9 @@
 //! today maps to its documented exit code, and every `--json` output
 //! validates against `schemas/glint-cli-output-v1.schema.json`.
 //!
+//! The state-changing theme commands (CLI-002) are exercised with a
+//! temporary `GLINT_HOME` in `tests/cli_roundtrip.rs`.
+//!
 //! `permission-denied` (5) is mapped from typed source errors in the unit
 //! tests (`commands::tests`); `daemon-unavailable` (6) and `timeout` (8) are
 //! reserved: no command can produce them until the daemon (COR) exists.
@@ -159,7 +162,7 @@ fn every_unimplemented_command_exits_3_and_never_succeeds() {
         );
         checked += 1;
     }
-    assert!(checked >= 20, "only {checked} commands checked");
+    assert!(checked >= 18, "only {checked} commands checked");
 }
 
 #[test]
@@ -281,7 +284,7 @@ fn missing_paths_exit_7() {
 #[test]
 fn schema_checker_rejects_malformed_envelopes() {
     let schema = output_schema();
-    let good = json(&["theme", "list"], UNSUPPORTED);
+    let good = json(&["doctor"], UNSUPPORTED);
     let mut cases = Vec::new();
     let mut ok_with_error = good.clone();
     ok_with_error["ok"] = Value::Bool(true);

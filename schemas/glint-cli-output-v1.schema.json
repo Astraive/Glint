@@ -1,33 +1,62 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:glint:schema:glint-cli-output:v1",
-  "$comment": "PROPOSED format (CLI-001): the envelope every `glint ... --json` call prints on stdout, for success and failure alike. Command names, flags and per-command `data` shapes stay proposed until documented as stable in docs/cli/reference.md. Fields are only added within schemaVersion 1; an incompatible change bumps schemaVersion. apps/cli/tests/exit_codes.rs validates real CLI output against this file.",
+  "$comment": "PROPOSED format (CLI-001): the envelope every `glint ... --json` call prints on stdout, for success and failure alike. Command names, flags and per-command `data` shapes stay proposed until documented as stable in docs/cli/reference.md. Fields are only added within schemaVersion 1; an incompatible change bumps schemaVersion. apps/cli/tests/exit_codes.rs validates real CLI output against this file. Per-command `data` shapes documented here live under $defs/data and are validated by apps/cli/tests/cli_roundtrip.rs (CLI-002); the envelope's `data` stays a plain object so new commands can add shapes without a version bump.",
   "x-glint-status": "proposed",
   "title": "Glint CLI JSON output envelope v1",
   "type": "object",
   "oneOf": [
-    { "$ref": "#/$defs/success" },
-    { "$ref": "#/$defs/failure" }
+    {
+      "$ref": "#/$defs/success"
+    },
+    {
+      "$ref": "#/$defs/failure"
+    }
   ],
   "$defs": {
     "common": {
-      "schemaVersion": { "const": 1 },
-      "glintVersion": { "type": "string", "minLength": 1 },
+      "schemaVersion": {
+        "const": 1
+      },
+      "glintVersion": {
+        "type": "string",
+        "minLength": 1
+      },
       "command": {
         "description": "The recognised command words, e.g. \"theme validate\"; null when the first word was not recognised.",
-        "type": ["string", "null"]
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "success": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schemaVersion", "glintVersion", "command", "ok", "exitCode", "data"],
+      "required": [
+        "schemaVersion",
+        "glintVersion",
+        "command",
+        "ok",
+        "exitCode",
+        "data"
+      ],
       "properties": {
-        "schemaVersion": { "$ref": "#/$defs/common/schemaVersion" },
-        "glintVersion": { "$ref": "#/$defs/common/glintVersion" },
-        "command": { "$ref": "#/$defs/common/command" },
-        "ok": { "const": true },
-        "exitCode": { "const": 0 },
+        "schemaVersion": {
+          "$ref": "#/$defs/common/schemaVersion"
+        },
+        "glintVersion": {
+          "$ref": "#/$defs/common/glintVersion"
+        },
+        "command": {
+          "$ref": "#/$defs/common/command"
+        },
+        "ok": {
+          "const": true
+        },
+        "exitCode": {
+          "const": 0
+        },
         "data": {
           "description": "Command-specific payload; see docs/cli/reference.md.",
           "type": "object"
@@ -37,17 +66,48 @@
     "failure": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schemaVersion", "glintVersion", "command", "ok", "exitCode", "error"],
+      "required": [
+        "schemaVersion",
+        "glintVersion",
+        "command",
+        "ok",
+        "exitCode",
+        "error"
+      ],
       "properties": {
-        "schemaVersion": { "$ref": "#/$defs/common/schemaVersion" },
-        "glintVersion": { "$ref": "#/$defs/common/glintVersion" },
-        "command": { "$ref": "#/$defs/common/command" },
-        "ok": { "const": false },
-        "exitCode": { "enum": [1, 2, 3, 4, 5, 6, 7, 8] },
+        "schemaVersion": {
+          "$ref": "#/$defs/common/schemaVersion"
+        },
+        "glintVersion": {
+          "$ref": "#/$defs/common/glintVersion"
+        },
+        "command": {
+          "$ref": "#/$defs/common/command"
+        },
+        "ok": {
+          "const": false
+        },
+        "exitCode": {
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
         "error": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "code", "message", "details"],
+          "required": [
+            "kind",
+            "code",
+            "message",
+            "details"
+          ],
           "properties": {
             "kind": {
               "description": "Failure class. Fixes exitCode: failure 1, usage 2, unsupported 3, invalid-package 4, permission-denied 5, daemon-unavailable 6, not-found 7, timeout 8.",
@@ -63,7 +123,7 @@
               ]
             },
             "code": {
-              "description": "Most specific stable code: GLINT_CLI_*, GLINT_SOURCE_*, GLINT_PACKAGE_* or GLINT_MANIFEST_*.",
+              "description": "Most specific stable code: GLINT_CLI_*, GLINT_SOURCE_*, GLINT_PACKAGE_*, GLINT_MANIFEST_*, GLINT_SURFACE_*, GLINT_INSTALL_*, GLINT_IDENTITY_* or GLINT_STORAGE_*.",
               "type": "string",
               "pattern": "^GLINT_[A-Z0-9_]+$"
             },
@@ -73,9 +133,287 @@
               "minLength": 1
             },
             "details": {
-              "description": "Machine-readable context such as sourceCode, packageCode, manifestCode, pointer or plannedIn.",
+              "description": "Machine-readable context such as sourceCode, packageCode, manifestCode, installCode, identityCode, storageCode, candidates, profiles, pointer or plannedIn.",
               "type": "object"
             }
+          }
+        }
+      }
+    },
+    "data": {
+      "activeTheme": {
+        "description": "The active profile and the digest of its base theme.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "profile",
+          "digest",
+          "revision"
+        ],
+        "properties": {
+          "profile": {
+            "type": "string",
+            "minLength": 1
+          },
+          "digest": {
+            "type": "string",
+            "minLength": 64
+          },
+          "revision": {
+            "type": "integer"
+          }
+        }
+      },
+      "themePackage": {
+        "description": "One installed release.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "version",
+          "digest",
+          "origin",
+          "source",
+          "size",
+          "installedAt",
+          "bundled",
+          "active"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "digest": {
+            "type": "string",
+            "minLength": 64
+          },
+          "origin": {
+            "description": "ADR 0006 origin: local, registry:<url>, git:<url>, artifact:<url>.",
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "locator"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "minLength": 1
+              },
+              "locator": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "size": {
+            "type": "integer"
+          },
+          "installedAt": {
+            "type": "integer"
+          },
+          "bundled": {
+            "type": "boolean"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "themeImport": {
+        "description": "`glint theme import PATH`.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "package",
+          "alreadyInstalled",
+          "activated",
+          "active"
+        ],
+        "properties": {
+          "package": {
+            "$ref": "#/$defs/data/themePackage"
+          },
+          "alreadyInstalled": {
+            "type": "boolean"
+          },
+          "activated": {
+            "const": false
+          },
+          "active": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/$defs/data/activeTheme"
+              }
+            ]
+          }
+        }
+      },
+      "themeList": {
+        "description": "`glint theme list`.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "packages",
+          "active"
+        ],
+        "properties": {
+          "packages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/data/themePackage"
+            }
+          },
+          "active": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/$defs/data/activeTheme"
+              }
+            ]
+          }
+        }
+      },
+      "themeExport": {
+        "description": "`glint theme export [-o PATH] ID`.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "package",
+          "archive",
+          "canonical"
+        ],
+        "properties": {
+          "package": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "version",
+              "digest"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "digest": {
+                "type": "string",
+                "minLength": 64
+              }
+            }
+          },
+          "archive": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "sha256",
+              "size",
+              "files"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "minLength": 64
+              },
+              "size": {
+                "type": "integer"
+              },
+              "files": {
+                "type": "integer"
+              }
+            }
+          },
+          "canonical": {
+            "type": "boolean"
+          }
+        }
+      },
+      "themeRemove": {
+        "description": "`glint theme remove ID`.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "removed"
+        ],
+        "properties": {
+          "removed": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "version",
+              "digest"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "digest": {
+                "type": "string",
+                "minLength": 64
+              }
+            }
+          }
+        }
+      },
+      "themeActivation": {
+        "description": "`glint theme use ID|default` and `glint safe-mode`.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "package",
+          "active",
+          "previous",
+          "safeMode"
+        ],
+        "properties": {
+          "package": {
+            "$ref": "#/$defs/data/themePackage"
+          },
+          "active": {
+            "$ref": "#/$defs/data/activeTheme"
+          },
+          "previous": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/$defs/data/activeTheme"
+              }
+            ]
+          },
+          "safeMode": {
+            "type": "boolean"
           }
         }
       }

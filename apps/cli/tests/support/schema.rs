@@ -3,7 +3,7 @@
 //!
 //! It implements exactly the keywords `schemas/glint-cli-output-v1.schema.json`
 //! uses: local `$ref`, `oneOf`, `type`, `const`, `enum`, `required`,
-//! `properties`, `additionalProperties: false`, `minLength` and `pattern`
+//! `properties`, `items`, `additionalProperties: false`, `minLength` and `pattern`
 //! (only the `^GLINT_[A-Z0-9_]+$` pattern). Any other keyword fails loudly,
 //! so the schema cannot silently grow beyond what is checked.
 
@@ -24,6 +24,15 @@ const ANNOTATIONS: &[&str] = &[
 pub fn validate(root: &Value, instance: &Value) -> Vec<String> {
     let mut errors = Vec::new();
     check(root, root, instance, "", &mut errors);
+    errors
+}
+
+/// Validate `instance` against the sub-schema at the local reference
+/// `reference` (e.g. `#/$defs/data/themeList`).
+#[allow(dead_code)]
+pub fn validate_at(root: &Value, reference: &str, instance: &Value) -> Vec<String> {
+    let mut errors = Vec::new();
+    check(root, resolve(root, reference), instance, "", &mut errors);
     errors
 }
 
@@ -117,6 +126,13 @@ fn check(root: &Value, schema: &Value, value: &Value, at: &str, errors: &mut Vec
                         if let Some(child) = object.get(name) {
                             check(root, sub, child, &format!("{at}/{name}"), errors);
                         }
+                    }
+                }
+            }
+            "items" => {
+                if let Some(array) = value.as_array() {
+                    for (index, item) in array.iter().enumerate() {
+                        check(root, rule, item, &format!("{at}/{index}"), errors);
                     }
                 }
             }
