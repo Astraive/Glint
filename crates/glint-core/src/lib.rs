@@ -29,6 +29,11 @@
 //!    gate, or the bundled default theme.
 //! 7. `start-shell`: the shell presents the selected surfaces.
 //!
+//! Once ready, the host can serve the runtime's state over local IPC
+//! ([`CoreIpc`], COR-003): typed reads answered from a published snapshot,
+//! subscriptions with ordered deltas, and a `shutdown` request that fires
+//! the same [`ShutdownSignal`] as the control channel.
+//!
 //! Degraded outcomes (recovered database, rejected config, fallback theme,
 //! skipped surface) are reported as [`LifecycleEvent::Warning`]s with stable
 //! `GLINT_CORE_WARN_*` codes; a failed stage releases whatever had started
@@ -56,15 +61,18 @@
 
 mod error;
 mod instance;
+mod ipc;
 mod lifecycle;
 mod runtime;
 mod signal;
 
 pub use error::{CoreError, ErrorCode};
 pub use glint_daemon::{Daemon, DaemonService};
+pub use glint_ipc::{IpcError, ServerHandle as IpcServer, StatusReply as IpcStatus};
 pub use glint_shell::{HeadlessBackend, Shell, ShellService};
 pub use glint_storage::GlintPaths;
 pub use instance::{InstanceError, InstanceLock, InstanceOwner, InstanceProbe, probe_instance};
+pub use ipc::{CoreIpc, probe_ipc};
 pub use lifecycle::{
     BootStage, LifecycleEvent, LifecycleState, ShutdownReason, ShutdownStage, warnings,
 };

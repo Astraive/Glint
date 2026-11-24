@@ -29,6 +29,9 @@ pub enum ErrorCode {
     AlreadyRunning,
     /// The instance lock could not be taken or released for another reason.
     InstanceLockFailed,
+    /// The local IPC endpoint could not be served (COR-003); see
+    /// [`CoreError::source_code`] for the `GLINT_IPC_*` code.
+    IpcFailed,
 }
 
 impl ErrorCode {
@@ -40,6 +43,7 @@ impl ErrorCode {
         ErrorCode::InvalidState,
         ErrorCode::AlreadyRunning,
         ErrorCode::InstanceLockFailed,
+        ErrorCode::IpcFailed,
     ];
 
     /// The stable string form, e.g. `GLINT_CORE_PATHS_UNAVAILABLE`.
@@ -51,6 +55,7 @@ impl ErrorCode {
             ErrorCode::InvalidState => "GLINT_CORE_INVALID_STATE",
             ErrorCode::AlreadyRunning => "GLINT_CORE_ALREADY_RUNNING",
             ErrorCode::InstanceLockFailed => "GLINT_CORE_INSTANCE_LOCK_FAILED",
+            ErrorCode::IpcFailed => "GLINT_CORE_IPC_FAILED",
         }
     }
 }
@@ -118,7 +123,7 @@ impl CoreError {
         }
     }
 
-    fn with_source_code(mut self, code: impl Into<String>) -> Self {
+    pub(crate) fn with_source_code(mut self, code: impl Into<String>) -> Self {
         self.source_code = Some(code.into());
         self
     }

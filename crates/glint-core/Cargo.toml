@@ -10,9 +10,12 @@ publish.workspace = true
 
 # glint-core composes glint-daemon and glint-shell through their service
 # traits (COR-001, ADR 0001). Neither of those depends on the other or on
-# glint-core, so the graph has no cycle. No OS-specific dependency.
+# glint-core, so the graph has no cycle. No OS-specific dependency:
+# glint-ipc (COR-003, ADR 0010) carries the local transport through the
+# portable interprocess crate.
 [dependencies]
 glint-daemon = { path = "../glint-daemon" }
+glint-ipc = { path = "../glint-ipc" }
 glint-shell = { path = "../glint-shell" }
 glint-storage = { path = "../glint-storage" }
 
