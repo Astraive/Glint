@@ -15,8 +15,12 @@
 //! named pipe or Unix socket and prints `glint-daemon: ipc listening
 //! <endpoint>`. Clients read state, subscribe to a snapshot plus ordered
 //! deltas, or send `shutdown`, which takes the same clean path as the
-//! stdin `shutdown` line. If the endpoint cannot be served the core shuts
-//! down again and exits with code 1.
+//! stdin `shutdown` line. Clients may also send the typed theme operations
+//! (CLI-006: `theme-list`, `theme-import`, `theme-use`, `theme-remove`,
+//! `theme-export`, `safe-mode`); the core runs them one at a time on the
+//! daemon, the only holder of the installer, and prints `glint-daemon:
+//! operation <name>: <summary>`. If the endpoint cannot be served the core
+//! shuts down again and exits with code 1.
 //!
 //! Only one core runs per user (per data root). A second launch stops
 //! before opening the database, asks the running instance for its status
@@ -36,7 +40,7 @@ use std::process::ExitCode;
 
 use glint_core::{
     CoreError, CoreIpc, ErrorCode, GlintPaths, RuntimeOptions, ShutdownReason, ShutdownSignal,
-    headless_runtime, probe_ipc,
+    headless_runtime, operation_channel, probe_ipc,
 };
 
 /// Clean shutdown.
@@ -140,7 +144,8 @@ fn main() -> ExitCode {
     };
 
     let signal = ShutdownSignal::new();
-    let server = match ipc.serve(&paths, &signal) {
+    let (operations, inbox) = operation_channel();
+    let server = match ipc.serve_with_operations(&paths, &signal, operations) {
         Ok(server) => server,
         Err(error) => {
             // A core nobody can reach is not reported as running.
@@ -156,7 +161,7 @@ fn main() -> ExitCode {
     } else {
         watch_stdin(signal.clone());
     }
-    let outcome = runtime.run_until(&signal);
+    let outcome = runtime.run_serving(&signal, &inbox);
     // Subscribers receive every shutdown delta, then `closed`.
     ipc.close("the core stopped");
     server.stop();
