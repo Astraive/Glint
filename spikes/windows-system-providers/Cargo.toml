@@ -22,7 +22,7 @@ serde_json = "1.0.154"
 # workspace builds one copy. `windows-core` is a direct dependency because the
 # `#[implement]` macro expands to `windows_core::` paths.
 [target."cfg(windows)".dependencies]
-windows-core = "0.62.2"
+windows-core = "0.100.0"
 windows = { version = "0.62.2", features = [
     "Devices_Power",
     "Foundation",
